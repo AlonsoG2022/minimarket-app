@@ -1,0 +1,64 @@
+@if (loading) {
+  <section class="card">
+    <h2 class="section-title">Cargando resumen</h2>
+    <p class="section-copy">Estamos preparando ventas del dia, inventario y alertas.</p>
+  </section>
+} @else {
+  <section class="dashboard-grid">
+    <article class="card stat-card">
+      <p>Ventas del dia</p>
+      <strong>{{ summary?.todaySales ?? 0 | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+    </article>
+
+    <article class="card stat-card">
+      <p>Transacciones</p>
+      <strong>{{ summary?.todayTransactions ?? 0 }}</strong>
+    </article>
+
+    <article class="card stat-card">
+      <p>Productos activos</p>
+      <strong>{{ summary?.productCount ?? 0 }}</strong>
+    </article>
+
+    <article class="card stat-card alert">
+      <p>Stock bajo</p>
+      <strong>{{ summary?.lowStockProducts ?? 0 }}</strong>
+    </article>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Inventario para seguimiento</h2>
+    <p class="section-copy">Lista rapida de productos que ya alcanzaron su stock minimo.</p>
+
+    @if (lowStockProducts.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoria</th>
+              <th>Stock</th>
+              <th>Minimo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of lowStockProducts; track product.id) {
+              <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.categoryName }}</td>
+                <td><span class="pill low">{{ product.stock }}</span></td>
+                <td>{{ product.minimumStock }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p>No hay productos en nivel critico por ahora.</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+  </section>
+}

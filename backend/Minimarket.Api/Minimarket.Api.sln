@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36518.9 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minimarket.Api", "Minimarket.Api.csproj", "{E72DE0FE-C295-0236-7567-D1817D8CBFE1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E72DE0FE-C295-0236-7567-D1817D8CBFE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E72DE0FE-C295-0236-7567-D1817D8CBFE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E72DE0FE-C295-0236-7567-D1817D8CBFE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E72DE0FE-C295-0236-7567-D1817D8CBFE1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FEDC9D9F-F8B3-4423-AF5E-04D5C4902264}
+	EndGlobalSection
+EndGlobal

@@ -1,1 +1,163 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-bg: #f7f0e8;
+  --color-surface: rgba(255, 252, 248, 0.82);
+  --color-surface-strong: #fffaf5;
+  --color-border: rgba(139, 92, 46, 0.16);
+  --color-accent: #d86f31;
+  --color-accent-dark: #9c3f10;
+  --color-success: #1f7a4d;
+  --color-danger: #b42318;
+  --color-text: #2d1e15;
+  --color-muted: #6e5747;
+  --shadow-soft: 0 18px 45px rgba(94, 52, 22, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 205, 148, 0.55), transparent 32%),
+    radial-gradient(circle at right, rgba(207, 232, 213, 0.7), transparent 24%),
+    linear-gradient(180deg, #fef8f2 0%, var(--color-bg) 100%);
+}
+
+body {
+  margin: 0;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  padding: 1.4rem;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+
+.section-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.section-copy {
+  margin: 0 0 1rem;
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: var(--color-accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button.secondary {
+  background: #efe1d3;
+  color: var(--color-text);
+}
+
+button.danger {
+  background: var(--color-danger);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid rgba(45, 30, 21, 0.14);
+  border-radius: 14px;
+  padding: 0.85rem 0.95rem;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.9rem 0.75rem;
+  border-bottom: 1px solid rgba(45, 30, 21, 0.08);
+  text-align: left;
+}
+
+th {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(216, 111, 49, 0.12);
+  color: var(--color-accent-dark);
+}
+
+.pill.low {
+  background: rgba(180, 35, 24, 0.1);
+  color: var(--color-danger);
+}
+
+.message {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: rgba(31, 122, 77, 0.12);
+  color: var(--color-success);
+}
+
+.message.error {
+  background: rgba(180, 35, 24, 0.12);
+  color: var(--color-danger);
+}

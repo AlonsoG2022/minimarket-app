@@ -1,0 +1,20 @@
+<div class="shell">
+  <header class="shell__header">
+    <div>
+      <p class="eyebrow">Sistema de ventas</p>
+      <h1>Minimarket Central</h1>
+      <p class="subtitle">Controla inventario, registra ventas y revisa reportes en una sola vista.</p>
+    </div>
+
+    <nav class="shell__nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Resumen</a>
+      <a routerLink="/productos" routerLinkActive="active">Productos</a>
+      <a routerLink="/ventas" routerLinkActive="active">Ventas</a>
+      <a routerLink="/reportes" routerLinkActive="active">Reportes</a>
+    </nav>
+  </header>
+
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+</div>

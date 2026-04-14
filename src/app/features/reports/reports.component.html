@@ -1,0 +1,56 @@
+<section class="card">
+  <h2 class="section-title">Reporte basico de ventas</h2>
+  <p class="section-copy">Consulta el total vendido por dia dentro de un rango de fechas.</p>
+
+  <div class="form-grid">
+    <div>
+      <label for="startDate">Fecha inicio</label>
+      <input id="startDate" type="date" [(ngModel)]="startDate">
+    </div>
+
+    <div>
+      <label for="endDate">Fecha fin</label>
+      <input id="endDate" type="date" [(ngModel)]="endDate">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" (click)="load()">Actualizar reporte</button>
+  </div>
+
+  @if (loading) {
+    <p class="section-copy">Generando reporte de ventas...</p>
+  } @else if (rows.length) {
+    <div class="summary-band">
+      <span class="pill">Dias con ventas: {{ rows.length }}</span>
+      <strong>Total acumulado: {{ total | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Ventas</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.date) {
+            <tr>
+              <td>{{ row.date | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ row.saleCount }}</td>
+              <td>{{ row.totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <p>No hay ventas para el rango seleccionado.</p>
+  }
+
+  @if (error) {
+    <p class="message error">{{ error }}</p>
+  }
+</section>

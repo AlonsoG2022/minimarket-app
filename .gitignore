@@ -5,6 +5,11 @@
 /tmp
 /out-tsc
 /bazel-out
+/backend/Minimarket.Api/bin
+/backend/Minimarket.Api/obj
+/backend/Minimarket.Api/publish
+/backend/Minimarket.Api/wwwroot/browser
+/backend/Minimarket.Api/logs
 
 # Node
 /node_modules
@@ -28,6 +33,12 @@ yarn-error.log
 !.vscode/extensions.json
 !.vscode/mcp.json
 .history/*
+
+# Visual Studio
+/.vs
+**/.vs/
+*.user
+*.suo
 
 # Miscellaneous
 /.angular/cache

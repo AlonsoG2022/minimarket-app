@@ -1,0 +1,8 @@
+.summary-band {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.25rem 0;
+  align-items: center;
+}

@@ -1,0 +1,19 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card p {
+  margin: 0 0 0.8rem;
+  color: var(--color-muted);
+}
+
+.stat-card strong {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+}
+
+.stat-card.alert {
+  background: rgba(180, 35, 24, 0.08);
+}
