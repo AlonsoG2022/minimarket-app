@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Category, Product, SaveProduct } from '../../core/models/minimarket.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { ProductsService } from '../../core/services/products.service';
@@ -8,13 +9,14 @@ import { ProductsService } from '../../core/services/products.service';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
 
@@ -32,13 +34,33 @@ export class ProductListComponent implements OnInit {
 
   products: Product[] = [];
   categories: Category[] = [];
+  searchTerm = '';
+  formVisible = false;
   isEditing = false;
   loadingProducts = true;
   loadingCategories = true;
   message = '';
   error = '';
 
+  get filteredProducts(): Product[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.products;
+    }
+
+    return this.products.filter((product) =>
+      product.name.toLowerCase().includes(term) ||
+      product.sku.toLowerCase().includes(term) ||
+      product.categoryName.toLowerCase().includes(term)
+    );
+  }
+
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      this.searchTerm = params.get('q') ?? '';
+      this.cdr.detectChanges();
+    });
+
     this.loadData();
   }
 
@@ -112,6 +134,7 @@ export class ProductListComponent implements OnInit {
   }
 
   edit(product: Product): void {
+    this.formVisible = true;
     this.isEditing = true;
     this.message = '';
     this.error = '';
@@ -148,6 +171,29 @@ export class ProductListComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.formVisible = false;
+    this.isEditing = false;
+    this.form.reset({
+      id: 0,
+      name: '',
+      sku: '',
+      description: '',
+      price: 0,
+      stock: 0,
+      minimumStock: 0,
+      isActive: true,
+      categoryId: 0
+    });
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+  }
+
+  openCreateForm(): void {
+    this.message = '';
+    this.error = '';
+    this.formVisible = true;
     this.isEditing = false;
     this.form.reset({
       id: 0,

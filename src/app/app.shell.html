@@ -1,20 +1,60 @@
 <div class="shell">
-  <header class="shell__header">
-    <div>
+  <aside class="shell__sidebar">
+    <div class="brand">
       <p class="eyebrow">Sistema de ventas</p>
       <h1>Minimarket Central</h1>
-      <p class="subtitle">Controla inventario, registra ventas y revisa reportes en una sola vista.</p>
+      <p class="subtitle">Operacion rapida para caja, inventario y seguimiento diario.</p>
     </div>
 
     <nav class="shell__nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Resumen</a>
-      <a routerLink="/productos" routerLinkActive="active">Productos</a>
-      <a routerLink="/ventas" routerLinkActive="active">Ventas</a>
-      <a routerLink="/reportes" routerLinkActive="active">Reportes</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span>Resumen</span>
+        <small>Vista general</small>
+      </a>
+      <a routerLink="/productos" routerLinkActive="active">
+        <span>Productos</span>
+        <small>Catalogo y stock</small>
+      </a>
+      <a routerLink="/ventas" routerLinkActive="active">
+        <span>Ventas</span>
+        <small>Registro diario</small>
+      </a>
+      <a routerLink="/reportes" routerLinkActive="active">
+        <span>Reportes</span>
+        <small>Resumen por fecha</small>
+      </a>
     </nav>
-  </header>
 
-  <main class="shell__content">
-    <router-outlet />
+    <div class="sidebar-note">
+      <strong>Consejo</strong>
+      <p>Empieza en ventas si estas en caja; usa productos para ajustes de inventario.</p>
+    </div>
+  </aside>
+
+  <main class="shell__main">
+    <header class="shell__header">
+      <div>
+        <p class="eyebrow">Panel operativo</p>
+        <h2>Gestion simple para el minimarket</h2>
+      </div>
+
+      <form class="global-search" (ngSubmit)="searchProducts()">
+        <label for="globalProductSearch">Buscar producto</label>
+        <div class="global-search__bar">
+          <input
+            id="globalProductSearch"
+            type="text"
+            [(ngModel)]="productSearch"
+            name="productSearch"
+            placeholder="Buscar por nombre del producto"
+          >
+          <button type="submit">Buscar</button>
+        </div>
+      </form>
+    </header>
+
+    <section class="shell__content">
+      <router-outlet />
+    </section>
   </main>
 </div>

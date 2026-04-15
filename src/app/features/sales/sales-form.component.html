@@ -116,6 +116,7 @@
             <th>Usuario</th>
             <th>Pago</th>
             <th>Total</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -126,6 +127,9 @@
               <td>{{ sale.userName }}</td>
               <td>{{ sale.paymentMethod }}</td>
               <td>{{ sale.total | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>
+                <button type="button" class="secondary" (click)="showSaleDetail(sale)">Ver detalle</button>
+              </td>
             </tr>
           }
         </tbody>
@@ -135,3 +139,49 @@
     <p>No hay ventas registradas aun.</p>
   }
 </section>
+
+@if (selectedSale) {
+  <div class="modal-backdrop" (click)="closeSaleDetail()">
+    <section class="card sale-detail-card modal-card" (click)="$event.stopPropagation()">
+      <div class="sale-detail-header">
+        <div>
+          <h2 class="section-title">Detalle de venta #{{ selectedSale.id }}</h2>
+          <p class="section-copy">
+            {{ selectedSale.saleDate | date: 'dd/MM/yyyy HH:mm' }} | {{ selectedSale.userName }} |
+            {{ selectedSale.paymentMethod }}
+          </p>
+        </div>
+
+        <button type="button" class="secondary" (click)="closeSaleDetail()">Cerrar</button>
+      </div>
+
+      <div class="sale-detail-summary">
+        <span class="pill">Items: {{ selectedSale.details.length }}</span>
+        <strong>Total: {{ selectedSale.total | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (detail of selectedSale.details; track detail.id) {
+              <tr>
+                <td>{{ detail.productName }}</td>
+                <td>{{ detail.quantity }}</td>
+                <td>{{ detail.unitPrice | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ detail.subtotal | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}

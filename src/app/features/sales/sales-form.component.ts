@@ -33,6 +33,7 @@ export class SalesFormComponent implements OnInit {
   products: Product[] = [];
   users: User[] = [];
   recentSales: Sale[] = [];
+  selectedSale?: Sale;
   lastSaleId?: number;
   loading = true;
   refreshingProducts = false;
@@ -152,6 +153,9 @@ export class SalesFormComponent implements OnInit {
     this.salesService.getAll(forceRefresh).subscribe({
       next: (sales) => {
         this.recentSales = sales.slice(0, 5);
+        if (this.selectedSale) {
+          this.selectedSale = this.recentSales.find((sale) => sale.id === this.selectedSale?.id);
+        }
         this.loadingSalesHistory = false;
         this.cdr.detectChanges();
       },
@@ -160,6 +164,14 @@ export class SalesFormComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  showSaleDetail(sale: Sale): void {
+    this.selectedSale = sale;
+  }
+
+  closeSaleDetail(): void {
+    this.selectedSale = undefined;
   }
 
   private createDetailGroup() {

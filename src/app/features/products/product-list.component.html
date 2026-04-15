@@ -1,75 +1,18 @@
 <section class="product-layout">
   <article class="card">
-    <h2 class="section-title">{{ isEditing ? 'Editar producto' : 'Nuevo producto' }}</h2>
-    <p class="section-copy">Gestiona el catalogo del minimarket con control de stock y categoria.</p>
-
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
-      <div>
-        <label for="name">Nombre</label>
-        <input id="name" formControlName="name">
-      </div>
-
-      <div>
-        <label for="sku">SKU</label>
-        <input id="sku" formControlName="sku">
-      </div>
-
-      <div>
-        <label for="price">Precio</label>
-        <input id="price" type="number" min="0" step="0.01" formControlName="price">
-      </div>
-
-      <div>
-        <label for="stock">Stock</label>
-        <input id="stock" type="number" min="0" formControlName="stock">
-      </div>
-
-      <div>
-        <label for="minimumStock">Stock minimo</label>
-        <input id="minimumStock" type="number" min="0" formControlName="minimumStock">
-      </div>
-
-      <div>
-        <label for="categoryId">Categoria</label>
-        <select id="categoryId" formControlName="categoryId">
-          <option [value]="0">Selecciona</option>
-          @for (category of categories; track category.id) {
-            <option [value]="category.id">{{ category.name }}</option>
-          }
-        </select>
-        @if (loadingCategories) {
-          <small class="field-hint">Cargando categorias...</small>
-        }
-      </div>
-
-      <div class="full-width">
-        <label for="description">Descripcion</label>
-        <textarea id="description" rows="3" formControlName="description"></textarea>
-      </div>
-
-      <div class="checkbox-row full-width">
-        <input id="isActive" type="checkbox" formControlName="isActive">
-        <label for="isActive">Producto activo</label>
-      </div>
-
-      <div class="actions full-width">
-        <button type="submit">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
-        <button type="button" class="secondary" (click)="resetForm()">Limpiar</button>
-      </div>
-    </form>
-
-    @if (message) {
-      <p class="message">{{ message }}</p>
-    }
-
-    @if (error) {
-      <p class="message error">{{ error }}</p>
-    }
-  </article>
-
-  <article class="card">
     <h2 class="section-title">Lista de productos</h2>
     <p class="section-copy">Vista general del inventario disponible y estado de stock.</p>
+
+    <div class="toolbar">
+      <div class="toolbar-actions">
+        <span class="pill">Mostrando {{ filteredProducts.length }} de {{ products.length }}</span>
+        @if (searchTerm) {
+          <span class="pill">Filtro: {{ searchTerm }}</span>
+          <button type="button" class="secondary" (click)="clearSearch()">Quitar filtro</button>
+        }
+        <button type="button" (click)="openCreateForm()">Nuevo producto</button>
+      </div>
+    </div>
 
     @if (loadingProducts) {
       <p class="section-copy">Cargando productos...</p>
@@ -87,7 +30,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (product of products; track product.id) {
+            @for (product of filteredProducts; track product.id) {
               <tr>
                 <td>
                   <strong>{{ product.name }}</strong>
@@ -110,6 +53,89 @@
           </tbody>
         </table>
       </div>
+
+      @if (!filteredProducts.length) {
+        <p class="section-copy">No se encontraron productos con ese criterio.</p>
+      }
     }
   </article>
+
 </section>
+
+@if (formVisible) {
+  <div class="modal-backdrop" (click)="resetForm()">
+    <article class="card editor-card modal-card" (click)="$event.stopPropagation()">
+      <div class="editor-header">
+        <div>
+          <h2 class="section-title">{{ isEditing ? 'Editar producto' : 'Nuevo producto' }}</h2>
+          <p class="section-copy">Completa los datos del producto y guarda los cambios.</p>
+        </div>
+
+        <button type="button" class="secondary" (click)="resetForm()">Cerrar</button>
+      </div>
+
+      <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+        <div>
+          <label for="name">Nombre</label>
+          <input id="name" formControlName="name">
+        </div>
+
+        <div>
+          <label for="sku">SKU</label>
+          <input id="sku" formControlName="sku">
+        </div>
+
+        <div>
+          <label for="price">Precio</label>
+          <input id="price" type="number" min="0" step="0.01" formControlName="price">
+        </div>
+
+        <div>
+          <label for="stock">Stock</label>
+          <input id="stock" type="number" min="0" formControlName="stock">
+        </div>
+
+        <div>
+          <label for="minimumStock">Stock minimo</label>
+          <input id="minimumStock" type="number" min="0" formControlName="minimumStock">
+        </div>
+
+        <div>
+          <label for="categoryId">Categoria</label>
+          <select id="categoryId" formControlName="categoryId">
+            <option [value]="0">Selecciona</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+          @if (loadingCategories) {
+            <small class="field-hint">Cargando categorias...</small>
+          }
+        </div>
+
+        <div class="full-width">
+          <label for="description">Descripcion</label>
+          <textarea id="description" rows="3" formControlName="description"></textarea>
+        </div>
+
+        <div class="checkbox-row full-width">
+          <input id="isActive" type="checkbox" formControlName="isActive">
+          <label for="isActive">Producto activo</label>
+        </div>
+
+        <div class="actions full-width">
+          <button type="submit">{{ isEditing ? 'Actualizar' : 'Guardar' }}</button>
+          <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+        </div>
+      </form>
+
+      @if (message) {
+        <p class="message">{{ message }}</p>
+      }
+
+      @if (error) {
+        <p class="message error">{{ error }}</p>
+      }
+    </article>
+  </div>
+}

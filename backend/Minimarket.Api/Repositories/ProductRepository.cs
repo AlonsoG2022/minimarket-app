@@ -15,7 +15,6 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
 
     public Task<Product?> GetByIdAsync(int id) =>
         context.Products
-            .AsNoTracking()
             .Include(x => x.Category)
             .FirstOrDefaultAsync(x => x.Id == id);
 

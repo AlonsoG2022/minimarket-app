@@ -28,15 +28,25 @@ public class SaleRepository(MinimarketDbContext context) : ISaleRepository
 
     public async Task<List<SalesSummaryDto>> GetSalesSummaryAsync(DateTime startDate, DateTime endDate)
     {
-        return await context.Sales
+        var rows = await context.Sales
+            .AsNoTracking()
             .Where(x => x.SaleDate >= startDate && x.SaleDate <= endDate)
             .GroupBy(x => x.SaleDate.Date)
-            .Select(group => new SalesSummaryDto(
-                DateOnly.FromDateTime(group.Key),
-                group.Sum(x => x.Total),
-                group.Count()))
+            .Select(group => new
+            {
+                Date = group.Key,
+                TotalAmount = group.Sum(x => x.Total),
+                SaleCount = group.Count()
+            })
             .OrderBy(x => x.Date)
             .ToListAsync();
+
+        return rows
+            .Select(row => new SalesSummaryDto(
+                DateOnly.FromDateTime(row.Date),
+                row.TotalAmount,
+                row.SaleCount))
+            .ToList();
     }
 
     public async Task<decimal> GetTodaySalesTotalAsync(DateTime dayStart, DateTime dayEnd)
