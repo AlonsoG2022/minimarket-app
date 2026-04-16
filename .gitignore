@@ -10,6 +10,7 @@
 /backend/Minimarket.Api/publish
 /backend/Minimarket.Api/wwwroot/browser
 /backend/Minimarket.Api/logs
+/backend-java/minimarket-api-java/target
 
 # Node
 /node_modules

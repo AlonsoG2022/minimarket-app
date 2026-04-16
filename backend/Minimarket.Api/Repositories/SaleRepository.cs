@@ -49,6 +49,28 @@ public class SaleRepository(MinimarketDbContext context) : ISaleRepository
             .ToList();
     }
 
+    public Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(DateTime startDate, DateTime endDate, int limit) =>
+        context.SaleDetails
+            .AsNoTracking()
+            .Where(x => x.Sale != null && x.Sale.SaleDate >= startDate && x.Sale.SaleDate <= endDate)
+            .GroupBy(x => new
+            {
+                x.ProductId,
+                ProductName = x.Product != null ? x.Product.Name : string.Empty,
+                Sku = x.Product != null ? x.Product.Sku : string.Empty
+            })
+            .Select(group => new TopSellingProductDto(
+                group.Key.ProductId,
+                group.Key.ProductName,
+                group.Key.Sku,
+                group.Sum(x => x.Quantity),
+                group.Sum(x => x.Subtotal)))
+            .OrderByDescending(x => x.TotalQuantity)
+            .ThenByDescending(x => x.TotalAmount)
+            .ThenBy(x => x.ProductName)
+            .Take(limit)
+            .ToListAsync();
+
     public async Task<decimal> GetTodaySalesTotalAsync(DateTime dayStart, DateTime dayEnd)
     {
         return await context.Sales

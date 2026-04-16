@@ -8,6 +8,9 @@ public class ReportService(ISaleRepository saleRepository, IProductRepository pr
     public async Task<IReadOnlyCollection<SalesSummaryDto>> GetSalesSummaryAsync(DateTime startDate, DateTime endDate) =>
         await saleRepository.GetSalesSummaryAsync(startDate, endDate);
 
+    public async Task<IReadOnlyCollection<TopSellingProductDto>> GetTopSellingProductsAsync(DateTime startDate, DateTime endDate, int limit) =>
+        await saleRepository.GetTopSellingProductsAsync(startDate, endDate, limit);
+
     public async Task<DashboardDto> GetDashboardAsync()
     {
         var now = DateTime.Now;

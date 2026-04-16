@@ -70,6 +70,14 @@ export interface SalesSummary {
   saleCount: number;
 }
 
+export interface TopSellingProduct {
+  productId: number;
+  productName: string;
+  sku: string;
+  totalQuantity: number;
+  totalAmount: number;
+}
+
 export interface DashboardSummary {
   todaySales: number;
   todayTransactions: number;

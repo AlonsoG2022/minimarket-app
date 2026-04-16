@@ -1,7 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SalesSummary } from '../../core/models/minimarket.models';
+import { forkJoin } from 'rxjs';
+import { SalesSummary, TopSellingProduct } from '../../core/models/minimarket.models';
 import { ReportsService } from '../../core/services/reports.service';
 
 @Component({
@@ -18,6 +19,7 @@ export class ReportsComponent implements OnInit {
   startDate = this.formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000));
   endDate = this.formatDate(new Date());
   rows: SalesSummary[] = [];
+  topProducts: TopSellingProduct[] = [];
   total = 0;
   loading = true;
   error = '';
@@ -28,16 +30,21 @@ export class ReportsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.reportsService.getSalesSummary(this.startDate, this.endDate).subscribe({
-      next: (rows) => {
-        this.rows = rows;
-        this.total = rows.reduce((sum, row) => sum + row.totalAmount, 0);
+    forkJoin({
+      salesSummary: this.reportsService.getSalesSummary(this.startDate, this.endDate),
+      topProducts: this.reportsService.getTopSellingProducts(this.startDate, this.endDate),
+    }).subscribe({
+      next: ({ salesSummary, topProducts }) => {
+        this.rows = salesSummary;
+        this.topProducts = topProducts;
+        this.total = salesSummary.reduce((sum, row) => sum + row.totalAmount, 0);
         this.error = '';
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'No fue posible generar el reporte.';
+        this.topProducts = [];
         this.loading = false;
         this.cdr.detectChanges();
       }

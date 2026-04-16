@@ -20,31 +20,74 @@
 
   @if (loading) {
     <p class="section-copy">Generando reporte de ventas...</p>
-  } @else if (rows.length) {
+  } @else if (rows.length || topProducts.length) {
     <div class="summary-band">
       <span class="pill">Dias con ventas: {{ rows.length }}</span>
       <strong>Total acumulado: {{ total | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Ventas</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of rows; track row.date) {
-            <tr>
-              <td>{{ row.date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ row.saleCount }}</td>
-              <td>{{ row.totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="reports-grid">
+      <div class="report-card">
+        <h3 class="report-title">Resumen diario</h3>
+        <p class="section-copy">Total vendido por dia dentro del rango seleccionado.</p>
+
+        @if (rows.length) {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Ventas</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of rows; track row.date) {
+                  <tr>
+                    <td>{{ row.date | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ row.saleCount }}</td>
+                    <td>{{ row.totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p>No hay ventas para el rango seleccionado.</p>
+        }
+      </div>
+
+      <div class="report-card">
+        <h3 class="report-title">Top productos vendidos</h3>
+        <p class="section-copy">Los productos con mayor salida segun el rango de fechas.</p>
+
+        @if (topProducts.length) {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>SKU</th>
+                  <th>Cantidad</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of topProducts; track product.productId) {
+                  <tr>
+                    <td>{{ product.productName }}</td>
+                    <td>{{ product.sku }}</td>
+                    <td>{{ product.totalQuantity }}</td>
+                    <td>{{ product.totalAmount | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p>No hay suficientes ventas para construir el top de productos.</p>
+        }
+      </div>
     </div>
   } @else {
     <p>No hay ventas para el rango seleccionado.</p>

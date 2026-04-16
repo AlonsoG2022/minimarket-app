@@ -24,4 +24,11 @@ public record SaleDto(
 
 public record SalesSummaryDto(DateOnly Date, decimal TotalAmount, int SaleCount);
 
+public record TopSellingProductDto(
+    int ProductId,
+    string ProductName,
+    string Sku,
+    int TotalQuantity,
+    decimal TotalAmount);
+
 public record DashboardDto(decimal TodaySales, int TodayTransactions, int ProductCount, int LowStockProducts);

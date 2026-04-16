@@ -10,6 +10,7 @@ public interface ISaleRepository
     Task AddAsync(Sale sale);
     Task<int> SaveChangesAsync();
     Task<List<SalesSummaryDto>> GetSalesSummaryAsync(DateTime startDate, DateTime endDate);
+    Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(DateTime startDate, DateTime endDate, int limit);
     Task<decimal> GetTodaySalesTotalAsync(DateTime dayStart, DateTime dayEnd);
     Task<int> GetTodayTransactionsAsync(DateTime dayStart, DateTime dayEnd);
 }
