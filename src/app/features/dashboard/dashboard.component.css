@@ -20,3 +20,18 @@
 .stat-card.alert {
   background: rgba(180, 35, 24, 0.08);
 }
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-card strong {
+    font-size: 1.8rem;
+  }
+}

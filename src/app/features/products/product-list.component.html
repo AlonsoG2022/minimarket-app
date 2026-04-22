@@ -17,8 +17,8 @@
     @if (loadingProducts) {
       <p class="section-copy">Cargando productos...</p>
     } @else {
-      <div class="table-wrap">
-        <table>
+      <div class="table-wrap product-table-wrap">
+        <table class="product-table">
           <thead>
             <tr>
               <th>Producto</th>
@@ -32,19 +32,19 @@
           <tbody>
             @for (product of filteredProducts; track product.id) {
               <tr>
-                <td>
+                <td data-label="Producto">
                   <strong>{{ product.name }}</strong>
-                  <div>{{ product.sku }}</div>
+                  <div class="product-sku">{{ product.sku }}</div>
                 </td>
-                <td>{{ product.categoryName }}</td>
-                <td>{{ product.price | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
-                <td>
+                <td data-label="Categoria">{{ product.categoryName }}</td>
+                <td data-label="Precio">{{ product.price | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                <td data-label="Stock">
                   <span class="pill" [class.low]="product.stock <= product.minimumStock">
                     {{ product.stock }}
                   </span>
                 </td>
-                <td>{{ product.isActive ? 'Activo' : 'Inactivo' }}</td>
-                <td class="actions-cell">
+                <td data-label="Estado">{{ product.isActive ? 'Activo' : 'Inactivo' }}</td>
+                <td data-label="Acciones" class="actions-cell">
                   <button type="button" class="secondary" (click)="edit(product)">Editar</button>
                   <button type="button" class="danger" (click)="remove(product)">Eliminar</button>
                 </td>

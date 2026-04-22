@@ -23,3 +23,15 @@
   margin: 0;
   font-size: 1.05rem;
 }
+
+@media (max-width: 640px) {
+  .summary-band {
+    align-items: flex-start;
+    margin: 1rem 0;
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

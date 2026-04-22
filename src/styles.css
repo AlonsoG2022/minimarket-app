@@ -112,6 +112,7 @@ label {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -160,4 +161,55 @@ th {
 .message.error {
   background: rgba(180, 35, 24, 0.12);
   color: var(--color-danger);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+  }
+
+  .section-copy {
+    font-size: 0.95rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions > * {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+    padding: 0.8rem 0.95rem;
+  }
+
+  th,
+  td {
+    padding: 0.75rem 0.6rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  th {
+    font-size: 0.75rem;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 0.8rem 0.85rem;
+  }
 }
