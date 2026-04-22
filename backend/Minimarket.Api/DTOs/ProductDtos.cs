@@ -14,7 +14,6 @@ public record ProductDto(
 
 public record SaveProductDto(
     string Name,
-    string Sku,
     string? Description,
     decimal Price,
     int Stock,

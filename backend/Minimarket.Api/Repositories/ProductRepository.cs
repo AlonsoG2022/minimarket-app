@@ -21,6 +21,13 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
     public Task<bool> ExistsBySkuAsync(string sku, int? excludingId = null) =>
         context.Products.AnyAsync(x => x.Sku == sku && (!excludingId.HasValue || x.Id != excludingId.Value));
 
+    public Task<List<string>> GetSkusByPrefixAsync(string prefix) =>
+        context.Products
+            .AsNoTracking()
+            .Where(x => x.Sku.StartsWith(prefix))
+            .Select(x => x.Sku)
+            .ToListAsync();
+
     public Task AddAsync(Product product) => context.Products.AddAsync(product).AsTask();
 
     public void Update(Product product) => context.Products.Update(product);

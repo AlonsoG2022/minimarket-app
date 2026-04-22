@@ -9,6 +9,7 @@ import com.minimarket.api.util.DtoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.List;
 
 @Service
@@ -41,18 +42,14 @@ public class ProductService {
             return ServiceResult.failure("Los datos del producto no son validos.");
         }
 
-        if (categoryRepository.findById(dto.categoryId()).isEmpty()) {
+        var category = categoryRepository.findById(dto.categoryId()).orElse(null);
+        if (category == null) {
             return ServiceResult.failure("La categoria seleccionada no existe.");
-        }
-
-        var normalizedSku = dto.sku().trim().toUpperCase();
-        if (productRepository.existsBySkuIgnoreCase(normalizedSku)) {
-            return ServiceResult.failure("Ya existe un producto con el mismo SKU.");
         }
 
         var product = new Product();
         product.setName(dto.name().trim());
-        product.setSku(normalizedSku);
+        product.setSku(generateSku(category.getName()));
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
@@ -76,13 +73,7 @@ public class ProductService {
             return ServiceResult.failure("La categoria seleccionada no existe.");
         }
 
-        var normalizedSku = dto.sku().trim().toUpperCase();
-        if (productRepository.existsBySkuIgnoreCaseAndIdNot(normalizedSku, id)) {
-            return ServiceResult.failure("Ya existe un producto con el mismo SKU.");
-        }
-
         product.setName(dto.name().trim());
-        product.setSku(normalizedSku);
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
@@ -104,5 +95,44 @@ public class ProductService {
 
         productRepository.delete(product);
         return ServiceResult.success(null);
+    }
+
+    private String generateSku(String categoryName) {
+        var prefix = buildCategoryPrefix(categoryName);
+        var nextNumber = productRepository.findBySkuStartingWith(prefix + "-")
+            .stream()
+            .map(Product::getSku)
+            .mapToInt(this::parseSkuSequence)
+            .max()
+            .orElse(0) + 1;
+
+        return "%s-%06d".formatted(prefix, nextNumber);
+    }
+
+    private int parseSkuSequence(String sku) {
+        var parts = sku.split("-", 2);
+        if (parts.length != 2) {
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(parts[1]);
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    private String buildCategoryPrefix(String categoryName) {
+        var normalized = Normalizer.normalize(categoryName, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .replaceAll("[^A-Za-z0-9]", "")
+            .toUpperCase();
+
+        if (normalized.isBlank()) {
+            return "CAT";
+        }
+
+        var prefix = normalized.length() >= 3 ? normalized.substring(0, 3) : normalized;
+        return (prefix + "XXX").substring(0, 3);
     }
 }

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 public record SaveProductDto(
     String name,
-    String sku,
     String description,
     BigDecimal price,
     Integer stock,

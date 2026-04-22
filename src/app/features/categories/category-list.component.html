@@ -1,0 +1,73 @@
+<section class="category-layout">
+  <article class="card">
+    <h2 class="section-title">Categorias</h2>
+    <p class="section-copy">Registra las categorias base que luego podras usar al crear productos.</p>
+
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+      <div>
+        <label for="name">Nombre</label>
+        <input id="name" formControlName="name" placeholder="Ej. Lacteos">
+      </div>
+
+      <div class="full-width">
+        <label for="description">Descripcion</label>
+        <textarea id="description" rows="3" formControlName="description"></textarea>
+      </div>
+
+      <div class="checkbox-row full-width">
+        <input id="isActive" type="checkbox" formControlName="isActive">
+        <label for="isActive">Categoria activa</label>
+      </div>
+
+      <div class="actions full-width">
+        <button type="submit">Guardar categoria</button>
+      </div>
+    </form>
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+  </article>
+
+  <article class="card">
+    <h2 class="section-title">Lista de categorias</h2>
+    <p class="section-copy">Estas categorias apareceran disponibles en el formulario de productos.</p>
+
+    @if (loading) {
+      <p class="section-copy">Cargando categorias...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="category-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripcion</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (category of categories; track category.id) {
+              <tr>
+                <td data-label="Nombre">
+                  <strong>{{ category.name }}</strong>
+                </td>
+                <td data-label="Descripcion">{{ category.description || 'Sin descripcion' }}</td>
+                <td data-label="Estado">
+                  <span class="pill">{{ category.isActive ? 'Activa' : 'Inactiva' }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (!categories.length) {
+        <p class="section-copy">Todavia no hay categorias registradas.</p>
+      }
+    }
+  </article>
+</section>

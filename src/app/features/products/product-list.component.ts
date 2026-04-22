@@ -23,7 +23,6 @@ export class ProductListComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     id: [0],
     name: ['', Validators.required],
-    sku: ['', Validators.required],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.1)]],
     stock: [0, [Validators.required, Validators.min(0)]],
@@ -104,7 +103,6 @@ export class ProductListComponent implements OnInit {
     const value = this.form.getRawValue();
     const payload: SaveProduct = {
       name: value.name,
-      sku: value.sku,
       description: value.description,
       price: Number(value.price),
       stock: Number(value.stock),
@@ -141,7 +139,6 @@ export class ProductListComponent implements OnInit {
     this.form.patchValue({
       id: product.id,
       name: product.name,
-      sku: product.sku,
       description: product.description ?? '',
       price: product.price,
       stock: product.stock,
@@ -176,7 +173,6 @@ export class ProductListComponent implements OnInit {
     this.form.reset({
       id: 0,
       name: '',
-      sku: '',
       description: '',
       price: 0,
       stock: 0,
@@ -198,7 +194,6 @@ export class ProductListComponent implements OnInit {
     this.form.reset({
       id: 0,
       name: '',
-      sku: '',
       description: '',
       price: 0,
       stock: 0,

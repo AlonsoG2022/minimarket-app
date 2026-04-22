@@ -2,6 +2,8 @@ using Minimarket.Api.DTOs;
 using Minimarket.Api.Mapping;
 using Minimarket.Api.Models;
 using Minimarket.Api.Repositories;
+using System.Globalization;
+using System.Text;
 
 namespace Minimarket.Api.Services;
 
@@ -20,20 +22,16 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             return (false, "Los datos del producto no son validos.", null);
         }
 
-        if (await categoryRepository.GetByIdAsync(dto.CategoryId) is null)
+        var category = await categoryRepository.GetByIdAsync(dto.CategoryId);
+        if (category is null)
         {
             return (false, "La categoria seleccionada no existe.", null);
-        }
-
-        if (await productRepository.ExistsBySkuAsync(dto.Sku.Trim().ToUpperInvariant()))
-        {
-            return (false, "Ya existe un producto con el mismo SKU.", null);
         }
 
         var product = new Product
         {
             Name = dto.Name.Trim(),
-            Sku = dto.Sku.Trim().ToUpperInvariant(),
+            Sku = await GenerateSkuAsync(category.Name),
             Description = dto.Description?.Trim(),
             Price = dto.Price,
             Stock = dto.Stock,
@@ -62,13 +60,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             return (false, "La categoria seleccionada no existe.", null);
         }
 
-        if (await productRepository.ExistsBySkuAsync(dto.Sku.Trim().ToUpperInvariant(), id))
-        {
-            return (false, "Ya existe un producto con el mismo SKU.", null);
-        }
-
         product.Name = dto.Name.Trim();
-        product.Sku = dto.Sku.Trim().ToUpperInvariant();
         product.Description = dto.Description?.Trim();
         product.Price = dto.Price;
         product.Stock = dto.Stock;
@@ -94,5 +86,64 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         productRepository.Remove(product);
         await productRepository.SaveChangesAsync();
         return (true, null);
+    }
+
+    private async Task<string> GenerateSkuAsync(string categoryName)
+    {
+        var prefix = BuildCategoryPrefix(categoryName);
+        var existingSkus = await productRepository.GetSkusByPrefixAsync($"{prefix}-");
+        var nextNumber = existingSkus
+            .Select(ParseSkuSequence)
+            .DefaultIfEmpty(0)
+            .Max() + 1;
+
+        return $"{prefix}-{nextNumber:000000}";
+    }
+
+    private static int ParseSkuSequence(string sku)
+    {
+        var parts = sku.Split('-', 2);
+        if (parts.Length != 2)
+        {
+            return 0;
+        }
+
+        return int.TryParse(parts[1], out var value) ? value : 0;
+    }
+
+    private static string BuildCategoryPrefix(string categoryName)
+    {
+        var normalized = categoryName.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder();
+
+        foreach (var character in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(character))
+            {
+                builder.Append(char.ToUpperInvariant(character));
+            }
+
+            if (builder.Length == 3)
+            {
+                break;
+            }
+        }
+
+        if (builder.Length == 0)
+        {
+            builder.Append("CAT");
+        }
+
+        while (builder.Length < 3)
+        {
+            builder.Append('X');
+        }
+
+        return builder.ToString();
     }
 }

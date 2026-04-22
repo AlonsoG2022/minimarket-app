@@ -20,13 +20,18 @@ export interface Product {
 
 export interface SaveProduct {
   name: string;
-  sku: string;
   description?: string | null;
   price: number;
   stock: number;
   minimumStock: number;
   isActive: boolean;
   categoryId: number;
+}
+
+export interface SaveCategory {
+  name: string;
+  description?: string | null;
+  isActive: boolean;
 }
 
 export interface User {

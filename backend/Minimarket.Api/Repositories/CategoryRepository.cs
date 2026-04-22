@@ -17,4 +17,12 @@ public class CategoryRepository(MinimarketDbContext context) : ICategoryReposito
         context.Categories
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
+
+    public Task<Category?> GetByNameAsync(string name) =>
+        context.Categories
+            .FirstOrDefaultAsync(x => x.Name.ToUpper() == name.ToUpper());
+
+    public Task AddAsync(Category category) => context.Categories.AddAsync(category).AsTask();
+
+    public Task<int> SaveChangesAsync() => context.SaveChangesAsync();
 }

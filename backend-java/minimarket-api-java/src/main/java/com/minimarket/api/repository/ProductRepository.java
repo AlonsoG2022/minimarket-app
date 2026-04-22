@@ -17,6 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("select p from Product p left join fetch p.category where p.id = :id")
     Optional<Product> findWithCategoryById(@Param("id") Integer id);
 
+    List<Product> findBySkuStartingWith(String prefix);
+
     boolean existsBySkuIgnoreCase(String sku);
 
     boolean existsBySkuIgnoreCaseAndIdNot(String sku, Integer id);

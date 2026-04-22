@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, shareReplay } from 'rxjs';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { API_BASE_URL } from './api-base';
-import { Category } from '../models/minimarket.models';
+import { Category, SaveCategory } from '../models/minimarket.models';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {
@@ -17,5 +17,15 @@ export class CategoriesService {
     }
 
     return this.categories$;
+  }
+
+  create(payload: SaveCategory): Observable<Category> {
+    return this.http.post<Category>(`${API_BASE_URL}/categories`, payload).pipe(
+      tap(() => this.invalidateCache())
+    );
+  }
+
+  invalidateCache(): void {
+    this.categories$ = undefined;
   }
 }
