@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { SalesSummary, TopSellingProduct } from '../../core/models/minimarket.models';
 import { ReportsService } from '../../core/services/reports.service';
+import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, SolesPricePipe],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
 })

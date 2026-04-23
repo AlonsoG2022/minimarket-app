@@ -4,11 +4,12 @@ import { forkJoin } from 'rxjs';
 import { DashboardSummary, Product } from '../../core/models/minimarket.models';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
+import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SolesPricePipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

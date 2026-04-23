@@ -7,11 +7,12 @@ import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
 import { UsersService } from '../../core/services/users.service';
+import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
   selector: 'app-sales-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SolesPricePipe],
   templateUrl: './sales-form.component.html',
   styleUrl: './sales-form.component.css'
 })

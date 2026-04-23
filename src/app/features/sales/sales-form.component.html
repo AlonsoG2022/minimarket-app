@@ -54,12 +54,7 @@
 
           <div class="detail-meta">
             <span>{{ getProductName(detail.get('productId')?.value ?? 0) }}</span>
-            <strong>
-              {{
-                getProductPrice(detail.get('productId')?.value ?? 0) * (detail.get('quantity')?.value ?? 0)
-                  | currency: 'PEN' : 'symbol' : '1.2-2'
-              }}
-            </strong>
+            <strong>{{ getProductPrice(detail.get('productId')?.value ?? 0) * (detail.get('quantity')?.value ?? 0) | solesPrice }}</strong>
           </div>
 
           <div>
@@ -78,7 +73,7 @@
 
     <div class="sale-total">
       <span>Total estimado</span>
-      <strong>{{ getTotal() | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <strong>{{ getTotal() | solesPrice }}</strong>
     </div>
 
     <div class="actions">
@@ -126,7 +121,7 @@
               <td>{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td>{{ sale.userName }}</td>
               <td>{{ sale.paymentMethod }}</td>
-              <td>{{ sale.total | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+              <td>{{ sale.total | solesPrice }}</td>
               <td>
                 <button type="button" class="secondary" (click)="showSaleDetail(sale)">Ver detalle</button>
               </td>
@@ -157,7 +152,7 @@
 
       <div class="sale-detail-summary">
         <span class="pill">Items: {{ selectedSale.details.length }}</span>
-        <strong>Total: {{ selectedSale.total | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+        <strong>Total: {{ selectedSale.total | solesPrice }}</strong>
       </div>
 
       <div class="table-wrap">
@@ -175,8 +170,8 @@
               <tr>
                 <td>{{ detail.productName }}</td>
                 <td>{{ detail.quantity }}</td>
-                <td>{{ detail.unitPrice | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
-                <td>{{ detail.subtotal | currency: 'PEN' : 'symbol' : '1.2-2' }}</td>
+                <td>{{ detail.unitPrice | solesPrice }}</td>
+                <td>{{ detail.subtotal | solesPrice }}</td>
               </tr>
             }
           </tbody>

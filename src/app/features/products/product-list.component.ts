@@ -5,11 +5,12 @@ import { ActivatedRoute } from '@angular/router';
 import { Category, Product, SaveProduct } from '../../core/models/minimarket.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { ProductsService } from '../../core/services/products.service';
+import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SolesPricePipe],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })

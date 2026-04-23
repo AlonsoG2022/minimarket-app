@@ -7,7 +7,7 @@
   <section class="dashboard-grid">
     <article class="card stat-card">
       <p>Ventas del dia</p>
-      <strong>{{ summary?.todaySales ?? 0 | currency: 'PEN' : 'symbol' : '1.2-2' }}</strong>
+      <strong>{{ summary?.todaySales ?? 0 | solesPrice }}</strong>
     </article>
 
     <article class="card stat-card">
