@@ -11,11 +11,16 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 export class App {
   private readonly router = inject(Router);
   productSearch = '';
+  readonly storeName = 'Minimarket Casa';
 
   searchProducts(): void {
     const query = this.productSearch.trim();
     this.router.navigate(['/productos'], {
       queryParams: query ? { q: query } : {}
     });
+  }
+
+  openQuickSale(): void {
+    this.router.navigate(['/ventas']);
   }
 }

@@ -1,61 +1,102 @@
 <div class="shell">
   <aside class="shell__sidebar">
     <div class="brand">
-      <p class="eyebrow">Sistema de ventas</p>
-      <h1>Minimarket Central</h1>
-      <p class="subtitle">Operacion rapida para caja, inventario y seguimiento diario.</p>
+      <div class="brand__badge">MC</div>
+      <div>
+        <p class="eyebrow">Sistema POS</p>
+        <h1>Minimarket</h1>
+        <p class="subtitle">Caja, stock y seguimiento diario.</p>
+      </div>
     </div>
 
     <nav class="shell__nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <span>Resumen</span>
-        <small>Vista general</small>
+        <span class="nav-icon">RS</span>
+        <span class="nav-copy">
+          <span>Resumen</span>
+          <small>Vista general</small>
+        </span>
       </a>
       <a routerLink="/categorias" routerLinkActive="active">
-        <span>Categorias</span>
-        <small>Registro base</small>
+        <span class="nav-icon">CT</span>
+        <span class="nav-copy">
+          <span>Categorias</span>
+          <small>Registro base</small>
+        </span>
       </a>
       <a routerLink="/productos" routerLinkActive="active">
-        <span>Productos</span>
-        <small>Catalogo y stock</small>
+        <span class="nav-icon">PD</span>
+        <span class="nav-copy">
+          <span>Productos</span>
+          <small>Catalogo y stock</small>
+        </span>
       </a>
       <a routerLink="/ventas" routerLinkActive="active">
-        <span>Ventas</span>
-        <small>Registro diario</small>
+        <span class="nav-icon">VT</span>
+        <span class="nav-copy">
+          <span>Ventas</span>
+          <small>Registro diario</small>
+        </span>
       </a>
       <a routerLink="/reportes" routerLinkActive="active">
-        <span>Reportes</span>
-        <small>Resumen por fecha</small>
+        <span class="nav-icon">RP</span>
+        <span class="nav-copy">
+          <span>Reportes</span>
+          <small>Resumen por fecha</small>
+        </span>
       </a>
     </nav>
 
     <div class="sidebar-note">
-      <strong>Consejo</strong>
-      <p>Empieza en ventas si estas en caja; usa productos para ajustes de inventario.</p>
+      <strong>Flujo rapido</strong>
+      <p>Usa "Nueva venta" para caja y deja productos o categorias para mantenimiento.</p>
     </div>
   </aside>
 
   <main class="shell__main">
-    <header class="shell__header">
-      <div>
-        <p class="eyebrow">Panel operativo</p>
-        <h2>Gestion simple para el minimarket</h2>
+    <header class="shell__topbar">
+      <div class="topbar__meta">
+        <div>
+          <p class="eyebrow">Operacion activa</p>
+          <h2>{{ storeName }}</h2>
+        </div>
+
+        <div class="topbar__status">
+          <span class="status-dot"></span>
+          <span>Tienda en linea</span>
+        </div>
       </div>
 
-      <form class="global-search" (ngSubmit)="searchProducts()">
-        <label for="globalProductSearch">Buscar producto</label>
-        <div class="global-search__bar">
-          <input
-            id="globalProductSearch"
-            type="text"
-            [(ngModel)]="productSearch"
-            name="productSearch"
-            placeholder="Buscar por nombre del producto"
-          >
-          <button type="submit">Buscar</button>
-        </div>
-      </form>
+      <div class="topbar__actions">
+        <form class="global-search" (ngSubmit)="searchProducts()">
+          <label for="globalProductSearch">Buscar producto</label>
+          <div class="global-search__bar">
+            <input
+              id="globalProductSearch"
+              type="text"
+              [(ngModel)]="productSearch"
+              name="productSearch"
+              placeholder="Buscar por nombre del producto"
+            >
+            <button type="submit">Buscar</button>
+          </div>
+        </form>
+
+        <button type="button" class="quick-sale" (click)="openQuickSale()">Nueva venta</button>
+      </div>
     </header>
+
+    <section class="shell__hero">
+      <div>
+        <p class="eyebrow">Panel operativo</p>
+        <h3>Gestion simple para el minimarket</h3>
+        <p>Todo el flujo diario a un clic: vender, revisar stock y seguir el avance del dia.</p>
+      </div>
+      <div class="hero-card">
+        <span class="pill">Acceso rapido</span>
+        <strong>Ventas, productos y reportes actualizados en tiempo real.</strong>
+      </div>
+    </section>
 
     <section class="shell__content">
       <router-outlet />
