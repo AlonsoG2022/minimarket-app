@@ -1,24 +1,109 @@
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  gap: 1.1rem;
+  margin-bottom: 1.15rem;
+}
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(45, 30, 21, 0.08);
+  box-shadow: 0 18px 34px rgba(86, 52, 31, 0.08);
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -20% -30% auto;
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  filter: blur(1px);
+}
+
+.stat-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
   margin-bottom: 1rem;
 }
 
+.stat-card__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.55);
+}
+
 .stat-card p {
-  margin: 0 0 0.8rem;
+  margin: 0;
   color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .stat-card strong {
+  position: relative;
+  z-index: 1;
   display: block;
-  font-size: clamp(1.65rem, 3vw, 2.4rem);
-  line-height: 1.1;
+  margin-bottom: 0.35rem;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 0.98;
   overflow-wrap: anywhere;
 }
 
-.stat-card.alert {
-  background: rgba(180, 35, 24, 0.08);
+.stat-card small {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.stat-card--sales {
+  background: linear-gradient(135deg, rgba(225, 248, 232, 0.92), rgba(255, 255, 255, 0.88));
+}
+
+.stat-card--sales .stat-card__icon {
+  color: #256f3a;
+  background: rgba(65, 142, 84, 0.16);
+}
+
+.stat-card--transactions {
+  background: linear-gradient(135deg, rgba(233, 242, 251, 0.92), rgba(255, 255, 255, 0.88));
+}
+
+.stat-card--transactions .stat-card__icon {
+  color: #235a89;
+  background: rgba(60, 120, 178, 0.16);
+}
+
+.stat-card--products {
+  background: linear-gradient(135deg, rgba(255, 244, 228, 0.96), rgba(255, 255, 255, 0.9));
+}
+
+.stat-card--products .stat-card__icon {
+  color: #a35f1a;
+  background: rgba(216, 111, 49, 0.16);
+}
+
+.stat-card--alert {
+  background: linear-gradient(135deg, rgba(252, 233, 229, 0.94), rgba(255, 255, 255, 0.88));
+}
+
+.stat-card--alert .stat-card__icon {
+  color: #a3472d;
+  background: rgba(186, 78, 48, 0.16);
 }
 
 @media (max-width: 640px) {
@@ -32,6 +117,6 @@
   }
 
   .stat-card strong {
-    font-size: 1.8rem;
+    font-size: 2.35rem;
   }
 }

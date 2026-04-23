@@ -5,24 +5,40 @@
   </section>
 } @else {
   <section class="dashboard-grid">
-    <article class="card stat-card">
-      <p>Ventas del dia</p>
+    <article class="card stat-card stat-card--sales">
+      <div class="stat-card__head">
+        <span class="stat-card__icon">VT</span>
+        <p>Ventas del dia</p>
+      </div>
       <strong>{{ summary?.todaySales ?? 0 | solesPrice }}</strong>
+      <small>Ingreso acumulado de hoy</small>
     </article>
 
-    <article class="card stat-card">
-      <p>Transacciones</p>
+    <article class="card stat-card stat-card--transactions">
+      <div class="stat-card__head">
+        <span class="stat-card__icon">TR</span>
+        <p>Transacciones</p>
+      </div>
       <strong>{{ summary?.todayTransactions ?? 0 }}</strong>
+      <small>Ventas registradas hoy</small>
     </article>
 
-    <article class="card stat-card">
-      <p>Productos activos</p>
+    <article class="card stat-card stat-card--products">
+      <div class="stat-card__head">
+        <span class="stat-card__icon">PD</span>
+        <p>Productos activos</p>
+      </div>
       <strong>{{ summary?.productCount ?? 0 }}</strong>
+      <small>Catalogo disponible para vender</small>
     </article>
 
-    <article class="card stat-card alert">
-      <p>Stock bajo</p>
+    <article class="card stat-card stat-card--alert">
+      <div class="stat-card__head">
+        <span class="stat-card__icon">AL</span>
+        <p>Stock bajo</p>
+      </div>
       <strong>{{ summary?.lowStockProducts ?? 0 }}</strong>
+      <small>Productos que requieren reposicion</small>
     </article>
   </section>
 
