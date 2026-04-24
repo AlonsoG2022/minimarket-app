@@ -42,36 +42,98 @@
     </article>
   </section>
 
-  <section class="card">
-    <h2 class="section-title">Inventario para seguimiento</h2>
-    <p class="section-copy">Lista rapida de productos que ya alcanzaron su stock minimo.</p>
-
-    @if (lowStockProducts.length) {
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Categoria</th>
-              <th>Stock</th>
-              <th>Minimo</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (product of lowStockProducts; track product.id) {
-              <tr>
-                <td>{{ product.name }}</td>
-                <td>{{ product.categoryName }}</td>
-                <td><span class="pill low">{{ product.stock }}</span></td>
-                <td>{{ product.minimumStock }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <section class="dashboard-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Actividad</p>
+        <h2 class="section-title">Movimiento reciente</h2>
       </div>
-    } @else {
-      <p>No hay productos en nivel critico por ahora.</p>
-    }
+      <p class="section-copy">Un vistazo rapido a las ultimas operaciones registradas.</p>
+    </div>
+
+    <div class="activity-grid">
+      <article class="card activity-card">
+        <h3 class="activity-card__title">Ventas recientes</h3>
+        <p class="section-copy">Ultimas transacciones registradas en la caja.</p>
+
+        @if (recentSales.length) {
+          <div class="activity-list">
+            @for (sale of recentSales; track sale.id) {
+              <div class="activity-item">
+                <div>
+                  <strong>Venta #{{ sale.id }}</strong>
+                  <p>{{ sale.userName }} · {{ sale.paymentMethod }}</p>
+                </div>
+                <div class="activity-item__meta">
+                  <span>{{ sale.saleDate | date: 'dd/MM HH:mm' }}</span>
+                  <strong>{{ sale.total | solesPrice }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-copy">Todavia no hay ventas registradas hoy.</p>
+        }
+      </article>
+
+      <article class="card activity-card activity-card--trend">
+        <h3 class="activity-card__title">Pulso del dia</h3>
+        <p class="section-copy">Una lectura rapida del estado operativo.</p>
+
+        <div class="trend-stack">
+          <div class="trend-bar trend-bar--sales">
+            <span>Ventas</span>
+            <strong>{{ summary?.todaySales ?? 0 | solesPrice }}</strong>
+          </div>
+          <div class="trend-bar trend-bar--transactions">
+            <span>Transacciones</span>
+            <strong>{{ summary?.todayTransactions ?? 0 }}</strong>
+          </div>
+          <div class="trend-bar trend-bar--inventory">
+            <span>Productos activos</span>
+            <strong>{{ summary?.productCount ?? 0 }}</strong>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="dashboard-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Inventario</p>
+        <h2 class="section-title">Seguimiento de stock</h2>
+      </div>
+      <p class="section-copy">Alertas visuales para identificar rapido los productos sensibles.</p>
+    </div>
+
+    <article class="card inventory-card" [class.inventory-card--ok]="lowStockStatus === 'ok'">
+      @if (lowStockProducts.length) {
+        <div class="inventory-list">
+          @for (product of lowStockProducts; track product.id) {
+            <div class="inventory-item" [class.inventory-item--critical]="product.stock === 0 || product.stock < product.minimumStock">
+              <div class="inventory-item__signal"></div>
+              <div class="inventory-item__body">
+                <strong>{{ product.name }}</strong>
+                <p>{{ product.categoryName }}</p>
+              </div>
+              <div class="inventory-item__stats">
+                <span>Stock {{ product.stock }}</span>
+                <small>Min. {{ product.minimumStock }}</small>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="inventory-empty">
+          <div class="inventory-empty__badge">OK</div>
+          <div>
+            <strong>Todo bajo control</strong>
+            <p>No hay productos en stock critico en este momento.</p>
+          </div>
+        </div>
+      }
+    </article>
 
     @if (error) {
       <p class="message error">{{ error }}</p>
