@@ -72,18 +72,59 @@ h1 {
   gap: 0.55rem;
 }
 
-.shell__nav a {
+.nav-module {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.nav-module__trigger {
   display: flex;
   align-items: center;
   gap: 0.8rem;
+  width: 100%;
   padding: 0.85rem 0.9rem;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--color-text);
-  text-decoration: none;
   font-weight: 700;
   border: 1px solid rgba(15, 23, 42, 0.08);
+  text-align: left;
+  cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-module__items {
+  display: grid;
+  gap: 0.35rem;
+  padding-left: 0.45rem;
+}
+
+.nav-module__items a {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.85rem 0.7rem 0.95rem;
+  border-radius: 14px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(216, 111, 49, 0.45);
+  flex: 0 0 auto;
+}
+
+.nav-caret {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-muted);
 }
 
 .nav-icon {
@@ -107,29 +148,46 @@ h1 {
   min-width: 0;
 }
 
-.shell__nav a small {
+.nav-module__trigger small {
   font-size: 0.82rem;
   color: var(--color-muted);
   font-weight: 600;
 }
 
-.shell__nav a:hover,
-.shell__nav a.active {
+.nav-module__trigger:hover,
+.nav-module__trigger.active {
   background: var(--color-accent);
   color: white;
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(156, 63, 16, 0.16);
 }
 
-.shell__nav a:hover small,
-.shell__nav a.active small {
+.nav-module__trigger:hover small,
+.nav-module__trigger.active small {
   color: rgba(255, 255, 255, 0.84);
 }
 
-.shell__nav a:hover .nav-icon,
-.shell__nav a.active .nav-icon {
+.nav-module__trigger:hover .nav-icon,
+.nav-module__trigger.active .nav-icon {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
+}
+
+.nav-module__trigger:hover .nav-caret,
+.nav-module__trigger.active .nav-caret {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.nav-module__items a:hover,
+.nav-module__items a.active {
+  background: rgba(216, 111, 49, 0.12);
+  color: var(--color-accent);
+  transform: translateX(2px);
+}
+
+.nav-module__items a:hover .nav-bullet,
+.nav-module__items a.active .nav-bullet {
+  background: var(--color-accent);
 }
 
 .sidebar-note {
@@ -317,15 +375,19 @@ h1 {
   }
 
   .shell__nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 0.65rem;
   }
 
-  .shell__nav a {
-    min-height: 86px;
+  .nav-module__trigger {
+    min-height: 82px;
     align-items: flex-start;
     padding: 0.85rem 0.8rem;
     border-radius: 16px;
+  }
+
+  .nav-module__items {
+    padding-left: 0;
   }
 
   .nav-icon {

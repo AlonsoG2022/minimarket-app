@@ -12,6 +12,12 @@ export class App {
   private readonly router = inject(Router);
   productSearch = '';
   readonly storeName = 'Minimarket Casa';
+  readonly expandedModules: Record<string, boolean> = {
+    principal: false,
+    ventas: false,
+    inventario: false,
+    mantenimiento: false
+  };
 
   searchProducts(): void {
     const query = this.productSearch.trim();
@@ -22,5 +28,13 @@ export class App {
 
   openQuickSale(): void {
     this.router.navigate(['/ventas']);
+  }
+
+  toggleModule(moduleKey: string): void {
+    this.expandedModules[moduleKey] = !this.expandedModules[moduleKey];
+  }
+
+  isModuleExpanded(moduleKey: string, prefixes: string[]): boolean {
+    return this.expandedModules[moduleKey];
   }
 }

@@ -10,41 +10,93 @@
     </div>
 
     <nav class="shell__nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <span class="nav-icon">RS</span>
-        <span class="nav-copy">
-          <span>Resumen</span>
-          <small>Vista general</small>
-        </span>
-      </a>
-      <a routerLink="/categorias" routerLinkActive="active">
-        <span class="nav-icon">CT</span>
-        <span class="nav-copy">
-          <span>Categorias</span>
-          <small>Registro base</small>
-        </span>
-      </a>
-      <a routerLink="/productos" routerLinkActive="active">
-        <span class="nav-icon">PD</span>
-        <span class="nav-copy">
-          <span>Productos</span>
-          <small>Catalogo y stock</small>
-        </span>
-      </a>
-      <a routerLink="/ventas" routerLinkActive="active">
-        <span class="nav-icon">VT</span>
-        <span class="nav-copy">
-          <span>Ventas</span>
-          <small>Registro diario</small>
-        </span>
-      </a>
-      <a routerLink="/reportes" routerLinkActive="active">
-        <span class="nav-icon">RP</span>
-        <span class="nav-copy">
-          <span>Reportes</span>
-          <small>Resumen por fecha</small>
-        </span>
-      </a>
+      <section class="nav-module">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('principal', ['/'])" (click)="toggleModule('principal')">
+          <span class="nav-icon">PR</span>
+          <span class="nav-copy">
+            <span>Principal</span>
+            <small>Vista general</small>
+          </span>
+          <span class="nav-caret">{{ isModuleExpanded('principal', ['/']) ? '−' : '+' }}</span>
+        </button>
+
+        @if (isModuleExpanded('principal', ['/'])) {
+          <div class="nav-module__items">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+              <span class="nav-bullet"></span>
+              <span>Resumen</span>
+            </a>
+          </div>
+        }
+      </section>
+
+      <section class="nav-module">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas'])" (click)="toggleModule('ventas')">
+          <span class="nav-icon">VT</span>
+          <span class="nav-copy">
+            <span>Ventas</span>
+            <small>Caja y seguimiento</small>
+          </span>
+          <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas']) ? '−' : '+' }}</span>
+        </button>
+
+        @if (isModuleExpanded('ventas', ['/ventas'])) {
+          <div class="nav-module__items">
+            <a routerLink="/ventas" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Nueva venta</span>
+            </a>
+            <a routerLink="/ventas" fragment="historial-ventas" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Historial reciente</span>
+            </a>
+          </div>
+        }
+      </section>
+
+      <section class="nav-module">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('inventario', ['/productos', '/reportes'])" (click)="toggleModule('inventario')">
+          <span class="nav-icon">IN</span>
+          <span class="nav-copy">
+            <span>Inventario</span>
+            <small>Stock y analisis</small>
+          </span>
+          <span class="nav-caret">{{ isModuleExpanded('inventario', ['/productos', '/reportes']) ? '−' : '+' }}</span>
+        </button>
+
+        @if (isModuleExpanded('inventario', ['/productos', '/reportes'])) {
+          <div class="nav-module__items">
+            <a routerLink="/productos" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Productos</span>
+            </a>
+            <a routerLink="/reportes" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Reportes</span>
+            </a>
+          </div>
+        }
+      </section>
+
+      <section class="nav-module">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias'])" (click)="toggleModule('mantenimiento')">
+          <span class="nav-icon">MT</span>
+          <span class="nav-copy">
+            <span>Mantenimiento</span>
+            <small>Datos base</small>
+          </span>
+          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias']) ? '−' : '+' }}</span>
+        </button>
+
+        @if (isModuleExpanded('mantenimiento', ['/categorias'])) {
+          <div class="nav-module__items">
+            <a routerLink="/categorias" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Categorias</span>
+            </a>
+          </div>
+        }
+      </section>
     </nav>
 
     <div class="sidebar-note">
