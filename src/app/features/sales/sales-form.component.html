@@ -1,138 +1,224 @@
-<section class="card" id="nueva-venta">
-  <h2 class="section-title">Registrar venta</h2>
-  <p class="section-copy">Selecciona usuario, productos y cantidades para generar una venta con detalle.</p>
-
-  @if (loading) {
-    <p class="section-copy">Cargando productos, usuarios y reglas de venta...</p>
-  } @else {
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="form-grid">
+<section class="sales-layout" id="nueva-venta">
+  <section class="card pos-card">
+    <div class="pos-card__header">
       <div>
-        <label for="userId">Usuario</label>
-        <select id="userId" formControlName="userId">
-          <option [value]="0">Selecciona</option>
-          @for (user of users; track user.id) {
-            <option [value]="user.id">{{ user.fullName }} ({{ user.role }})</option>
-          }
-        </select>
+        <h2 class="section-title">Nueva venta</h2>
+        <p class="section-copy">Busca un producto, agrégalo al ticket y cobra al final.</p>
       </div>
 
-      <div>
-        <label for="paymentMethod">Metodo de pago</label>
-        <select id="paymentMethod" formControlName="paymentMethod">
-          <option value="Efectivo">Efectivo</option>
-          <option value="Tarjeta">Tarjeta</option>
-          <option value="Yape">Yape</option>
-        </select>
-      </div>
-
-      <div class="full-width">
-        <label for="notes">Notas</label>
-        <textarea id="notes" rows="3" formControlName="notes"></textarea>
-      </div>
+      @if (lastSaleId) {
+        <span class="pill">Última venta: #{{ lastSaleId }}</span>
+      }
     </div>
 
-    <div class="detail-list" formArrayName="details">
-      @for (detail of details.controls; track $index) {
-        <div class="detail-row" [formGroupName]="$index">
-          <div>
-            <label>Producto</label>
-            <select formControlName="productId">
-              <option [value]="0">Selecciona</option>
-              @for (product of products; track product.id) {
-                <option [value]="product.id">
-                  {{ product.name }} | Stock {{ product.stock }}
-                </option>
+    @if (loading) {
+      <p class="section-copy">Cargando productos, usuarios y reglas de venta...</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="submit()" class="pos-grid">
+        <article class="card pos-search-card">
+          <div class="pos-search-card__header">
+            <div>
+              <h3>Agregar productos</h3>
+              <p>Escribe el nombre del producto y presiona Enter para agregar el primero.</p>
+            </div>
+          </div>
+
+          <div class="pos-search-bar">
+            <div class="search-field">
+              <label for="productSearch">Buscar producto</label>
+              <input
+                id="productSearch"
+                type="text"
+                [(ngModel)]="productSearch"
+                [ngModelOptions]="{ standalone: true }"
+                (keydown.enter)="addFirstMatchingProduct(); $event.preventDefault()"
+                placeholder="Buscar producto por nombre"
+              >
+            </div>
+
+            <div class="quantity-field">
+              <label for="quickQuantity">Cantidad</label>
+              <input
+                id="quickQuantity"
+                type="number"
+                min="1"
+                [(ngModel)]="quickQuantity"
+                [ngModelOptions]="{ standalone: true }"
+              >
+            </div>
+          </div>
+
+          @if (!hasSearchTerm) {
+            <div class="ticket-empty search-empty">
+              <strong>Empieza escribiendo un producto</strong>
+              <p>La búsqueda mostrará una lista simple con los nombres que vayan coincidiendo.</p>
+            </div>
+          } @else {
+            <div class="search-results">
+              @for (product of filteredProducts; track product.id) {
+                <button type="button" class="search-result" (click)="addProduct(product)">
+                  <div class="search-result__content">
+                    <strong class="search-result__title">{{ product.name }}</strong>
+                  </div>
+                  <span class="search-result__price">{{ product.price | solesPrice }}</span>
+                </button>
+              } @empty {
+                <p class="empty-copy">No encontramos productos con ese nombre.</p>
               }
-            </select>
-          </div>
-
-          <div>
-            <label>Cantidad</label>
-            <input type="number" min="1" formControlName="quantity">
-          </div>
-
-          <div class="detail-meta">
-            <span>{{ getProductName(detail.get('productId')?.value ?? 0) }}</span>
-            <strong>{{ getProductPrice(detail.get('productId')?.value ?? 0) * (detail.get('quantity')?.value ?? 0) | solesPrice }}</strong>
-          </div>
-
-          <div>
-            <button type="button" class="secondary" (click)="removeItem($index)">Quitar</button>
-          </div>
-        </div>
-      }
-    </div>
-
-    <div class="actions">
-      <button type="button" class="secondary" (click)="addItem()">Agregar item</button>
-      @if (refreshingProducts) {
-        <span class="inline-hint">Actualizando stock disponible...</span>
-      }
-    </div>
-
-    <div class="sale-total">
-      <span>Total estimado</span>
-      <strong>{{ getTotal() | solesPrice }}</strong>
-    </div>
-
-    <div class="actions">
-      <button type="submit">Registrar venta</button>
-    </div>
-  </form>
-  }
-
-  @if (message) {
-    <p class="message">{{ message }}</p>
-  }
-
-  @if (error) {
-    <p class="message error">{{ error }}</p>
-  }
-
-  @if (lastSaleId) {
-    <p class="pill">Ultima venta registrada: #{{ lastSaleId }}</p>
-  }
-</section>
-
-<section class="card" id="historial-ventas">
-  <h2 class="section-title">Ventas recientes</h2>
-  <p class="section-copy">Aqui puedes verificar las ultimas ventas registradas y sus montos.</p>
-
-  @if (loadingSalesHistory) {
-    <p class="section-copy">Cargando ventas recientes...</p>
-  } @else if (recentSales.length) {
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Codigo</th>
-            <th>Fecha</th>
-            <th>Usuario</th>
-            <th>Pago</th>
-            <th>Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (sale of recentSales; track sale.id) {
-            <tr>
-              <td>#{{ sale.id }}</td>
-              <td>{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ sale.userName }}</td>
-              <td>{{ sale.paymentMethod }}</td>
-              <td>{{ sale.total | solesPrice }}</td>
-              <td>
-                <button type="button" class="secondary" (click)="showSaleDetail(sale)">Ver detalle</button>
-              </td>
-            </tr>
+            </div>
           }
-        </tbody>
-      </table>
-    </div>
-  } @else {
-    <p>No hay ventas registradas aun.</p>
-  }
+
+          @if (refreshingProducts) {
+            <p class="inline-hint">Actualizando stock disponible...</p>
+          }
+        </article>
+
+        <article class="card ticket-card">
+          <div class="ticket-card__header">
+            <div>
+              <h3>Venta actual</h3>
+              <p>El ticket se actualiza en tiempo real mientras agregas productos.</p>
+            </div>
+            <span class="pill">{{ currentItems.length }} item(s)</span>
+          </div>
+
+          @if (currentItems.length) {
+            <div class="ticket-list">
+              @for (item of currentItems; track item.index) {
+                <div class="ticket-item">
+                  <div class="ticket-item__main">
+                    <strong>{{ item.productName }}</strong>
+                    <p>{{ item.sku }} · Stock {{ item.stock }}</p>
+                  </div>
+
+                  <div class="ticket-item__qty">
+                    <button type="button" class="secondary" (click)="decrementQuantity(item.index)">−</button>
+                    <input
+                      type="number"
+                      min="1"
+                      [value]="item.quantity"
+                      (change)="updateQuantity(item.index, +$any($event.target).value)"
+                    >
+                    <button type="button" class="secondary" (click)="incrementQuantity(item.index)">+</button>
+                  </div>
+
+                  <div class="ticket-item__price">
+                    <span>{{ item.unitPrice | solesPrice }}</span>
+                    <strong>{{ item.subtotal | solesPrice }}</strong>
+                  </div>
+
+                  <button type="button" class="danger" (click)="removeItem(item.index)">Quitar</button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="ticket-empty">
+              <strong>Ticket vacío</strong>
+              <p>Agrega un producto desde el buscador para empezar la venta.</p>
+            </div>
+          }
+
+          <div class="sale-total">
+            <span>Total estimado</span>
+            <strong>{{ getTotal() | solesPrice }}</strong>
+          </div>
+        </article>
+
+        <article class="card checkout-card">
+          <div class="checkout-card__header">
+            <div>
+              <h3>Cobrar</h3>
+              <p>Completa solo lo necesario al final del flujo.</p>
+            </div>
+          </div>
+
+          <div class="checkout-grid">
+            <div>
+              <label for="userId">Usuario</label>
+              <select id="userId" formControlName="userId">
+                <option [value]="0">Selecciona</option>
+                @for (user of users; track user.id) {
+                  <option [value]="user.id">{{ user.fullName }} ({{ user.role }})</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label for="paymentMethod">Método de pago</label>
+              <select id="paymentMethod" formControlName="paymentMethod">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Yape">Yape</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="button" class="secondary notes-toggle" (click)="showNotes = !showNotes">
+            {{ showNotes ? 'Ocultar nota' : 'Agregar nota' }}
+          </button>
+
+          @if (showNotes) {
+            <div class="checkout-notes">
+              <label for="notes">Notas</label>
+              <textarea id="notes" rows="3" formControlName="notes"></textarea>
+            </div>
+          }
+
+          <div class="checkout-actions">
+            <button type="submit" class="checkout-submit">Cobrar</button>
+          </div>
+        </article>
+      </form>
+    }
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+  </section>
+
+  <section class="card" id="historial-ventas">
+    <h2 class="section-title">Ventas recientes</h2>
+    <p class="section-copy">Aquí puedes verificar las últimas ventas registradas y sus montos.</p>
+
+    @if (loadingSalesHistory) {
+      <p class="section-copy">Cargando ventas recientes...</p>
+    } @else if (recentSales.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Fecha</th>
+              <th>Usuario</th>
+              <th>Pago</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sale of recentSales; track sale.id) {
+              <tr>
+                <td>#{{ sale.id }}</td>
+                <td>{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ sale.userName }}</td>
+                <td>{{ sale.paymentMethod }}</td>
+                <td>{{ sale.total | solesPrice }}</td>
+                <td>
+                  <button type="button" class="secondary" (click)="showSaleDetail(sale)">Ver detalle</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p>No hay ventas registradas aún.</p>
+    }
+  </section>
 </section>
 
 @if (selectedSale) {

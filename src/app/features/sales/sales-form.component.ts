@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { Product, Sale, User } from '../../core/models/minimarket.models';
 import { ProductsService } from '../../core/services/products.service';
@@ -12,7 +13,7 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 @Component({
   selector: 'app-sales-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SolesPricePipe],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SolesPricePipe],
   templateUrl: './sales-form.component.html',
   styleUrl: './sales-form.component.css'
 })
@@ -28,7 +29,7 @@ export class SalesFormComponent implements OnInit {
     userId: [0, [Validators.required, Validators.min(1)]],
     paymentMethod: ['Efectivo', Validators.required],
     notes: [''],
-    details: this.fb.array([this.createDetailGroup()])
+    details: this.fb.array([])
   });
 
   products: Product[] = [];
@@ -36,6 +37,9 @@ export class SalesFormComponent implements OnInit {
   recentSales: Sale[] = [];
   selectedSale?: Sale;
   lastSaleId?: number;
+  productSearch = '';
+  quickQuantity = 1;
+  showNotes = false;
   loading = true;
   refreshingProducts = false;
   loadingSalesHistory = true;
@@ -44,6 +48,55 @@ export class SalesFormComponent implements OnInit {
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
+  }
+
+  get hasSearchTerm(): boolean {
+    return this.productSearch.trim().length > 0;
+  }
+
+  get filteredProducts(): Product[] {
+    const term = this.productSearch.trim().toLowerCase();
+    if (!term) {
+      return [];
+    }
+
+    return this.products
+      .filter((product) => product.name.toLowerCase().includes(term))
+      .slice(0, 8);
+  }
+
+  get currentItems(): Array<{
+    index: number;
+    productId: number;
+    productName: string;
+    sku: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+    stock: number;
+  }> {
+    return this.details.controls
+      .map((control, index) => {
+        const productId = Number(control.get('productId')?.value);
+        const quantity = Number(control.get('quantity')?.value);
+        const product = this.products.find((item) => item.id === productId);
+
+        if (!product) {
+          return null;
+        }
+
+        return {
+          index,
+          productId,
+          productName: product.name,
+          sku: product.sku,
+          quantity,
+          unitPrice: product.price,
+          subtotal: product.price * quantity,
+          stock: product.stock
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
   }
 
   ngOnInit(): void {
@@ -55,6 +108,9 @@ export class SalesFormComponent implements OnInit {
       next: ({ products, users }) => {
         this.products = products.filter((product) => product.isActive);
         this.users = users.filter((user) => user.isActive);
+        if (!this.form.get('userId')?.value && this.users.length) {
+          this.form.patchValue({ userId: this.users[0].id });
+        }
         this.error = '';
         this.loading = false;
         this.cdr.detectChanges();
@@ -69,21 +125,70 @@ export class SalesFormComponent implements OnInit {
     this.loadRecentSales();
   }
 
-  addItem(): void {
-    this.details.push(this.createDetailGroup());
+  addProduct(product: Product, quantity = this.quickQuantity): void {
+    const safeQuantity = Math.max(1, Number(quantity) || 1);
+    const existingIndex = this.details.controls.findIndex(
+      (control) => Number(control.get('productId')?.value) === product.id
+    );
+
+    if (existingIndex >= 0) {
+      const control = this.details.at(existingIndex);
+      const currentQuantity = Number(control.get('quantity')?.value) || 0;
+      control.patchValue({ quantity: currentQuantity + safeQuantity });
+    } else {
+      this.details.push(this.createDetailGroup(product.id, safeQuantity));
+    }
+
+    this.productSearch = '';
+    this.quickQuantity = 1;
   }
 
-  removeItem(index: number): void {
-    if (this.details.length === 1) {
+  addFirstMatchingProduct(): void {
+    const product = this.filteredProducts[0];
+    if (!product) {
       return;
     }
 
+    this.addProduct(product);
+  }
+
+  removeItem(index: number): void {
     this.details.removeAt(index);
   }
 
+  updateQuantity(index: number, quantity: number): void {
+    const control = this.details.at(index);
+    control.patchValue({ quantity: Math.max(1, Number(quantity) || 1) });
+  }
+
+  incrementQuantity(index: number): void {
+    const control = this.details.at(index);
+    const currentQuantity = Number(control.get('quantity')?.value) || 1;
+    control.patchValue({ quantity: currentQuantity + 1 });
+  }
+
+  decrementQuantity(index: number): void {
+    const control = this.details.at(index);
+    const currentQuantity = Number(control.get('quantity')?.value) || 1;
+    if (currentQuantity <= 1) {
+      return;
+    }
+
+    control.patchValue({ quantity: currentQuantity - 1 });
+  }
+
   submit(): void {
-    if (this.form.invalid) {
+    const saleDetails = this.currentItems.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity
+    }));
+
+    if (this.form.get('userId')?.invalid || this.form.get('paymentMethod')?.invalid || !saleDetails.length) {
       this.form.markAllAsTouched();
+      if (!saleDetails.length) {
+        this.error = 'Agrega al menos un producto antes de cobrar.';
+        this.message = '';
+      }
       return;
     }
 
@@ -93,10 +198,7 @@ export class SalesFormComponent implements OnInit {
       userId: Number(payload.userId),
       paymentMethod: payload.paymentMethod ?? 'Efectivo',
       notes: payload.notes ?? '',
-      details: (payload.details ?? []).map((detail) => ({
-        productId: Number(detail.productId),
-        quantity: Number(detail.quantity)
-      }))
+      details: saleDetails
     }).subscribe({
       next: (sale) => {
         this.productsService.invalidateCache();
@@ -104,12 +206,15 @@ export class SalesFormComponent implements OnInit {
         this.message = `Venta registrada correctamente. Codigo #${sale.id}.`;
         this.error = '';
         this.lastSaleId = sale.id;
+        this.productSearch = '';
+        this.quickQuantity = 1;
+        this.showNotes = false;
         this.form.reset({
           userId: payload.userId,
           paymentMethod: 'Efectivo',
           notes: ''
         });
-        this.form.setControl('details', this.fb.array([this.createDetailGroup()]));
+        this.form.setControl('details', this.fb.array([]));
         this.refreshingProducts = true;
         this.productsService.getAll(true).subscribe({
           next: (products) => {
@@ -142,11 +247,7 @@ export class SalesFormComponent implements OnInit {
   }
 
   getTotal(): number {
-    return this.details.controls.reduce((sum, control) => {
-      const productId = Number(control.get('productId')?.value);
-      const quantity = Number(control.get('quantity')?.value);
-      return sum + this.getProductPrice(productId) * quantity;
-    }, 0);
+    return this.currentItems.reduce((sum, item) => sum + item.subtotal, 0);
   }
 
   private loadRecentSales(forceRefresh = false): void {
@@ -175,10 +276,10 @@ export class SalesFormComponent implements OnInit {
     this.selectedSale = undefined;
   }
 
-  private createDetailGroup() {
+  private createDetailGroup(productId: number, quantity: number) {
     return this.fb.group({
-      productId: [0, [Validators.required, Validators.min(1)]],
-      quantity: [1, [Validators.required, Validators.min(1)]]
+      productId: [productId, [Validators.required, Validators.min(1)]],
+      quantity: [quantity, [Validators.required, Validators.min(1)]]
     });
   }
 }
