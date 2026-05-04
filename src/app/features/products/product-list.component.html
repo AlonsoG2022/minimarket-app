@@ -12,6 +12,9 @@
         }
         <input #importInput type="file" accept=".xlsx,.xls" hidden (change)="importFromFile($event)">
         <button type="button" class="secondary" (click)="downloadImportTemplate()">Descargar plantilla</button>
+        <button type="button" class="secondary" (click)="exportProducts()" [disabled]="loadingProducts || !products.length">
+          Exportar productos
+        </button>
         <button type="button" class="secondary" (click)="openImportPicker(importInput)" [disabled]="importingProducts">
           {{ importingProducts ? 'Importando...' : 'Importar Excel' }}
         </button>

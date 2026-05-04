@@ -208,12 +208,43 @@ export class ProductListComponent implements OnInit {
   }
 
   downloadImportTemplate(): void {
-    const worksheet = utils.aoa_to_sheet([
+    const productsWorksheet = utils.aoa_to_sheet([
       ['NombreProducto', 'Precio', 'Categoria', 'Stock']
     ]);
+    const categoriesWorksheet = utils.aoa_to_sheet([
+      ['Categoria'],
+      ...this.categories.map((category) => [category.name])
+    ]);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, productsWorksheet, 'Productos');
+    utils.book_append_sheet(workbook, categoriesWorksheet, 'Categorias');
+    writeFile(workbook, 'plantilla-productos-minimarket.xlsx');
+  }
+
+  exportProducts(): void {
+    if (!this.products.length) {
+      this.error = 'No hay productos para exportar.';
+      this.message = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const rows = this.products
+      .slice()
+      .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }))
+      .map((product) => ({
+        NombreProducto: product.name,
+        Precio: product.price,
+        Categoria: product.categoryName,
+        Stock: product.stock,
+        SKU: product.sku,
+        Activo: product.isActive ? 'Si' : 'No'
+      }));
+
+    const worksheet = utils.json_to_sheet(rows);
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, 'Productos');
-    writeFile(workbook, 'plantilla-productos-minimarket.xlsx');
+    writeFile(workbook, 'productos-minimarket.xlsx');
   }
 
   openImportPicker(input: HTMLInputElement): void {
