@@ -28,6 +28,24 @@ export interface SaveProduct {
   categoryId: number;
 }
 
+export interface ProductImportRow {
+  rowNumber: number;
+  name: string;
+  price: number;
+  categoryName: string;
+  stock: number;
+}
+
+export interface ProductImportError {
+  rowNumber: number;
+  message: string;
+}
+
+export interface ProductImportResult {
+  createdCount: number;
+  errors: ProductImportError[];
+}
+
 export interface SaveCategory {
   name: string;
   description?: string | null;
@@ -40,6 +58,18 @@ export interface User {
   username: string;
   role: string;
   isActive: boolean;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface AuthSession {
+  id: number;
+  fullName: string;
+  username: string;
+  role: string;
 }
 
 export interface SaleDetail {

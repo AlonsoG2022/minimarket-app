@@ -99,7 +99,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             new Product { Id = 5, Name = "Detergente Floral 900g", Sku = "LIM-001", Description = "Detergente en polvo", Price = 8.90m, Stock = 22, MinimumStock = 8, CategoryId = 3, IsActive = true });
 
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, FullName = "Administrador General", Username = "admin", PasswordHash = "3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121", Role = "admin", IsActive = true },
-            new User { Id = 2, FullName = "Caja Principal", Username = "cajero", PasswordHash = "3eaf7440a5899bf27c390f75b4bbf3be0fc200cc3d5908f01e210d39f3995b18", Role = "cajero", IsActive = true });
+            new User { Id = 1, FullName = "Administrador General", Username = "admin", PasswordHash = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", Role = "admin", IsActive = true },
+            new User { Id = 2, FullName = "Caja Principal", Username = "cajero", PasswordHash = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", Role = "cajero", IsActive = true });
     }
 }

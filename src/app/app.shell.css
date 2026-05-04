@@ -6,7 +6,7 @@
 .shell {
   display: grid;
   min-height: 100dvh;
-  grid-template-columns: minmax(220px, 248px) minmax(0, 1fr);
+  grid-template-columns: minmax(248px, 276px) minmax(0, 1fr);
   background:
     radial-gradient(circle at top right, rgba(220, 140, 90, 0.12), transparent 28%),
     linear-gradient(180deg, #fffaf5 0%, #fff7ee 48%, #fffaf6 100%);
@@ -24,12 +24,14 @@
 h1 {
   margin: 0;
   font-size: clamp(1.55rem, 2.2vw, 1.95rem);
+  line-height: 1.05;
 }
 
 .subtitle {
   margin: 0.35rem 0 0;
   color: var(--color-muted);
   font-size: 0.95rem;
+  line-height: 1.35;
 }
 
 .shell__sidebar {
@@ -49,10 +51,10 @@ h1 {
 
 .brand {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 0.8rem;
   align-items: center;
-  padding: 0.25rem 0.25rem 0.5rem;
+  padding: 0.25rem 0.45rem 0.5rem 0.25rem;
 }
 
 .brand__badge {
@@ -65,6 +67,11 @@ h1 {
   color: #fff;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.brand__copy {
+  min-width: 0;
+  padding-right: 0.35rem;
 }
 
 .shell__nav {
@@ -215,7 +222,7 @@ h1 {
 
 .shell__topbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+  grid-template-columns: minmax(320px, 1fr) minmax(620px, 760px);
   gap: 1rem;
   align-items: end;
   padding: 1rem 1.1rem;
@@ -260,10 +267,11 @@ h1 {
 
 .topbar__actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(260px, 1fr) auto minmax(240px, 280px);
   align-items: end;
   gap: 0.9rem;
   min-width: 0;
+  justify-content: end;
 }
 
 .global-search {
@@ -274,6 +282,7 @@ h1 {
 .global-search label {
   display: block;
   margin-bottom: 0.45rem;
+  white-space: nowrap;
 }
 
 .global-search__bar {
@@ -287,6 +296,35 @@ h1 {
   white-space: nowrap;
   min-width: 146px;
   align-self: end;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(45, 30, 21, 0.08);
+  background: rgba(255, 248, 241, 0.92);
+}
+
+.topbar-user strong {
+  display: block;
+  line-height: 1.1;
+}
+
+.topbar-user small {
+  display: block;
+  margin-top: 0.18rem;
+  color: var(--color-muted);
+  text-transform: capitalize;
+}
+
+.topbar-user__logout {
+  min-width: 80px;
 }
 
 .shell__hero {
@@ -348,7 +386,7 @@ h1 {
 
   .topbar__actions {
     width: 100%;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 1fr;
   }
 
   .shell__hero {
@@ -380,8 +418,8 @@ h1 {
   }
 
   .nav-module__trigger {
-    min-height: 82px;
-    align-items: flex-start;
+    min-height: 78px;
+    align-items: center;
     padding: 0.85rem 0.8rem;
     border-radius: 16px;
   }
@@ -402,6 +440,10 @@ h1 {
 
   .nav-copy small {
     font-size: 0.76rem;
+  }
+
+  .nav-copy {
+    justify-content: center;
   }
 
   .sidebar-note {
@@ -435,13 +477,18 @@ h1 {
 
   .topbar__actions,
   .global-search,
-  .quick-sale {
+  .quick-sale,
+  .topbar-user {
     width: 100%;
   }
 
   .quick-sale {
     width: 100%;
     min-width: 0;
+  }
+
+  .topbar-user {
+    padding: 0.8rem 0.9rem;
   }
 
   .shell__hero {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { API_BASE_URL } from './api-base';
-import { Product, SaveProduct } from '../models/minimarket.models';
+import { Product, ProductImportResult, ProductImportRow, SaveProduct } from '../models/minimarket.models';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
@@ -32,6 +32,12 @@ export class ProductsService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.invalidateCache())
+    );
+  }
+
+  importRows(rows: ProductImportRow[]): Observable<ProductImportResult> {
+    return this.http.post<ProductImportResult>(`${this.apiUrl}/import`, rows).pipe(
       tap(() => this.invalidateCache())
     );
   }

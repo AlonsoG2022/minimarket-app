@@ -52,6 +52,25 @@
   align-items: center;
 }
 
+.import-summary {
+  margin-bottom: 1rem;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(216, 111, 49, 0.18);
+  background: rgba(255, 248, 241, 0.86);
+}
+
+.import-summary strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.import-summary ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--color-text);
+}
+
 .full-width {
   grid-column: 1 / -1;
 }

@@ -10,9 +10,33 @@
           <span class="pill">Filtro: {{ searchTerm }}</span>
           <button type="button" class="secondary" (click)="clearSearch()">Quitar filtro</button>
         }
+        <input #importInput type="file" accept=".xlsx,.xls" hidden (change)="importFromFile($event)">
+        <button type="button" class="secondary" (click)="downloadImportTemplate()">Descargar plantilla</button>
+        <button type="button" class="secondary" (click)="openImportPicker(importInput)" [disabled]="importingProducts">
+          {{ importingProducts ? 'Importando...' : 'Importar Excel' }}
+        </button>
         <button type="button" (click)="openCreateForm()">Nuevo producto</button>
       </div>
     </div>
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+
+    @if (importErrors.length) {
+      <div class="import-summary">
+        <strong>Filas con observaciones</strong>
+        <ul>
+          @for (item of importErrors; track $index) {
+            <li>Fila {{ item.rowNumber }}: {{ item.message }}</li>
+          }
+        </ul>
+      </div>
+    }
 
     @if (loadingProducts) {
       <p class="section-copy">Cargando productos...</p>
@@ -125,13 +149,6 @@
         </div>
       </form>
 
-      @if (message) {
-        <p class="message">{{ message }}</p>
-      }
-
-      @if (error) {
-        <p class="message error">{{ error }}</p>
-      }
     </article>
   </div>
 }

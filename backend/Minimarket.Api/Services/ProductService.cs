@@ -75,6 +75,72 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         return (true, null, updated?.ToDto());
     }
 
+    public async Task<ProductImportResultDto> ImportAsync(IReadOnlyCollection<ProductImportRowDto> rows)
+    {
+        if (rows.Count == 0)
+        {
+            return new ProductImportResultDto(0, [new ProductImportErrorDto(0, "El archivo no contiene filas validas.")]);
+        }
+
+        var errors = new List<ProductImportErrorDto>();
+        var createdCount = 0;
+
+        foreach (var row in rows)
+        {
+            var name = row.Name?.Trim() ?? string.Empty;
+            var categoryName = row.CategoryName?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, "El nombre del producto es obligatorio."));
+                continue;
+            }
+
+            if (row.Price <= 0)
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, "El precio debe ser mayor que cero."));
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryName))
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, "La categoria es obligatoria."));
+                continue;
+            }
+
+            if (row.Stock < 0)
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, "El stock no puede ser menor que cero."));
+                continue;
+            }
+
+            var category = await categoryRepository.GetByNameAsync(categoryName);
+            if (category is null)
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, $"La categoria '{categoryName}' no existe."));
+                continue;
+            }
+
+            var product = new Product
+            {
+                Name = name,
+                Sku = await GenerateSkuAsync(category.Name),
+                Description = null,
+                Price = row.Price,
+                Stock = row.Stock,
+                MinimumStock = 0,
+                IsActive = true,
+                CategoryId = category.Id
+            };
+
+            await productRepository.AddAsync(product);
+            await productRepository.SaveChangesAsync();
+            createdCount++;
+        }
+
+        return new ProductImportResultDto(createdCount, errors);
+    }
+
     public async Task<(bool Success, string? Error)> DeleteAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);

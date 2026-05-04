@@ -134,13 +134,11 @@
 
           <div class="checkout-grid">
             <div>
-              <label for="userId">Usuario</label>
-              <select id="userId" formControlName="userId">
-                <option [value]="0">Selecciona</option>
-                @for (user of users; track user.id) {
-                  <option [value]="user.id">{{ user.fullName }} ({{ user.role }})</option>
-                }
-              </select>
+              <label>Usuario activo</label>
+              <div class="checkout-user">
+                <strong>{{ authService.session()?.fullName }}</strong>
+                <span>{{ authService.session()?.role }}</span>
+              </div>
             </div>
 
             <div>

@@ -2,6 +2,8 @@ package com.minimarket.api.controller;
 
 import com.minimarket.api.dto.ApiMessageResponse;
 import com.minimarket.api.dto.ProductDto;
+import com.minimarket.api.dto.ProductImportResultDto;
+import com.minimarket.api.dto.ProductImportRowDto;
 import com.minimarket.api.dto.SaveProductDto;
 import com.minimarket.api.service.ProductService;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,11 @@ public class ProductsController {
             .toUri();
 
         return ResponseEntity.created(location).body(result.data());
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ProductImportResultDto> importProducts(@RequestBody List<ProductImportRowDto> rows) {
+        return ResponseEntity.ok(productService.importRows(rows));
     }
 
     @PutMapping("/{id}")

@@ -1,0 +1,47 @@
+<section class="login-page">
+  <div class="login-page__panel">
+    <div class="login-copy">
+      <p class="eyebrow">Acceso seguro</p>
+      <h1>Minimarket POS</h1>
+      <p>
+        Ingresa con tu usuario para registrar ventas con trazabilidad real y mostrar solo
+        los módulos que correspondan a tu rol.
+      </p>
+
+      <div class="login-copy__tips">
+        <strong>Roles previstos</strong>
+        <ul>
+          <li>admin: acceso completo</li>
+          <li>cajero: resumen y ventas</li>
+        </ul>
+      </div>
+    </div>
+
+    <section class="card login-card">
+      <div class="login-card__header">
+        <h2>Iniciar sesión</h2>
+        <p>Usa tu usuario y contraseña para continuar.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+        <div>
+          <label for="username">Usuario</label>
+          <input id="username" type="text" formControlName="username" autocomplete="username">
+        </div>
+
+        <div>
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" formControlName="password" autocomplete="current-password">
+        </div>
+
+        @if (error) {
+          <p class="message error">{{ error }}</p>
+        }
+
+        <button type="submit" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'Entrar' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</section>

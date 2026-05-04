@@ -20,3 +20,18 @@ public record SaveProductDto(
     int MinimumStock,
     bool IsActive,
     int CategoryId);
+
+public record ProductImportRowDto(
+    int RowNumber,
+    string Name,
+    decimal Price,
+    string CategoryName,
+    int Stock);
+
+public record ProductImportErrorDto(
+    int RowNumber,
+    string Message);
+
+public record ProductImportResultDto(
+    int CreatedCount,
+    IReadOnlyCollection<ProductImportErrorDto> Errors);

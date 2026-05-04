@@ -2,12 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { Product, Sale, User } from '../../core/models/minimarket.models';
+import { Product, Sale } from '../../core/models/minimarket.models';
+import { AuthService } from '../../core/services/auth.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
-import { UsersService } from '../../core/services/users.service';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
@@ -20,20 +19,18 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 export class SalesFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly authService = inject(AuthService);
   private readonly salesService = inject(SalesService);
   private readonly productsService = inject(ProductsService);
   private readonly reportsService = inject(ReportsService);
-  private readonly usersService = inject(UsersService);
 
   readonly form = this.fb.group({
-    userId: [0, [Validators.required, Validators.min(1)]],
     paymentMethod: ['Efectivo', Validators.required],
     notes: [''],
     details: this.fb.array([])
   });
 
   products: Product[] = [];
-  users: User[] = [];
   recentSales: Sale[] = [];
   selectedSale?: Sale;
   lastSaleId?: number;
@@ -101,16 +98,9 @@ export class SalesFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    forkJoin({
-      products: this.productsService.getAll(),
-      users: this.usersService.getAll()
-    }).subscribe({
-      next: ({ products, users }) => {
+    this.productsService.getAll().subscribe({
+      next: (products) => {
         this.products = products.filter((product) => product.isActive);
-        this.users = users.filter((user) => user.isActive);
-        if (!this.form.get('userId')?.value && this.users.length) {
-          this.form.patchValue({ userId: this.users[0].id });
-        }
         this.error = '';
         this.loading = false;
         this.cdr.detectChanges();
@@ -178,13 +168,18 @@ export class SalesFormComponent implements OnInit {
   }
 
   submit(): void {
+    const currentUser = this.authService.session();
     const saleDetails = this.currentItems.map((item) => ({
       productId: item.productId,
       quantity: item.quantity
     }));
 
-    if (this.form.get('userId')?.invalid || this.form.get('paymentMethod')?.invalid || !saleDetails.length) {
+    if (!currentUser || this.form.get('paymentMethod')?.invalid || !saleDetails.length) {
       this.form.markAllAsTouched();
+      if (!currentUser) {
+        this.error = 'Tu sesión no está disponible. Vuelve a ingresar.';
+        this.message = '';
+      }
       if (!saleDetails.length) {
         this.error = 'Agrega al menos un producto antes de cobrar.';
         this.message = '';
@@ -195,7 +190,7 @@ export class SalesFormComponent implements OnInit {
     const payload = this.form.getRawValue();
 
     this.salesService.create({
-      userId: Number(payload.userId),
+      userId: currentUser.id,
       paymentMethod: payload.paymentMethod ?? 'Efectivo',
       notes: payload.notes ?? '',
       details: saleDetails
@@ -210,7 +205,6 @@ export class SalesFormComponent implements OnInit {
         this.quickQuantity = 1;
         this.showNotes = false;
         this.form.reset({
-          userId: payload.userId,
           paymentMethod: 'Efectivo',
           notes: ''
         });

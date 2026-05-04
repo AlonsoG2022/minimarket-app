@@ -31,6 +31,10 @@ public class ProductsController(IProductService productService) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Product!.Id }, result.Product);
     }
 
+    [HttpPost("import")]
+    public async Task<ActionResult<ProductImportResultDto>> Import([FromBody] IReadOnlyCollection<ProductImportRowDto> rows)
+        => Ok(await productService.ImportAsync(rows));
+
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ProductDto>> Update(int id, [FromBody] SaveProductDto dto)
     {

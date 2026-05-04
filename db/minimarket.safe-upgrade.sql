@@ -519,14 +519,28 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Username = 'admin')
 BEGIN
     INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)
-    VALUES ('Administrador General', 'admin', '3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121', 'admin', 1);
+    VALUES ('Administrador General', 'admin', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'admin', 1);
+END;
+ELSE
+BEGIN
+    UPDATE dbo.Usuarios
+    SET PasswordHash = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        Activo = 1
+    WHERE Username = 'admin';
 END;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Username = 'cajero')
 BEGIN
     INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)
-    VALUES ('Caja Principal', 'cajero', '3eaf7440a5899bf27c390f75b4bbf3be0fc200cc3d5908f01e210d39f3995b18', 'cajero', 1);
+    VALUES ('Caja Principal', 'cajero', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'cajero', 1);
+END;
+ELSE
+BEGIN
+    UPDATE dbo.Usuarios
+    SET PasswordHash = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        Activo = 1
+    WHERE Username = 'cajero';
 END;
 GO
 

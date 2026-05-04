@@ -1,8 +1,9 @@
+@if (auth.isAuthenticated()) {
 <div class="shell">
   <aside class="shell__sidebar">
     <div class="brand">
       <div class="brand__badge">MC</div>
-      <div>
+      <div class="brand__copy">
         <p class="eyebrow">Sistema POS</p>
         <h1>Minimarket</h1>
         <p class="subtitle">Caja, stock y seguimiento diario.</p>
@@ -10,6 +11,7 @@
     </div>
 
     <nav class="shell__nav">
+      @if (canAccessDashboard()) {
       <section class="nav-module">
         <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('principal', ['/'])" (click)="toggleModule('principal')">
           <span class="nav-icon">PR</span>
@@ -17,7 +19,7 @@
             <span>Principal</span>
             <small>Vista general</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('principal', ['/']) ? '−' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('principal', ['/']) ? '-' : '+' }}</span>
         </button>
 
         @if (isModuleExpanded('principal', ['/'])) {
@@ -29,7 +31,9 @@
           </div>
         }
       </section>
+      }
 
+      @if (canAccessSales()) {
       <section class="nav-module">
         <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas'])" (click)="toggleModule('ventas')">
           <span class="nav-icon">VT</span>
@@ -37,7 +41,7 @@
             <span>Ventas</span>
             <small>Caja y seguimiento</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas']) ? '−' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas']) ? '-' : '+' }}</span>
         </button>
 
         @if (isModuleExpanded('ventas', ['/ventas'])) {
@@ -53,31 +57,39 @@
           </div>
         }
       </section>
+      }
 
+      @if (canAccessProducts() || canAccessReports()) {
       <section class="nav-module">
         <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('inventario', ['/productos', '/reportes'])" (click)="toggleModule('inventario')">
           <span class="nav-icon">IN</span>
           <span class="nav-copy">
             <span>Inventario</span>
-            <small>Stock y analisis</small>
+            <small>Stock y análisis</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('inventario', ['/productos', '/reportes']) ? '−' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('inventario', ['/productos', '/reportes']) ? '-' : '+' }}</span>
         </button>
 
         @if (isModuleExpanded('inventario', ['/productos', '/reportes'])) {
           <div class="nav-module__items">
+            @if (canAccessProducts()) {
             <a routerLink="/productos" routerLinkActive="active">
               <span class="nav-bullet"></span>
               <span>Productos</span>
             </a>
+            }
+            @if (canAccessReports()) {
             <a routerLink="/reportes" routerLinkActive="active">
               <span class="nav-bullet"></span>
               <span>Reportes</span>
             </a>
+            }
           </div>
         }
       </section>
+      }
 
+      @if (canAccessCategories()) {
       <section class="nav-module">
         <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias'])" (click)="toggleModule('mantenimiento')">
           <span class="nav-icon">MT</span>
@@ -85,23 +97,30 @@
             <span>Mantenimiento</span>
             <small>Datos base</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias']) ? '−' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias']) ? '-' : '+' }}</span>
         </button>
 
         @if (isModuleExpanded('mantenimiento', ['/categorias'])) {
           <div class="nav-module__items">
             <a routerLink="/categorias" routerLinkActive="active">
               <span class="nav-bullet"></span>
-              <span>Categorias</span>
+              <span>Categorías</span>
             </a>
           </div>
         }
       </section>
+      }
     </nav>
 
     <div class="sidebar-note">
-      <strong>Flujo rapido</strong>
-      <p>Usa "Nueva venta" para caja y deja productos o categorias para mantenimiento.</p>
+      <strong>Acceso actual</strong>
+      <p>
+        @if (session()?.role === 'cajero') {
+          Tu perfil está orientado a resumen y ventas de caja.
+        } @else {
+          Tu perfil tiene acceso administrativo completo.
+        }
+      </p>
     </div>
   </aside>
 
@@ -109,39 +128,51 @@
     <header class="shell__topbar">
       <div class="topbar__meta">
         <div>
-          <p class="eyebrow">Operacion activa</p>
+          <p class="eyebrow">Operación activa</p>
           <h2>{{ storeName }}</h2>
         </div>
 
         <div class="topbar__status">
           <span class="status-dot"></span>
-          <span>Tienda en linea</span>
+          <span>Tienda en línea</span>
         </div>
       </div>
 
       <div class="topbar__actions">
-        <form class="global-search" (ngSubmit)="searchProducts()">
-          <label for="globalProductSearch">Buscar producto</label>
-          <div class="global-search__bar">
-            <input
-              id="globalProductSearch"
-              type="text"
-              [(ngModel)]="productSearch"
-              name="productSearch"
-              placeholder="Buscar por nombre del producto"
-            >
-            <button type="submit">Buscar</button>
-          </div>
-        </form>
+        @if (canAccessProducts()) {
+          <form class="global-search" (ngSubmit)="searchProducts()">
+            <label for="globalProductSearch">Buscar producto</label>
+            <div class="global-search__bar">
+              <input
+                id="globalProductSearch"
+                type="text"
+                [(ngModel)]="productSearch"
+                name="productSearch"
+                placeholder="Buscar por nombre del producto"
+              >
+              <button type="submit">Buscar</button>
+            </div>
+          </form>
+        }
 
-        <button type="button" class="quick-sale" (click)="openQuickSale()">Nueva venta</button>
+        @if (canAccessSales()) {
+          <button type="button" class="quick-sale" (click)="openQuickSale()">Nueva venta</button>
+        }
+
+        <div class="topbar-user">
+          <div>
+            <strong>{{ session()?.fullName }}</strong>
+            <small>{{ session()?.role }}</small>
+          </div>
+          <button type="button" class="secondary topbar-user__logout" (click)="logout()">Salir</button>
+        </div>
       </div>
     </header>
 
     <section class="shell__hero">
       <div>
         <p class="eyebrow">Panel operativo</p>
-        <h3>Gestion simple para el minimarket</h3>
+        <h3>Gestión simple para el minimarket</h3>
         <p>Ventas, productos y reportes actualizados en tiempo real.</p>
       </div>
     </section>
@@ -151,3 +182,6 @@
     </section>
   </main>
 </div>
+} @else {
+  <router-outlet />
+}

@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Category, Product, SaveProduct } from '../../core/models/minimarket.models';
+import { read, utils, writeFile } from 'xlsx';
+import { Category, Product, ProductImportError, ProductImportRow, SaveProduct } from '../../core/models/minimarket.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { ProductsService } from '../../core/services/products.service';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
@@ -39,8 +40,10 @@ export class ProductListComponent implements OnInit {
   isEditing = false;
   loadingProducts = true;
   loadingCategories = true;
+  importingProducts = false;
   message = '';
   error = '';
+  importErrors: ProductImportError[] = [];
 
   get filteredProducts(): Product[] {
     const term = this.searchTerm.trim().toLowerCase();
@@ -202,5 +205,116 @@ export class ProductListComponent implements OnInit {
       isActive: true,
       categoryId: 0
     });
+  }
+
+  downloadImportTemplate(): void {
+    const worksheet = utils.aoa_to_sheet([
+      ['NombreProducto', 'Precio', 'Categoria', 'Stock']
+    ]);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, 'Productos');
+    writeFile(workbook, 'plantilla-productos-minimarket.xlsx');
+  }
+
+  openImportPicker(input: HTMLInputElement): void {
+    input.value = '';
+    input.click();
+  }
+
+  importFromFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    this.importingProducts = true;
+    this.message = '';
+    this.error = '';
+    this.importErrors = [];
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const workbook = read(reader.result, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rawRows = utils.sheet_to_json<Record<string, unknown>>(sheet, {
+          defval: '',
+          raw: false
+        });
+
+        const rows = this.mapImportRows(rawRows);
+        if (!rows.length) {
+          this.error = 'El archivo no contiene filas validas para importar.';
+          this.importingProducts = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.productsService.importRows(rows).subscribe({
+          next: (result) => {
+            this.importErrors = result.errors;
+            this.message = result.createdCount
+              ? `Se importaron ${result.createdCount} producto(s) correctamente.`
+              : '';
+            this.error = !result.createdCount && result.errors.length
+              ? 'No se pudo importar ninguna fila. Revisa el detalle de errores.'
+              : '';
+            this.importingProducts = false;
+            this.loadData(true);
+            this.cdr.detectChanges();
+          },
+          error: (response) => {
+            this.error = response.error?.message ?? 'No se pudo importar el archivo.';
+            this.importingProducts = false;
+            this.cdr.detectChanges();
+          }
+        });
+      } catch {
+        this.error = 'No se pudo leer el archivo seleccionado.';
+        this.importingProducts = false;
+        this.cdr.detectChanges();
+      }
+    };
+
+    reader.onerror = () => {
+      this.error = 'No se pudo leer el archivo seleccionado.';
+      this.importingProducts = false;
+      this.cdr.detectChanges();
+    };
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  private mapImportRows(rawRows: Record<string, unknown>[]): ProductImportRow[] {
+    return rawRows
+      .map((row, index) => {
+        const name = this.readCell(row, ['NombreProducto', 'Nombre Producto', 'nombreproducto']);
+        const categoryName = this.readCell(row, ['Categoria', 'Categoría', 'categoria']);
+        const priceText = this.readCell(row, ['Precio', 'precio']);
+        const stockText = this.readCell(row, ['Stock', 'stock']);
+        const normalizedPrice = priceText.replace(',', '.').trim();
+        const normalizedStock = stockText.replace(',', '.').trim();
+
+        return {
+          rowNumber: index + 2,
+          name: name.trim(),
+          categoryName: categoryName.trim(),
+          price: Number(normalizedPrice),
+          stock: normalizedStock ? Number(normalizedStock) : 0
+        };
+      })
+      .filter((row) => row.name || row.categoryName || Number.isFinite(row.price) || row.stock > 0);
+  }
+
+  private readCell(row: Record<string, unknown>, keys: string[]): string {
+    for (const key of keys) {
+      if (key in row) {
+        return String(row[key] ?? '');
+      }
+    }
+
+    return '';
   }
 }

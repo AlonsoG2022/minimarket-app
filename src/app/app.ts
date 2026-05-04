@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 })
 export class App {
   private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
   productSearch = '';
   readonly storeName = 'Minimarket Casa';
   readonly expandedModules: Record<string, boolean> = {
@@ -18,8 +20,18 @@ export class App {
     inventario: false,
     mantenimiento: false
   };
+  readonly session = computed(() => this.auth.session());
+  readonly canAccessDashboard = computed(() => this.auth.hasRole(['admin', 'cajero']));
+  readonly canAccessSales = computed(() => this.auth.hasRole(['admin', 'cajero']));
+  readonly canAccessProducts = computed(() => this.auth.hasRole(['admin']));
+  readonly canAccessReports = computed(() => this.auth.hasRole(['admin']));
+  readonly canAccessCategories = computed(() => this.auth.hasRole(['admin']));
 
   searchProducts(): void {
+    if (!this.canAccessProducts()) {
+      return;
+    }
+
     const query = this.productSearch.trim();
     this.router.navigate(['/productos'], {
       queryParams: query ? { q: query } : {}
@@ -27,6 +39,10 @@ export class App {
   }
 
   openQuickSale(): void {
+    if (!this.canAccessSales()) {
+      return;
+    }
+
     this.router.navigate(['/ventas']);
   }
 
@@ -36,5 +52,10 @@ export class App {
 
   isModuleExpanded(moduleKey: string, prefixes: string[]): boolean {
     return this.expandedModules[moduleKey];
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }

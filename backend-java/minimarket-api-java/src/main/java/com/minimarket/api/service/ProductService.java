@@ -1,7 +1,6 @@
 package com.minimarket.api.service;
 
-import com.minimarket.api.dto.ProductDto;
-import com.minimarket.api.dto.SaveProductDto;
+import com.minimarket.api.dto.*;
 import com.minimarket.api.entity.Product;
 import com.minimarket.api.repository.CategoryRepository;
 import com.minimarket.api.repository.ProductRepository;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -84,6 +84,64 @@ public class ProductService {
         var updated = productRepository.save(product);
         var loaded = productRepository.findWithCategoryById(updated.getId()).orElse(updated);
         return ServiceResult.success(DtoMapper.toDto(loaded));
+    }
+
+    @Transactional
+    public ProductImportResultDto importRows(List<ProductImportRowDto> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return new ProductImportResultDto(0, List.of(new ProductImportErrorDto(0, "El archivo no contiene filas validas.")));
+        }
+
+        var errors = new ArrayList<ProductImportErrorDto>();
+        var createdCount = 0;
+
+        for (var row : rows) {
+            var rowNumber = row.rowNumber() != null ? row.rowNumber() : 0;
+            var name = row.name() != null ? row.name().trim() : "";
+            var categoryName = row.categoryName() != null ? row.categoryName().trim() : "";
+
+            if (name.isBlank()) {
+                errors.add(new ProductImportErrorDto(rowNumber, "El nombre del producto es obligatorio."));
+                continue;
+            }
+
+            if (row.price() == null || row.price().signum() <= 0) {
+                errors.add(new ProductImportErrorDto(rowNumber, "El precio debe ser mayor que cero."));
+                continue;
+            }
+
+            if (categoryName.isBlank()) {
+                errors.add(new ProductImportErrorDto(rowNumber, "La categoria es obligatoria."));
+                continue;
+            }
+
+            var stock = row.stock() != null ? row.stock() : 0;
+            if (stock < 0) {
+                errors.add(new ProductImportErrorDto(rowNumber, "El stock no puede ser menor que cero."));
+                continue;
+            }
+
+            var category = categoryRepository.findByNameIgnoreCase(categoryName).orElse(null);
+            if (category == null) {
+                errors.add(new ProductImportErrorDto(rowNumber, "La categoria '%s' no existe.".formatted(categoryName)));
+                continue;
+            }
+
+            var product = new Product();
+            product.setName(name);
+            product.setSku(generateSku(category.getName()));
+            product.setDescription(null);
+            product.setPrice(row.price());
+            product.setStock(stock);
+            product.setMinimumStock(0);
+            product.setIsActive(true);
+            product.setCategoryId(category.getId());
+
+            productRepository.save(product);
+            createdCount++;
+        }
+
+        return new ProductImportResultDto(createdCount, errors);
     }
 
     @Transactional

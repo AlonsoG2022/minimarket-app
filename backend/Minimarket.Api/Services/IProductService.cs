@@ -9,4 +9,5 @@ public interface IProductService
     Task<(bool Success, string? Error, ProductDto? Product)> CreateAsync(SaveProductDto dto);
     Task<(bool Success, string? Error, ProductDto? Product)> UpdateAsync(int id, SaveProductDto dto);
     Task<(bool Success, string? Error)> DeleteAsync(int id);
+    Task<ProductImportResultDto> ImportAsync(IReadOnlyCollection<ProductImportRowDto> rows);
 }
