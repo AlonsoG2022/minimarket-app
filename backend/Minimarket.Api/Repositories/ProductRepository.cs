@@ -18,8 +18,24 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
             .Include(x => x.Category)
             .FirstOrDefaultAsync(x => x.Id == id);
 
+    public Task<Product?> GetByBarcodeAsync(string barcode) =>
+        context.Products
+            .Include(x => x.Category)
+            .FirstOrDefaultAsync(x => x.Barcode == barcode);
+
+    public Task<Product?> GetByPurchaseBarcodeAsync(string barcode) =>
+        context.Products
+            .Include(x => x.Category)
+            .FirstOrDefaultAsync(x => x.PurchaseBarcode == barcode);
+
     public Task<bool> ExistsBySkuAsync(string sku, int? excludingId = null) =>
         context.Products.AnyAsync(x => x.Sku == sku && (!excludingId.HasValue || x.Id != excludingId.Value));
+
+    public Task<bool> ExistsByBarcodeAsync(string barcode, int? excludingId = null) =>
+        context.Products.AnyAsync(x => x.Barcode == barcode && (!excludingId.HasValue || x.Id != excludingId.Value));
+
+    public Task<bool> ExistsByPurchaseBarcodeAsync(string barcode, int? excludingId = null) =>
+        context.Products.AnyAsync(x => x.PurchaseBarcode == barcode && (!excludingId.HasValue || x.Id != excludingId.Value));
 
     public Task<List<string>> GetSkusByPrefixAsync(string prefix) =>
         context.Products

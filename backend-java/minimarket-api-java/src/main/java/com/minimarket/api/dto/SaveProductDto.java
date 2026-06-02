@@ -4,8 +4,13 @@ import java.math.BigDecimal;
 
 public record SaveProductDto(
     String name,
+    String barcode,
+    String purchaseBarcode,
     String description,
     BigDecimal price,
+    String salesUnitName,
+    String purchaseUnitName,
+    Integer unitsPerPurchaseUnit,
     Integer stock,
     Integer minimumStock,
     Boolean isActive,

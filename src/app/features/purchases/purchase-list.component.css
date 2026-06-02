@@ -1,0 +1,185 @@
+.purchase-layout {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.purchase-header,
+.purchase-ticket-card__header,
+.purchase-scan-card__header,
+.purchase-detail-header,
+.purchase-detail-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.purchase-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid,
+.scan-grid,
+.manual-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scan-grid {
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  align-items: end;
+}
+
+.manual-grid {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  margin-top: 1rem;
+}
+
+.scan-actions {
+  display: flex;
+  align-items: end;
+}
+
+.scan-warning {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(184, 61, 12, 0.2);
+  background: linear-gradient(135deg, rgba(255, 234, 219, 0.92), rgba(255, 248, 241, 0.96));
+}
+
+.scan-warning p {
+  margin: 0.35rem 0 0.85rem;
+  color: var(--color-muted);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.purchase-line-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.purchase-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(120px, 160px)) minmax(110px, 140px) auto;
+  gap: 0.9rem;
+  align-items: end;
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 248, 241, 0.84);
+  border: 1px solid rgba(45, 30, 21, 0.08);
+}
+
+.purchase-line__main p {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+}
+
+.purchase-line__field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.purchase-line__totals {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: end;
+}
+
+.purchase-line__totals span {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.purchase-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(216, 111, 49, 0.1), rgba(255, 245, 236, 0.8));
+}
+
+.purchase-total strong {
+  font-size: 1.7rem;
+}
+
+.purchase-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.ticket-empty {
+  padding: 1.2rem;
+  border-radius: 18px;
+  background: rgba(255, 250, 246, 0.7);
+  border: 1px dashed rgba(45, 30, 21, 0.12);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(45, 30, 21, 0.34);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+}
+
+.modal-card {
+  width: min(980px, 100%);
+  max-height: calc(100dvh - 3rem);
+  overflow: auto;
+}
+
+.create-product-card {
+  width: min(860px, 100%);
+}
+
+.create-product-hint {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 248, 241, 0.84);
+  border: 1px solid rgba(45, 30, 21, 0.08);
+}
+
+.create-product-hint p {
+  margin: 0.3rem 0 0;
+  color: var(--color-muted);
+}
+
+@media (max-width: 1080px) {
+  .purchase-line {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .form-grid,
+  .scan-grid,
+  .manual-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .purchase-actions {
+    justify-content: stretch;
+  }
+
+  .purchase-actions button {
+    width: 100%;
+  }
+}

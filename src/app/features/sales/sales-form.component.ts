@@ -61,7 +61,11 @@ export class SalesFormComponent implements OnInit {
     }
 
     return this.products
-      .filter((product) => product.name.toLowerCase().includes(term))
+      .filter((product) =>
+        product.name.toLowerCase().includes(term) ||
+        product.sku.toLowerCase().includes(term) ||
+        (product.barcode ?? '').toLowerCase().includes(term)
+      )
       .slice(0, 8);
   }
 

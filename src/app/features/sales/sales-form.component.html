@@ -29,7 +29,7 @@
           <div class="pos-search-card__header">
             <div>
               <h3>Agregar productos</h3>
-              <p>Escribe el nombre del producto y presiona Enter para agregar el primero.</p>
+              <p>Escribe el nombre, SKU o escanea el codigo de barras y presiona Enter para agregar el primero.</p>
             </div>
           </div>
 
@@ -42,7 +42,7 @@
                 [(ngModel)]="productSearch"
                 [ngModelOptions]="{ standalone: true }"
                 (keydown.enter)="addFirstMatchingProduct(); $event.preventDefault()"
-                placeholder="Buscar producto por nombre"
+                placeholder="Buscar por nombre, SKU o escanear codigo"
               >
             </div>
 
@@ -61,7 +61,7 @@
           @if (!hasSearchTerm) {
             <div class="ticket-empty search-empty">
               <strong>Empieza escribiendo un producto</strong>
-              <p>La búsqueda mostrará una lista simple con los nombres que vayan coincidiendo.</p>
+              <p>La búsqueda mostrará coincidencias y también aceptará el lector de código de barras.</p>
             </div>
           } @else {
             <div class="search-results">

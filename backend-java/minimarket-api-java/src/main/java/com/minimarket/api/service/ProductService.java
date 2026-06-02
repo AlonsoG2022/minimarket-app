@@ -39,8 +39,13 @@ public class ProductService {
 
     @Transactional
     public ServiceResult<ProductDto> create(SaveProductDto dto) {
-        if (dto.stock() < 0 || dto.price().signum() <= 0) {
+        if (dto.stock() < 0 || dto.price().signum() <= 0 || dto.unitsPerPurchaseUnit() == null || dto.unitsPerPurchaseUnit() <= 0) {
             return ServiceResult.failure("Los datos del producto no son validos.");
+        }
+
+        var barcodeError = validateBarcodes(dto, null);
+        if (barcodeError != null) {
+            return ServiceResult.failure(barcodeError);
         }
 
         var category = categoryRepository.findById(dto.categoryId()).orElse(null);
@@ -51,10 +56,16 @@ public class ProductService {
         var product = new Product();
         product.setName(dto.name().trim());
         product.setSku(generateSku(category.getName()));
+        product.setBarcode(normalizeOptional(dto.barcode()));
+        product.setPurchaseBarcode(normalizeOptional(dto.purchaseBarcode()));
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
+        product.setCost(java.math.BigDecimal.ZERO);
         product.setStock(dto.stock());
         product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
+        product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
+        product.setUnitsPerPurchaseUnit(dto.unitsPerPurchaseUnit());
         product.setIsActive(dto.isActive());
         product.setCategoryId(dto.categoryId());
 
@@ -70,15 +81,29 @@ public class ProductService {
             return ServiceResult.failure("Producto no encontrado.");
         }
 
+        if (dto.stock() < 0 || dto.price().signum() <= 0 || dto.unitsPerPurchaseUnit() == null || dto.unitsPerPurchaseUnit() <= 0) {
+            return ServiceResult.failure("Los datos del producto no son validos.");
+        }
+
+        var barcodeError = validateBarcodes(dto, id);
+        if (barcodeError != null) {
+            return ServiceResult.failure(barcodeError);
+        }
+
         if (categoryRepository.findById(dto.categoryId()).isEmpty()) {
             return ServiceResult.failure("La categoria seleccionada no existe.");
         }
 
         product.setName(dto.name().trim());
+        product.setBarcode(normalizeOptional(dto.barcode()));
+        product.setPurchaseBarcode(normalizeOptional(dto.purchaseBarcode()));
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
         product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
+        product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
+        product.setUnitsPerPurchaseUnit(dto.unitsPerPurchaseUnit());
         product.setIsActive(dto.isActive());
         product.setCategoryId(dto.categoryId());
 
@@ -131,10 +156,16 @@ public class ProductService {
             var product = new Product();
             product.setName(name);
             product.setSku(generateSku(category.getName()));
+            product.setBarcode(null);
+            product.setPurchaseBarcode(null);
             product.setDescription(null);
             product.setPrice(row.price());
+            product.setCost(java.math.BigDecimal.ZERO);
             product.setStock(stock);
             product.setMinimumStock(FIXED_MINIMUM_STOCK);
+            product.setSalesUnitName("unidad");
+            product.setPurchaseUnitName("unidad");
+            product.setUnitsPerPurchaseUnit(1);
             product.setIsActive(true);
             product.setCategoryId(category.getId());
 
@@ -193,5 +224,62 @@ public class ProductService {
 
         var prefix = normalized.length() >= 3 ? normalized.substring(0, 3) : normalized;
         return (prefix + "XXX").substring(0, 3);
+    }
+
+    private String validateBarcodes(SaveProductDto dto, Integer excludingId) {
+        var barcode = normalizeOptional(dto.barcode());
+        var purchaseBarcode = normalizeOptional(dto.purchaseBarcode());
+
+        if (barcode != null) {
+            var exists = excludingId == null
+                ? productRepository.existsByBarcodeIgnoreCase(barcode)
+                : productRepository.existsByBarcodeIgnoreCaseAndIdNot(barcode, excludingId);
+            if (exists) {
+                return "El codigo de barras de venta ya existe.";
+            }
+
+            var existingPurchaseBarcode = productRepository.findWithCategoryByPurchaseBarcode(barcode).orElse(null);
+            if (existingPurchaseBarcode != null
+                && !existingPurchaseBarcode.getId().equals(excludingId)
+                && (existingPurchaseBarcode.getBarcode() == null || !existingPurchaseBarcode.getBarcode().equalsIgnoreCase(barcode))) {
+                return "El codigo de barras de venta ya esta siendo usado como codigo de compra.";
+            }
+        }
+
+        if (purchaseBarcode != null) {
+            var exists = excludingId == null
+                ? productRepository.existsByPurchaseBarcodeIgnoreCase(purchaseBarcode)
+                : productRepository.existsByPurchaseBarcodeIgnoreCaseAndIdNot(purchaseBarcode, excludingId);
+            if (exists) {
+                return "El codigo de barras de compra ya existe.";
+            }
+
+            var existingBarcode = productRepository.findWithCategoryByBarcode(purchaseBarcode).orElse(null);
+            if (existingBarcode != null
+                && !existingBarcode.getId().equals(excludingId)
+                && (existingBarcode.getPurchaseBarcode() == null || !existingBarcode.getPurchaseBarcode().equalsIgnoreCase(purchaseBarcode))) {
+                return "El codigo de barras de compra ya esta siendo usado como codigo de venta.";
+            }
+        }
+
+        return null;
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        var trimmed = value.trim();
+        return trimmed.isBlank() ? null : trimmed;
+    }
+
+    private String normalizeUnitName(String value) {
+        if (value == null) {
+            return "unidad";
+        }
+
+        var trimmed = value.trim();
+        return trimmed.isBlank() ? "unidad" : trimmed;
     }
 }

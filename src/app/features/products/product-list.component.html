@@ -61,6 +61,7 @@
               <th>Producto</th>
               <th>Categoria</th>
               <th>Precio</th>
+              <th>Costo</th>
               <th>Stock</th>
               <th>Estado</th>
               <th></th>
@@ -75,6 +76,7 @@
                 </td>
                 <td data-label="Categoria">{{ product.categoryName }}</td>
                 <td data-label="Precio">{{ product.price | solesPrice }}</td>
+                <td data-label="Costo">{{ product.cost | solesPrice }}</td>
                 <td data-label="Stock">
                   <span class="pill" [class.low]="product.stock <= 5">
                     {{ product.stock }}
@@ -124,9 +126,43 @@
         </div>
 
         <div>
+          <label for="barcode">Codigo de barras venta</label>
+          <input id="barcode" formControlName="barcode" placeholder="Escanea o escribe el codigo de venta">
+        </div>
+
+        <div>
+          <label for="purchaseBarcode">Codigo de barras compra</label>
+          <input id="purchaseBarcode" formControlName="purchaseBarcode" placeholder="Escanea o escribe el codigo del paquete">
+        </div>
+
+        <div>
+          <label for="salesUnitName">Unidad de venta</label>
+          <input id="salesUnitName" formControlName="salesUnitName" placeholder="unidad, botella, sobre">
+        </div>
+
+        <div>
+          <label for="purchaseUnitName">Unidad de compra</label>
+          <input id="purchaseUnitName" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba">
+        </div>
+
+        <div>
+          <label for="unitsPerPurchaseUnit">Unidades por compra</label>
+          <input id="unitsPerPurchaseUnit" type="number" min="1" formControlName="unitsPerPurchaseUnit">
+          <small class="field-hint">Ejemplo: frasco con 100 dulces = 100 unidades por compra.</small>
+        </div>
+
+        @if (isEditing) {
+        <div>
           <label for="stock">Stock</label>
           <input id="stock" type="number" min="0" formControlName="stock">
         </div>
+        } @else {
+        <div>
+          <label>Stock inicial</label>
+          <input value="0" readonly>
+          <small class="field-hint">El stock inicial se registra desde Compras para mantener trazabilidad.</small>
+        </div>
+        }
 
         <div>
           <label>Stock minimo</label>

@@ -3,7 +3,9 @@ package com.minimarket.api.util;
 import com.minimarket.api.dto.*;
 import com.minimarket.api.entity.Category;
 import com.minimarket.api.entity.Product;
+import com.minimarket.api.entity.Purchase;
 import com.minimarket.api.entity.Sale;
+import com.minimarket.api.entity.Supplier;
 import com.minimarket.api.entity.User;
 
 public final class DtoMapper {
@@ -25,13 +27,33 @@ public final class DtoMapper {
             product.getId(),
             product.getName(),
             product.getSku(),
+            product.getBarcode(),
+            product.getPurchaseBarcode(),
             product.getDescription(),
             product.getPrice(),
+            product.getCost(),
             product.getStock(),
             product.getMinimumStock(),
+            product.getSalesUnitName(),
+            product.getPurchaseUnitName(),
+            product.getUnitsPerPurchaseUnit(),
             product.getIsActive(),
             product.getCategoryId(),
             product.getCategory() != null ? product.getCategory().getName() : ""
+        );
+    }
+
+    public static SupplierDto toDto(Supplier supplier) {
+        return new SupplierDto(
+            supplier.getId(),
+            supplier.getName(),
+            supplier.getDocumentNumber(),
+            supplier.getContactName(),
+            supplier.getPhone(),
+            supplier.getEmail(),
+            supplier.getAddress(),
+            supplier.getNotes(),
+            supplier.getIsActive()
         );
     }
 
@@ -66,6 +88,38 @@ public final class DtoMapper {
             sale.getPaymentMethod(),
             sale.getTotal(),
             sale.getNotes(),
+            details
+        );
+    }
+
+    public static PurchaseDto toDto(Purchase purchase) {
+        var details = purchase.getDetails()
+            .stream()
+            .map(detail -> new PurchaseDetailDto(
+                detail.getId(),
+                detail.getProductId(),
+                detail.getProduct() != null ? detail.getProduct().getName() : "",
+                detail.getPackageQuantity(),
+                detail.getUnitsPerPackage(),
+                detail.getTotalUnits(),
+                detail.getPackageCost(),
+                detail.getUnitCost(),
+                detail.getSubtotal(),
+                detail.getPurchaseUnitName(),
+                detail.getBarcodeSnapshot()
+            ))
+            .toList();
+
+        return new PurchaseDto(
+            purchase.getId(),
+            purchase.getPurchaseDate(),
+            purchase.getSupplierId(),
+            purchase.getSupplier() != null ? purchase.getSupplier().getName() : "",
+            purchase.getUserId(),
+            purchase.getUser() != null ? purchase.getUser().getFullName() : "",
+            purchase.getInvoiceNumber(),
+            purchase.getNotes(),
+            purchase.getTotal(),
             details
         );
     }

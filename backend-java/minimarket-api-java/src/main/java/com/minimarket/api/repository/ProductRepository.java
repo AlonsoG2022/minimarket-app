@@ -17,9 +17,23 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("select p from Product p left join fetch p.category where p.id = :id")
     Optional<Product> findWithCategoryById(@Param("id") Integer id);
 
+    @Query("select p from Product p left join fetch p.category where p.barcode = :barcode")
+    Optional<Product> findWithCategoryByBarcode(@Param("barcode") String barcode);
+
+    @Query("select p from Product p left join fetch p.category where p.purchaseBarcode = :barcode")
+    Optional<Product> findWithCategoryByPurchaseBarcode(@Param("barcode") String barcode);
+
     List<Product> findBySkuStartingWith(String prefix);
 
     boolean existsBySkuIgnoreCase(String sku);
 
     boolean existsBySkuIgnoreCaseAndIdNot(String sku, Integer id);
+
+    boolean existsByBarcodeIgnoreCase(String barcode);
+
+    boolean existsByBarcodeIgnoreCaseAndIdNot(String barcode, Integer id);
+
+    boolean existsByPurchaseBarcodeIgnoreCase(String purchaseBarcode);
+
+    boolean existsByPurchaseBarcodeIgnoreCaseAndIdNot(String purchaseBarcode, Integer id);
 }

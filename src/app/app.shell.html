@@ -33,19 +33,20 @@
       </section>
       }
 
-      @if (canAccessSales()) {
+      @if (canAccessSales() || canAccessPurchases()) {
       <section class="nav-module">
-        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas'])" (click)="toggleModule('ventas')">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas', '/compras'])" (click)="toggleModule('ventas')">
           <span class="nav-icon">VT</span>
           <span class="nav-copy">
             <span>Ventas</span>
             <small>Caja y seguimiento</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas']) ? '-' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas', '/compras']) ? '-' : '+' }}</span>
         </button>
 
-        @if (isModuleExpanded('ventas', ['/ventas'])) {
+        @if (isModuleExpanded('ventas', ['/ventas', '/compras'])) {
           <div class="nav-module__items">
+            @if (canAccessSales()) {
             <a routerLink="/ventas" routerLinkActive="active">
               <span class="nav-bullet"></span>
               <span>Nueva venta</span>
@@ -54,6 +55,13 @@
               <span class="nav-bullet"></span>
               <span>Historial reciente</span>
             </a>
+            }
+            @if (canAccessPurchases()) {
+            <a routerLink="/compras" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Compras</span>
+            </a>
+            }
           </div>
         }
       </section>
@@ -65,7 +73,7 @@
           <span class="nav-icon">IN</span>
           <span class="nav-copy">
             <span>Inventario</span>
-            <small>Stock y análisis</small>
+            <small>Stock y analisis</small>
           </span>
           <span class="nav-caret">{{ isModuleExpanded('inventario', ['/productos', '/reportes']) ? '-' : '+' }}</span>
         </button>
@@ -89,23 +97,31 @@
       </section>
       }
 
-      @if (canAccessCategories()) {
+      @if (canAccessCategories() || canAccessSuppliers()) {
       <section class="nav-module">
-        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias'])" (click)="toggleModule('mantenimiento')">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias', '/proveedores'])" (click)="toggleModule('mantenimiento')">
           <span class="nav-icon">MT</span>
           <span class="nav-copy">
             <span>Mantenimiento</span>
             <small>Datos base</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias']) ? '-' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias', '/proveedores']) ? '-' : '+' }}</span>
         </button>
 
-        @if (isModuleExpanded('mantenimiento', ['/categorias'])) {
+        @if (isModuleExpanded('mantenimiento', ['/categorias', '/proveedores'])) {
           <div class="nav-module__items">
+            @if (canAccessSuppliers()) {
+            <a routerLink="/proveedores" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Proveedores</span>
+            </a>
+            }
+            @if (canAccessCategories()) {
             <a routerLink="/categorias" routerLinkActive="active">
               <span class="nav-bullet"></span>
-              <span>Categorías</span>
+              <span>Categorias</span>
             </a>
+            }
           </div>
         }
       </section>
@@ -116,7 +132,7 @@
       <strong>Acceso actual</strong>
       <p>
         @if (session()?.role === 'cajero') {
-          Tu perfil está orientado a resumen y ventas de caja.
+          Tu perfil esta orientado a resumen y ventas de caja.
         } @else {
           Tu perfil tiene acceso administrativo completo.
         }
@@ -128,13 +144,13 @@
     <header class="shell__topbar">
       <div class="topbar__meta">
         <div>
-          <p class="eyebrow">Operación activa</p>
+          <p class="eyebrow">Operacion activa</p>
           <h2>{{ storeName }}</h2>
         </div>
 
         <div class="topbar__status">
           <span class="status-dot"></span>
-          <span>Tienda en línea</span>
+          <span>Tienda en linea</span>
         </div>
       </div>
 
@@ -172,8 +188,8 @@
     <section class="shell__hero">
       <div>
         <p class="eyebrow">Panel operativo</p>
-        <h3>Gestión simple para el minimarket</h3>
-        <p>Ventas, productos y reportes actualizados en tiempo real.</p>
+        <h3>Gestion simple para el minimarket</h3>
+        <p>Ventas, productos, compras y reportes actualizados en tiempo real.</p>
       </div>
     </section>
 

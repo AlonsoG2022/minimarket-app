@@ -6,7 +6,11 @@ public interface IProductRepository
 {
     Task<List<Product>> GetAllAsync();
     Task<Product?> GetByIdAsync(int id);
+    Task<Product?> GetByBarcodeAsync(string barcode);
+    Task<Product?> GetByPurchaseBarcodeAsync(string barcode);
     Task<bool> ExistsBySkuAsync(string sku, int? excludingId = null);
+    Task<bool> ExistsByBarcodeAsync(string barcode, int? excludingId = null);
+    Task<bool> ExistsByPurchaseBarcodeAsync(string barcode, int? excludingId = null);
     Task<List<string>> GetSkusByPrefixAsync(string prefix);
     Task AddAsync(Product product);
     void Update(Product product);

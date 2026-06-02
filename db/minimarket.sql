@@ -9,6 +9,9 @@ GO
 
 IF OBJECT_ID('dbo.DetalleVenta', 'U') IS NOT NULL DROP TABLE dbo.DetalleVenta;
 IF OBJECT_ID('dbo.Ventas', 'U') IS NOT NULL DROP TABLE dbo.Ventas;
+IF OBJECT_ID('dbo.DetalleCompra', 'U') IS NOT NULL DROP TABLE dbo.DetalleCompra;
+IF OBJECT_ID('dbo.Compras', 'U') IS NOT NULL DROP TABLE dbo.Compras;
+IF OBJECT_ID('dbo.Proveedores', 'U') IS NOT NULL DROP TABLE dbo.Proveedores;
 IF OBJECT_ID('dbo.Productos', 'U') IS NOT NULL DROP TABLE dbo.Productos;
 IF OBJECT_ID('dbo.Usuarios', 'U') IS NOT NULL DROP TABLE dbo.Usuarios;
 IF OBJECT_ID('dbo.Categorias', 'U') IS NOT NULL DROP TABLE dbo.Categorias;
@@ -28,13 +31,21 @@ CREATE TABLE dbo.Productos
     Id INT IDENTITY(1,1) PRIMARY KEY,
     Nombre NVARCHAR(150) NOT NULL,
     Sku NVARCHAR(30) NOT NULL,
+    CodigoBarras NVARCHAR(50) NULL,
+    CodigoBarrasCompra NVARCHAR(50) NULL,
     Descripcion NVARCHAR(250) NULL,
     Precio DECIMAL(10,2) NOT NULL,
+    Costo DECIMAL(10,2) NOT NULL DEFAULT 0,
     Stock INT NOT NULL,
     StockMinimo INT NOT NULL DEFAULT 5,
+    UnidadVenta NVARCHAR(30) NOT NULL DEFAULT 'unidad',
+    UnidadCompra NVARCHAR(30) NOT NULL DEFAULT 'unidad',
+    UnidadesPorCompra INT NOT NULL DEFAULT 1,
     Activo BIT NOT NULL DEFAULT 1,
     CategoriaId INT NOT NULL,
     CONSTRAINT UQ_Productos_Sku UNIQUE (Sku),
+    CONSTRAINT UQ_Productos_CodigoBarras UNIQUE (CodigoBarras),
+    CONSTRAINT UQ_Productos_CodigoBarrasCompra UNIQUE (CodigoBarrasCompra),
     CONSTRAINT FK_Productos_Categorias FOREIGN KEY (CategoriaId) REFERENCES dbo.Categorias(Id)
 );
 GO
@@ -48,6 +59,20 @@ CREATE TABLE dbo.Usuarios
     Rol NVARCHAR(20) NOT NULL,
     Activo BIT NOT NULL DEFAULT 1,
     CONSTRAINT UQ_Usuarios_Username UNIQUE (Username)
+);
+GO
+
+CREATE TABLE dbo.Proveedores
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(150) NOT NULL,
+    NumeroDocumento NVARCHAR(30) NULL,
+    NombreContacto NVARCHAR(120) NULL,
+    Telefono NVARCHAR(30) NULL,
+    Correo NVARCHAR(120) NULL,
+    Direccion NVARCHAR(250) NULL,
+    Notas NVARCHAR(250) NULL,
+    Activo BIT NOT NULL DEFAULT 1
 );
 GO
 
@@ -76,6 +101,38 @@ CREATE TABLE dbo.DetalleVenta
 );
 GO
 
+CREATE TABLE dbo.Compras
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    FechaCompra DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    ProveedorId INT NOT NULL,
+    UsuarioId INT NOT NULL,
+    NumeroComprobante NVARCHAR(50) NULL,
+    Notas NVARCHAR(250) NULL,
+    Total DECIMAL(12,2) NOT NULL,
+    CONSTRAINT FK_Compras_Proveedores FOREIGN KEY (ProveedorId) REFERENCES dbo.Proveedores(Id),
+    CONSTRAINT FK_Compras_Usuarios FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id)
+);
+GO
+
+CREATE TABLE dbo.DetalleCompra
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    CompraId INT NOT NULL,
+    ProductoId INT NOT NULL,
+    CantidadPaquetes INT NOT NULL,
+    UnidadesPorPaquete INT NOT NULL,
+    TotalUnidades INT NOT NULL,
+    CostoPaquete DECIMAL(10,2) NOT NULL,
+    CostoUnitario DECIMAL(10,2) NOT NULL,
+    Subtotal DECIMAL(12,2) NOT NULL,
+    UnidadCompra NVARCHAR(30) NOT NULL,
+    CodigoBarrasLeido NVARCHAR(50) NULL,
+    CONSTRAINT FK_DetalleCompra_Compras FOREIGN KEY (CompraId) REFERENCES dbo.Compras(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_DetalleCompra_Productos FOREIGN KEY (ProductoId) REFERENCES dbo.Productos(Id)
+);
+GO
+
 INSERT INTO dbo.Categorias (Nombre, Descripcion, Activo)
 VALUES
 ('Abarrotes', 'Productos de uso diario', 1),
@@ -83,19 +140,24 @@ VALUES
 ('Limpieza', 'Articulos de limpieza', 1);
 GO
 
-INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
+INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
 VALUES
-('Arroz Superior 1Kg', 'ABR-001', 'Bolsa de arroz blanco', 4.50, 80, 5, 1, 1),
-('Azucar Rubia 1Kg', 'ABR-002', 'Azucar rubia embolsada', 4.20, 60, 5, 1, 1),
-('Gaseosa Cola 3L', 'BEB-001', 'Botella retornable', 9.80, 30, 5, 1, 2),
-('Agua Mineral 625ml', 'BEB-002', 'Botella personal', 2.50, 48, 5, 1, 2),
-('Detergente Floral 900g', 'LIM-001', 'Detergente en polvo', 8.90, 22, 5, 1, 3);
+('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, 'unidad', 'fardo', 12, 1, 1),
+('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, 'unidad', 'fardo', 10, 1, 1),
+('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, 'botella', 'jaba', 12, 1, 2),
+('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, 'botella', 'jaba', 24, 1, 2),
+('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, 'unidad', 'caja', 12, 1, 3);
 GO
 
 INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)
 VALUES
 ('Administrador General', 'admin', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'admin', 1),
 ('Caja Principal', 'cajero', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'cajero', 1);
+GO
+
+INSERT INTO dbo.Proveedores (Nombre, NumeroDocumento, NombreContacto, Telefono, Correo, Direccion, Notas, Activo)
+VALUES
+('Distribuidora Central', '20601234567', 'Rosa Medina', '987654321', 'ventas@distribuidoracentral.pe', 'Av. Principal 123', 'Proveedor inicial de referencia', 1);
 GO
 
 INSERT INTO dbo.Ventas (FechaVenta, UsuarioId, Total, MetodoPago, Notas)

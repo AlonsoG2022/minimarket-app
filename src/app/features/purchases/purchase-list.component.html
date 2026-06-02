@@ -1,0 +1,340 @@
+<section class="purchase-layout">
+  <section class="card">
+    <div class="purchase-header">
+      <div>
+        <h2 class="section-title">Compras</h2>
+        <p class="section-copy">Registra ingresos de mercaderia por proveedor y deja listo el costo por unidad.</p>
+      </div>
+      <span class="pill">Escaner listo para codigo de barras</span>
+    </div>
+
+    @if (loading) {
+      <p class="section-copy">Cargando proveedores y productos...</p>
+    } @else {
+      <form class="purchase-grid" [formGroup]="form" (ngSubmit)="submit()">
+        <article class="card purchase-base-card">
+          <h3>Datos de la compra</h3>
+
+          <div class="form-grid">
+            <div>
+              <label for="supplierId">Proveedor</label>
+              <select id="supplierId" formControlName="supplierId">
+                <option [value]="0">Selecciona</option>
+                @for (supplier of suppliers; track supplier.id) {
+                  <option [value]="supplier.id">{{ supplier.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label for="invoiceNumber">Comprobante</label>
+              <input id="invoiceNumber" formControlName="invoiceNumber" placeholder="Factura, boleta o guia">
+            </div>
+
+            <div class="full-width">
+              <label for="notes">Notas</label>
+              <textarea id="notes" rows="3" formControlName="notes"></textarea>
+            </div>
+          </div>
+        </article>
+
+        <article class="card purchase-scan-card">
+          <div class="purchase-scan-card__header">
+            <div>
+              <h3>Agregar productos</h3>
+              <p>Escanea el codigo del paquete o selecciona el producto si aun no tiene codigo.</p>
+            </div>
+          </div>
+
+          <div class="scan-grid">
+            <div>
+              <label for="barcodeInput">Codigo de barras</label>
+              <input
+                #barcodeInputRef
+                id="barcodeInput"
+                [(ngModel)]="barcodeInput"
+                [ngModelOptions]="{ standalone: true }"
+                (keydown.enter)="addByBarcode(); $event.preventDefault()"
+                placeholder="Escanea el codigo de compra o venta"
+              >
+            </div>
+
+            <div>
+              <label for="quickPackageQuantity">Paquetes</label>
+              <input
+                id="quickPackageQuantity"
+                type="number"
+                min="1"
+                [(ngModel)]="quickPackageQuantity"
+                [ngModelOptions]="{ standalone: true }"
+              >
+            </div>
+
+            <div class="scan-actions">
+              <button type="button" (click)="addByBarcode()">Agregar por codigo</button>
+            </div>
+          </div>
+
+          @if (pendingScannedCode) {
+            <div class="scan-warning">
+              <strong>Codigo no registrado: {{ pendingScannedCode }}</strong>
+              <p>Si es un producto nuevo, puedes crearlo ahora mismo sin salir de Compras.</p>
+              <button type="button" class="secondary" (click)="openCreateProductModal(pendingScannedCode)">Crear producto con este codigo</button>
+            </div>
+          }
+
+          <div class="manual-grid">
+            <div>
+              <label for="manualProductId">Producto manual</label>
+              <select
+                id="manualProductId"
+                [(ngModel)]="manualProductId"
+                [ngModelOptions]="{ standalone: true }"
+              >
+                <option [ngValue]="0">Selecciona un producto</option>
+                @for (product of products; track product.id) {
+                  <option [ngValue]="product.id">{{ product.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="scan-actions">
+              <button type="button" class="secondary" (click)="addManualProduct()">Agregar manualmente</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card purchase-ticket-card">
+          <div class="purchase-ticket-card__header">
+            <div>
+              <h3>Compra actual</h3>
+              <p>Aqui definimos cuantos paquetes entran, cuantas unidades trae cada paquete y cuanto cuesta.</p>
+            </div>
+            <span class="pill">{{ currentItems.length }} item(s)</span>
+          </div>
+
+          @if (currentItems.length) {
+            <div class="purchase-line-list">
+              @for (item of currentItems; track item.index) {
+                <div class="purchase-line">
+                  <div class="purchase-line__main">
+                    <strong>{{ item.productName }}</strong>
+                    <p>{{ item.purchaseUnitName }} | {{ item.totalUnits }} unidades | costo unitario {{ item.unitCost | solesPrice }}</p>
+                  </div>
+
+                  <div class="purchase-line__field">
+                    <label>Paquetes</label>
+                    <input type="number" min="1" [value]="item.packageQuantity" (change)="updateLineValue(item.index, 'packageQuantity', +$any($event.target).value)">
+                  </div>
+
+                  <div class="purchase-line__field">
+                    <label>Unidades por paquete</label>
+                    <input type="number" min="1" [value]="item.unitsPerPackage" (change)="updateLineValue(item.index, 'unitsPerPackage', +$any($event.target).value)">
+                  </div>
+
+                  <div class="purchase-line__field">
+                    <label>Costo por paquete</label>
+                    <input type="number" min="0.01" step="0.01" [value]="item.packageCost" (change)="updateLineValue(item.index, 'packageCost', +$any($event.target).value)">
+                  </div>
+
+                  <div class="purchase-line__totals">
+                    <span>Total linea</span>
+                    <strong>{{ item.subtotal | solesPrice }}</strong>
+                  </div>
+
+                  <button type="button" class="danger" (click)="removeItem(item.index)">Quitar</button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="ticket-empty">
+              <strong>No hay productos en la compra actual</strong>
+              <p>Escanea el codigo del paquete o usa la seleccion manual para empezar.</p>
+            </div>
+          }
+
+          <div class="purchase-total">
+            <span>Total de la compra</span>
+            <strong>{{ getTotal() | solesPrice }}</strong>
+          </div>
+
+          <div class="purchase-actions">
+            <button type="submit">Registrar compra</button>
+          </div>
+        </article>
+      </form>
+    }
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Compras recientes</h2>
+    <p class="section-copy">Consulta rapida de los ultimos ingresos registrados por proveedor.</p>
+
+    @if (loadingHistory) {
+      <p class="section-copy">Cargando compras recientes...</p>
+    } @else if (purchases.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Usuario</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (purchase of purchases; track purchase.id) {
+              <tr>
+                <td>#{{ purchase.id }}</td>
+                <td>{{ purchase.purchaseDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ purchase.supplierName }}</td>
+                <td>{{ purchase.userName }}</td>
+                <td>{{ purchase.total | solesPrice }}</td>
+                <td><button type="button" class="secondary" (click)="showPurchaseDetail(purchase)">Ver detalle</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="section-copy">Todavia no hay compras registradas.</p>
+    }
+  </section>
+</section>
+
+@if (showCreateProductModal) {
+  <div class="modal-backdrop" (click)="closeCreateProductModal()">
+    <section class="card modal-card create-product-card" (click)="$event.stopPropagation()">
+      <div class="purchase-detail-header">
+        <div>
+          <h2 class="section-title">Crear producto en compra</h2>
+          <p class="section-copy">Completa lo minimo necesario para registrarlo y seguir escaneando.</p>
+        </div>
+        <button type="button" class="secondary" (click)="closeCreateProductModal()">Cerrar</button>
+      </div>
+
+      <form class="form-grid" [formGroup]="productCreateForm" (ngSubmit)="createProductOnTheFly()">
+        <div>
+          <label for="newProductName">Nombre</label>
+          <input #createProductNameRef id="newProductName" formControlName="name" placeholder="Ej. Dulce de menta">
+        </div>
+
+        <div>
+          <label for="newProductCategory">Categoria</label>
+          <select id="newProductCategory" formControlName="categoryId">
+            <option [value]="0">Selecciona</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="newProductPrice">Precio de venta</label>
+          <input id="newProductPrice" type="number" min="0.1" step="0.01" formControlName="price">
+        </div>
+
+        <div>
+          <label for="newProductBarcode">Codigo de barras venta</label>
+          <input id="newProductBarcode" formControlName="barcode" placeholder="Opcional">
+        </div>
+
+        <div>
+          <label for="newProductPurchaseBarcode">Codigo de barras compra</label>
+          <input id="newProductPurchaseBarcode" formControlName="purchaseBarcode" placeholder="Codigo del paquete">
+        </div>
+
+        <div>
+          <label for="newProductSalesUnit">Unidad de venta</label>
+          <input id="newProductSalesUnit" formControlName="salesUnitName" placeholder="unidad">
+        </div>
+
+        <div>
+          <label for="newProductPurchaseUnit">Unidad de compra</label>
+          <input id="newProductPurchaseUnit" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba">
+        </div>
+
+        <div>
+          <label for="newProductUnitsPerPurchase">Unidades por compra</label>
+          <input id="newProductUnitsPerPurchase" type="number" min="1" formControlName="unitsPerPurchaseUnit">
+        </div>
+
+        <div class="full-width">
+          <label for="newProductDescription">Descripcion</label>
+          <textarea id="newProductDescription" rows="3" formControlName="description"></textarea>
+        </div>
+
+        <div class="full-width create-product-hint">
+          <strong>Ejemplo practico</strong>
+          <p>Si compras 1 frasco con 100 dulces, deja “unidad” como venta, “frasco” como compra y “100” en unidades por compra.</p>
+        </div>
+
+        <div class="actions full-width">
+          <button type="submit">Crear y agregar a compra</button>
+          <button type="button" class="secondary" (click)="closeCreateProductModal()">Cancelar</button>
+        </div>
+      </form>
+
+      @if (createProductError) {
+        <p class="message error">{{ createProductError }}</p>
+      }
+    </section>
+  </div>
+}
+
+@if (selectedPurchase) {
+  <div class="modal-backdrop" (click)="closePurchaseDetail()">
+    <section class="card purchase-detail-card modal-card" (click)="$event.stopPropagation()">
+      <div class="purchase-detail-header">
+        <div>
+          <h2 class="section-title">Detalle de compra #{{ selectedPurchase.id }}</h2>
+          <p class="section-copy">{{ selectedPurchase.purchaseDate | date: 'dd/MM/yyyy HH:mm' }} | {{ selectedPurchase.supplierName }}</p>
+        </div>
+        <button type="button" class="secondary" (click)="closePurchaseDetail()">Cerrar</button>
+      </div>
+
+      <div class="purchase-detail-summary">
+        <span class="pill">Items: {{ selectedPurchase.details.length }}</span>
+        <strong>Total: {{ selectedPurchase.total | solesPrice }}</strong>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Paquetes</th>
+              <th>Unidades</th>
+              <th>Costo paquete</th>
+              <th>Costo unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (detail of selectedPurchase.details; track detail.id) {
+              <tr>
+                <td>{{ detail.productName }}</td>
+                <td>{{ detail.packageQuantity }} {{ detail.purchaseUnitName }}</td>
+                <td>{{ detail.totalUnits }}</td>
+                <td>{{ detail.packageCost | solesPrice }}</td>
+                <td>{{ detail.unitCost | solesPrice }}</td>
+                <td>{{ detail.subtotal | solesPrice }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}

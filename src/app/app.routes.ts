@@ -6,8 +6,10 @@ import { LoginComponent } from './features/auth/login.component';
 import { CategoryListComponent } from './features/categories/category-list.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ProductListComponent } from './features/products/product-list.component';
+import { PurchaseListComponent } from './features/purchases/purchase-list.component';
 import { ReportsComponent } from './features/reports/reports.component';
 import { SalesFormComponent } from './features/sales/sales-form.component';
+import { SupplierListComponent } from './features/suppliers/supplier-list.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
@@ -37,8 +39,20 @@ export const routes: Routes = [
     data: { roles: ['admin', 'cajero'] }
   },
   {
+    path: 'compras',
+    component: PurchaseListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] }
+  },
+  {
     path: 'reportes',
     component: ReportsComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'proveedores',
+    component: SupplierListComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['admin'] }
   },

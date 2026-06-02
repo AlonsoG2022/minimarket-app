@@ -1,0 +1,109 @@
+<section class="supplier-layout">
+  <article class="card">
+    <h2 class="section-title">{{ isEditing ? 'Editar proveedor' : 'Proveedores' }}</h2>
+    <p class="section-copy">Registra los proveedores base para luego asociarles compras y documentos.</p>
+
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+      <div>
+        <label for="name">Nombre</label>
+        <input id="name" formControlName="name" placeholder="Ej. Distribuidora Norte">
+      </div>
+
+      <div>
+        <label for="documentNumber">Documento</label>
+        <input id="documentNumber" formControlName="documentNumber" placeholder="RUC o DNI">
+      </div>
+
+      <div>
+        <label for="contactName">Contacto</label>
+        <input id="contactName" formControlName="contactName" placeholder="Persona de contacto">
+      </div>
+
+      <div>
+        <label for="phone">Telefono</label>
+        <input id="phone" formControlName="phone" placeholder="987654321">
+      </div>
+
+      <div>
+        <label for="email">Correo</label>
+        <input id="email" formControlName="email" placeholder="ventas@proveedor.pe">
+      </div>
+
+      <div>
+        <label for="address">Direccion</label>
+        <input id="address" formControlName="address" placeholder="Av. Principal 123">
+      </div>
+
+      <div class="full-width">
+        <label for="notes">Notas</label>
+        <textarea id="notes" rows="3" formControlName="notes"></textarea>
+      </div>
+
+      <div class="checkbox-row full-width">
+        <input id="isActive" type="checkbox" formControlName="isActive">
+        <label for="isActive">Proveedor activo</label>
+      </div>
+
+      <div class="actions full-width">
+        <button type="submit">{{ isEditing ? 'Actualizar proveedor' : 'Guardar proveedor' }}</button>
+        <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+      </div>
+    </form>
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+  </article>
+
+  <article class="card">
+    <h2 class="section-title">Lista de proveedores</h2>
+    <p class="section-copy">Estos proveedores quedaran disponibles para registrar compras y comprobar costos.</p>
+
+    @if (loading) {
+      <p class="section-copy">Cargando proveedores...</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="supplier-table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Contacto</th>
+              <th>Documento</th>
+              <th>Telefono</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (supplier of suppliers; track supplier.id) {
+              <tr>
+                <td data-label="Proveedor">
+                  <strong>{{ supplier.name }}</strong>
+                  <div class="supplier-subline">{{ supplier.email || supplier.address || 'Sin dato adicional' }}</div>
+                </td>
+                <td data-label="Contacto">{{ supplier.contactName || 'Sin contacto' }}</td>
+                <td data-label="Documento">{{ supplier.documentNumber || 'Sin documento' }}</td>
+                <td data-label="Telefono">{{ supplier.phone || 'Sin telefono' }}</td>
+                <td data-label="Estado">
+                  <span class="pill">{{ supplier.isActive ? 'Activo' : 'Inactivo' }}</span>
+                </td>
+                <td data-label="Acciones" class="actions-cell">
+                  <button type="button" class="secondary" (click)="edit(supplier)">Editar</button>
+                  <button type="button" class="danger" (click)="remove(supplier)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (!suppliers.length) {
+        <p class="section-copy">Todavia no hay proveedores registrados.</p>
+      }
+    }
+  </article>
+</section>

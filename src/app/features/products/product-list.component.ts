@@ -26,8 +26,13 @@ export class ProductListComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     id: [0],
     name: ['', Validators.required],
+    barcode: [''],
+    purchaseBarcode: [''],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.1)]],
+    salesUnitName: ['unidad', Validators.required],
+    purchaseUnitName: ['unidad', Validators.required],
+    unitsPerPurchaseUnit: [1, [Validators.required, Validators.min(1)]],
     stock: [0, [Validators.required, Validators.min(0)]],
     minimumStock: [this.fixedMinimumStock, [Validators.required, Validators.min(this.fixedMinimumStock)]],
     isActive: [true],
@@ -61,7 +66,9 @@ export class ProductListComponent implements OnInit {
     return this.products.filter((product) =>
       product.name.toLowerCase().includes(term) ||
       product.sku.toLowerCase().includes(term) ||
-      product.categoryName.toLowerCase().includes(term)
+      product.categoryName.toLowerCase().includes(term) ||
+      (product.barcode ?? '').toLowerCase().includes(term) ||
+      (product.purchaseBarcode ?? '').toLowerCase().includes(term)
     );
   }
 
@@ -114,9 +121,14 @@ export class ProductListComponent implements OnInit {
     const value = this.form.getRawValue();
     const payload: SaveProduct = {
       name: value.name,
+      barcode: value.barcode || null,
+      purchaseBarcode: value.purchaseBarcode || null,
       description: value.description,
       price: Number(value.price),
-      stock: Number(value.stock),
+      salesUnitName: value.salesUnitName,
+      purchaseUnitName: value.purchaseUnitName,
+      unitsPerPurchaseUnit: Number(value.unitsPerPurchaseUnit),
+      stock: this.isEditing ? Number(value.stock) : 0,
       minimumStock: this.fixedMinimumStock,
       isActive: value.isActive,
       categoryId: Number(value.categoryId)
@@ -150,8 +162,13 @@ export class ProductListComponent implements OnInit {
     this.form.patchValue({
       id: product.id,
       name: product.name,
+      barcode: product.barcode ?? '',
+      purchaseBarcode: product.purchaseBarcode ?? '',
       description: product.description ?? '',
       price: product.price,
+      salesUnitName: product.salesUnitName,
+      purchaseUnitName: product.purchaseUnitName,
+      unitsPerPurchaseUnit: product.unitsPerPurchaseUnit,
       stock: product.stock,
       minimumStock: this.fixedMinimumStock,
       isActive: product.isActive,
@@ -184,8 +201,13 @@ export class ProductListComponent implements OnInit {
     this.form.reset({
       id: 0,
       name: '',
+      barcode: '',
+      purchaseBarcode: '',
       description: '',
       price: 0,
+      salesUnitName: 'unidad',
+      purchaseUnitName: 'unidad',
+      unitsPerPurchaseUnit: 1,
       stock: 0,
       minimumStock: this.fixedMinimumStock,
       isActive: true,
@@ -205,8 +227,13 @@ export class ProductListComponent implements OnInit {
     this.form.reset({
       id: 0,
       name: '',
+      barcode: '',
+      purchaseBarcode: '',
       description: '',
       price: 0,
+      salesUnitName: 'unidad',
+      purchaseUnitName: 'unidad',
+      unitsPerPurchaseUnit: 1,
       stock: 0,
       minimumStock: this.fixedMinimumStock,
       isActive: true,
@@ -245,6 +272,12 @@ export class ProductListComponent implements OnInit {
         Categoria: product.categoryName,
         Stock: product.stock,
         SKU: product.sku,
+        CodigoBarras: product.barcode ?? '',
+        CodigoBarrasCompra: product.purchaseBarcode ?? '',
+        UnidadVenta: product.salesUnitName,
+        UnidadCompra: product.purchaseUnitName,
+        UnidadesPorCompra: product.unitsPerPurchaseUnit,
+        Costo: product.cost,
         Activo: product.isActive ? 'Si' : 'No'
       }));
 
