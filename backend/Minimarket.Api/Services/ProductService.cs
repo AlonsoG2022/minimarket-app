@@ -9,6 +9,8 @@ namespace Minimarket.Api.Services;
 
 public class ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository) : IProductService
 {
+    private const int FixedMinimumStock = 5;
+
     public async Task<IReadOnlyCollection<ProductDto>> GetAllAsync() =>
         (await productRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
 
@@ -17,7 +19,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
 
     public async Task<(bool Success, string? Error, ProductDto? Product)> CreateAsync(SaveProductDto dto)
     {
-        if (dto.Stock < 0 || dto.MinimumStock < 0 || dto.Price <= 0)
+        if (dto.Stock < 0 || dto.Price <= 0)
         {
             return (false, "Los datos del producto no son validos.", null);
         }
@@ -35,7 +37,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             Description = dto.Description?.Trim(),
             Price = dto.Price,
             Stock = dto.Stock,
-            MinimumStock = dto.MinimumStock,
+            MinimumStock = FixedMinimumStock,
             IsActive = dto.IsActive,
             CategoryId = dto.CategoryId
         };
@@ -64,7 +66,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         product.Description = dto.Description?.Trim();
         product.Price = dto.Price;
         product.Stock = dto.Stock;
-        product.MinimumStock = dto.MinimumStock;
+        product.MinimumStock = FixedMinimumStock;
         product.IsActive = dto.IsActive;
         product.CategoryId = dto.CategoryId;
 
@@ -128,7 +130,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
                 Description = null,
                 Price = row.Price,
                 Stock = row.Stock,
-                MinimumStock = 0,
+                MinimumStock = FixedMinimumStock,
                 IsActive = true,
                 CategoryId = category.Id
             };

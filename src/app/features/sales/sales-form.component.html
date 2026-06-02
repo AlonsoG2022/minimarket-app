@@ -1,4 +1,14 @@
 <section class="sales-layout" id="nueva-venta">
+  @if (lowStockNotice) {
+    <aside class="stock-toast" aria-live="polite">
+      <div class="stock-toast__content">
+        <strong>Stock minimo alcanzado</strong>
+        <p>{{ lowStockNotice }}</p>
+      </div>
+      <button type="button" class="secondary stock-toast__close" (click)="dismissLowStockNotice()">Cerrar</button>
+    </aside>
+  }
+
   <section class="card pos-card">
     <div class="pos-card__header">
       <div>

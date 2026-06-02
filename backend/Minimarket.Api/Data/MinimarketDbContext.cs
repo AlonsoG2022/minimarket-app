@@ -92,11 +92,11 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             new Category { Id = 3, Name = "Limpieza", Description = "Articulos de limpieza", IsActive = true });
 
         modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Name = "Arroz Superior 1Kg", Sku = "ABR-001", Description = "Bolsa de arroz blanco", Price = 4.50m, Stock = 80, MinimumStock = 20, CategoryId = 1, IsActive = true },
-            new Product { Id = 2, Name = "Azucar Rubia 1Kg", Sku = "ABR-002", Description = "Azucar rubia embolsada", Price = 4.20m, Stock = 60, MinimumStock = 15, CategoryId = 1, IsActive = true },
-            new Product { Id = 3, Name = "Gaseosa Cola 3L", Sku = "BEB-001", Description = "Botella retornable", Price = 9.80m, Stock = 30, MinimumStock = 10, CategoryId = 2, IsActive = true },
-            new Product { Id = 4, Name = "Agua Mineral 625ml", Sku = "BEB-002", Description = "Botella personal", Price = 2.50m, Stock = 48, MinimumStock = 12, CategoryId = 2, IsActive = true },
-            new Product { Id = 5, Name = "Detergente Floral 900g", Sku = "LIM-001", Description = "Detergente en polvo", Price = 8.90m, Stock = 22, MinimumStock = 8, CategoryId = 3, IsActive = true });
+            new Product { Id = 1, Name = "Arroz Superior 1Kg", Sku = "ABR-001", Description = "Bolsa de arroz blanco", Price = 4.50m, Stock = 80, MinimumStock = 5, CategoryId = 1, IsActive = true },
+            new Product { Id = 2, Name = "Azucar Rubia 1Kg", Sku = "ABR-002", Description = "Azucar rubia embolsada", Price = 4.20m, Stock = 60, MinimumStock = 5, CategoryId = 1, IsActive = true },
+            new Product { Id = 3, Name = "Gaseosa Cola 3L", Sku = "BEB-001", Description = "Botella retornable", Price = 9.80m, Stock = 30, MinimumStock = 5, CategoryId = 2, IsActive = true },
+            new Product { Id = 4, Name = "Agua Mineral 625ml", Sku = "BEB-002", Description = "Botella personal", Price = 2.50m, Stock = 48, MinimumStock = 5, CategoryId = 2, IsActive = true },
+            new Product { Id = 5, Name = "Detergente Floral 900g", Sku = "LIM-001", Description = "Detergente en polvo", Price = 8.90m, Stock = 22, MinimumStock = 5, CategoryId = 3, IsActive = true });
 
         modelBuilder.Entity<User>().HasData(
             new User { Id = 1, FullName = "Administrador General", Username = "admin", PasswordHash = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", Role = "admin", IsActive = true },

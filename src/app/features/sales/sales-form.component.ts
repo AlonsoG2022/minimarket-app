@@ -17,8 +17,10 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
   styleUrl: './sales-form.component.css'
 })
 export class SalesFormComponent implements OnInit {
+  private readonly fixedMinimumStock = 5;
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private lowStockNoticeTimeout?: ReturnType<typeof setTimeout>;
   readonly authService = inject(AuthService);
   private readonly salesService = inject(SalesService);
   private readonly productsService = inject(ProductsService);
@@ -42,6 +44,7 @@ export class SalesFormComponent implements OnInit {
   loadingSalesHistory = true;
   message = '';
   error = '';
+  lowStockNotice = '';
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
@@ -200,6 +203,7 @@ export class SalesFormComponent implements OnInit {
         this.reportsService.invalidateDashboardCache();
         this.message = `Venta registrada correctamente. Codigo #${sale.id}.`;
         this.error = '';
+        this.clearLowStockNotice();
         this.lastSaleId = sale.id;
         this.productSearch = '';
         this.quickQuantity = 1;
@@ -213,6 +217,10 @@ export class SalesFormComponent implements OnInit {
         this.productsService.getAll(true).subscribe({
           next: (products) => {
             this.products = products.filter((product) => product.isActive);
+            const notice = this.buildLowStockNotice(saleDetails.map((detail) => detail.productId));
+            if (notice) {
+              this.showLowStockNotice(notice);
+            }
             this.refreshingProducts = false;
             this.cdr.detectChanges();
           },
@@ -230,6 +238,45 @@ export class SalesFormComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private buildLowStockNotice(purchasedProductIds: number[]): string {
+    const uniqueIds = [...new Set(purchasedProductIds)];
+    const lowStockProducts = uniqueIds
+      .map((productId) => this.products.find((product) => product.id === productId))
+      .filter((product): product is Product => !!product && product.stock <= this.fixedMinimumStock);
+
+    if (!lowStockProducts.length) {
+      return '';
+    }
+
+    const labels = lowStockProducts.map((product) => `${product.name} (${product.stock})`);
+    const productsText = labels.join(', ');
+    return `Aviso: ${productsText} ya ${lowStockProducts.length === 1 ? 'esta' : 'estan'} en stock minimo (${this.fixedMinimumStock}).`;
+  }
+
+  dismissLowStockNotice(): void {
+    this.clearLowStockNotice();
+    this.cdr.detectChanges();
+  }
+
+  private showLowStockNotice(notice: string): void {
+    this.clearLowStockNotice();
+    this.lowStockNotice = notice;
+    this.lowStockNoticeTimeout = setTimeout(() => {
+      this.lowStockNotice = '';
+      this.lowStockNoticeTimeout = undefined;
+      this.cdr.detectChanges();
+    }, 6000);
+  }
+
+  private clearLowStockNotice(): void {
+    if (this.lowStockNoticeTimeout) {
+      clearTimeout(this.lowStockNoticeTimeout);
+      this.lowStockNoticeTimeout = undefined;
+    }
+
+    this.lowStockNotice = '';
   }
 
   getProductName(productId: number): string {

@@ -30,6 +30,7 @@ export class ProductsService {
     );
   }
 
+  
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => this.invalidateCache())

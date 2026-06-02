@@ -16,6 +16,7 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
+  private readonly fixedMinimumStock = 5;
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
@@ -28,7 +29,7 @@ export class ProductListComponent implements OnInit {
     description: [''],
     price: [0, [Validators.required, Validators.min(0.1)]],
     stock: [0, [Validators.required, Validators.min(0)]],
-    minimumStock: [0, [Validators.required, Validators.min(0)]],
+    minimumStock: [this.fixedMinimumStock, [Validators.required, Validators.min(this.fixedMinimumStock)]],
     isActive: [true],
     categoryId: [0, [Validators.required, Validators.min(1)]]
   });
@@ -44,6 +45,12 @@ export class ProductListComponent implements OnInit {
   message = '';
   error = '';
   importErrors: ProductImportError[] = [];
+
+  get lowStockProducts(): Product[] {
+    return this.products
+      .filter((product) => product.stock <= this.fixedMinimumStock)
+      .sort((left, right) => left.stock - right.stock || left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
+  }
 
   get filteredProducts(): Product[] {
     const term = this.searchTerm.trim().toLowerCase();
@@ -68,7 +75,7 @@ export class ProductListComponent implements OnInit {
   }
 
   loadData(forceRefreshProducts = false): void {
-    this.loadingProducts = true;
+    this.loadingProducts = true;  
     this.productsService.getAll(forceRefreshProducts).subscribe({
       next: (products) => {
         this.products = products;
@@ -110,7 +117,7 @@ export class ProductListComponent implements OnInit {
       description: value.description,
       price: Number(value.price),
       stock: Number(value.stock),
-      minimumStock: Number(value.minimumStock),
+      minimumStock: this.fixedMinimumStock,
       isActive: value.isActive,
       categoryId: Number(value.categoryId)
     };
@@ -146,7 +153,7 @@ export class ProductListComponent implements OnInit {
       description: product.description ?? '',
       price: product.price,
       stock: product.stock,
-      minimumStock: product.minimumStock,
+      minimumStock: this.fixedMinimumStock,
       isActive: product.isActive,
       categoryId: product.categoryId
     });
@@ -180,7 +187,7 @@ export class ProductListComponent implements OnInit {
       description: '',
       price: 0,
       stock: 0,
-      minimumStock: 0,
+      minimumStock: this.fixedMinimumStock,
       isActive: true,
       categoryId: 0
     });
@@ -201,7 +208,7 @@ export class ProductListComponent implements OnInit {
       description: '',
       price: 0,
       stock: 0,
-      minimumStock: 0,
+      minimumStock: this.fixedMinimumStock,
       isActive: true,
       categoryId: 0
     });

@@ -71,6 +71,25 @@
   color: var(--color-text);
 }
 
+.stock-alert {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(216, 111, 49, 0.24);
+  background: linear-gradient(135deg, rgba(255, 243, 234, 0.95), rgba(255, 250, 246, 0.92));
+}
+
+.stock-alert strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--color-heading);
+}
+
+.stock-alert p {
+  margin: 0;
+  color: var(--color-text);
+}
+
 .full-width {
   grid-column: 1 / -1;
 }

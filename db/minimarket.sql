@@ -31,7 +31,7 @@ CREATE TABLE dbo.Productos
     Descripcion NVARCHAR(250) NULL,
     Precio DECIMAL(10,2) NOT NULL,
     Stock INT NOT NULL,
-    StockMinimo INT NOT NULL,
+    StockMinimo INT NOT NULL DEFAULT 5,
     Activo BIT NOT NULL DEFAULT 1,
     CategoriaId INT NOT NULL,
     CONSTRAINT UQ_Productos_Sku UNIQUE (Sku),
@@ -85,11 +85,11 @@ GO
 
 INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
 VALUES
-('Arroz Superior 1Kg', 'ABR-001', 'Bolsa de arroz blanco', 4.50, 80, 20, 1, 1),
-('Azucar Rubia 1Kg', 'ABR-002', 'Azucar rubia embolsada', 4.20, 60, 15, 1, 1),
-('Gaseosa Cola 3L', 'BEB-001', 'Botella retornable', 9.80, 30, 10, 1, 2),
-('Agua Mineral 625ml', 'BEB-002', 'Botella personal', 2.50, 48, 12, 1, 2),
-('Detergente Floral 900g', 'LIM-001', 'Detergente en polvo', 8.90, 22, 8, 1, 3);
+('Arroz Superior 1Kg', 'ABR-001', 'Bolsa de arroz blanco', 4.50, 80, 5, 1, 1),
+('Azucar Rubia 1Kg', 'ABR-002', 'Azucar rubia embolsada', 4.20, 60, 5, 1, 1),
+('Gaseosa Cola 3L', 'BEB-001', 'Botella retornable', 9.80, 30, 5, 1, 2),
+('Agua Mineral 625ml', 'BEB-002', 'Botella personal', 2.50, 48, 5, 1, 2),
+('Detergente Floral 900g', 'LIM-001', 'Detergente en polvo', 8.90, 22, 5, 1, 3);
 GO
 
 INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)

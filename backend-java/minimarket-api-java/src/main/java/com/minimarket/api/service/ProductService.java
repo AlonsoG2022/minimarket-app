@@ -14,6 +14,7 @@ import java.util.List;
 
 @Service
 public class ProductService {
+    private static final int FIXED_MINIMUM_STOCK = 5;
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -38,7 +39,7 @@ public class ProductService {
 
     @Transactional
     public ServiceResult<ProductDto> create(SaveProductDto dto) {
-        if (dto.stock() < 0 || dto.minimumStock() < 0 || dto.price().signum() <= 0) {
+        if (dto.stock() < 0 || dto.price().signum() <= 0) {
             return ServiceResult.failure("Los datos del producto no son validos.");
         }
 
@@ -53,7 +54,7 @@ public class ProductService {
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
-        product.setMinimumStock(dto.minimumStock());
+        product.setMinimumStock(FIXED_MINIMUM_STOCK);
         product.setIsActive(dto.isActive());
         product.setCategoryId(dto.categoryId());
 
@@ -77,7 +78,7 @@ public class ProductService {
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
-        product.setMinimumStock(dto.minimumStock());
+        product.setMinimumStock(FIXED_MINIMUM_STOCK);
         product.setIsActive(dto.isActive());
         product.setCategoryId(dto.categoryId());
 
@@ -133,7 +134,7 @@ public class ProductService {
             product.setDescription(null);
             product.setPrice(row.price());
             product.setStock(stock);
-            product.setMinimumStock(0);
+            product.setMinimumStock(FIXED_MINIMUM_STOCK);
             product.setIsActive(true);
             product.setCategoryId(category.getId());
 

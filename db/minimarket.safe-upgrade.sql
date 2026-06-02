@@ -97,7 +97,7 @@ BEGIN
         Descripcion NVARCHAR(250) NULL,
         Precio DECIMAL(10,2) NOT NULL,
         Stock INT NOT NULL,
-        StockMinimo INT NOT NULL,
+        StockMinimo INT NOT NULL CONSTRAINT DF_Productos_StockMinimo DEFAULT (5),
         Activo BIT NOT NULL CONSTRAINT DF_Productos_Activo DEFAULT (1),
         CategoriaId INT NOT NULL
     );
@@ -158,7 +158,7 @@ SET
     Sku = ISNULL(Sku, CONCAT('SKU-', Id)),
     Precio = ISNULL(Precio, 0),
     Stock = ISNULL(Stock, 0),
-    StockMinimo = ISNULL(StockMinimo, 0),
+    StockMinimo = ISNULL(StockMinimo, 5),
     Activo = ISNULL(Activo, 1),
     CategoriaId = ISNULL(CategoriaId, 1)
 WHERE
@@ -169,6 +169,11 @@ WHERE
     OR StockMinimo IS NULL
     OR Activo IS NULL
     OR CategoriaId IS NULL;
+GO
+
+UPDATE dbo.Productos
+SET StockMinimo = 5
+WHERE StockMinimo <> 5;
 GO
 
 ALTER TABLE dbo.Productos ALTER COLUMN Nombre NVARCHAR(150) NOT NULL;
@@ -190,6 +195,18 @@ IF NOT EXISTS
 BEGIN
     ALTER TABLE dbo.Productos
     ADD CONSTRAINT DF_Productos_Activo DEFAULT (1) FOR Activo;
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.default_constraints
+    WHERE name = 'DF_Productos_StockMinimo'
+)
+BEGIN
+    ALTER TABLE dbo.Productos
+    ADD CONSTRAINT DF_Productos_StockMinimo DEFAULT (5) FOR StockMinimo;
 END;
 GO
 
@@ -551,31 +568,31 @@ DECLARE @CategoriaLimpiezaId INT = (SELECT TOP 1 Id FROM dbo.Categorias WHERE No
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-001')
 BEGIN
     INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
-    VALUES ('Arroz Superior 1Kg', 'ABR-001', 'Bolsa de arroz blanco', 4.50, 80, 20, 1, @CategoriaAbarrotesId);
+    VALUES ('Arroz Superior 1Kg', 'ABR-001', 'Bolsa de arroz blanco', 4.50, 80, 5, 1, @CategoriaAbarrotesId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-002')
 BEGIN
     INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
-    VALUES ('Azucar Rubia 1Kg', 'ABR-002', 'Azucar rubia embolsada', 4.20, 60, 15, 1, @CategoriaAbarrotesId);
+    VALUES ('Azucar Rubia 1Kg', 'ABR-002', 'Azucar rubia embolsada', 4.20, 60, 5, 1, @CategoriaAbarrotesId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-001')
 BEGIN
     INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
-    VALUES ('Gaseosa Cola 3L', 'BEB-001', 'Botella retornable', 9.80, 30, 10, 1, @CategoriaBebidasId);
+    VALUES ('Gaseosa Cola 3L', 'BEB-001', 'Botella retornable', 9.80, 30, 5, 1, @CategoriaBebidasId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-002')
 BEGIN
     INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
-    VALUES ('Agua Mineral 625ml', 'BEB-002', 'Botella personal', 2.50, 48, 12, 1, @CategoriaBebidasId);
+    VALUES ('Agua Mineral 625ml', 'BEB-002', 'Botella personal', 2.50, 48, 5, 1, @CategoriaBebidasId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'LIM-001')
 BEGIN
     INSERT INTO dbo.Productos (Nombre, Sku, Descripcion, Precio, Stock, StockMinimo, Activo, CategoriaId)
-    VALUES ('Detergente Floral 900g', 'LIM-001', 'Detergente en polvo', 8.90, 22, 8, 1, @CategoriaLimpiezaId);
+    VALUES ('Detergente Floral 900g', 'LIM-001', 'Detergente en polvo', 8.90, 22, 5, 1, @CategoriaLimpiezaId);
 END;
 GO
 

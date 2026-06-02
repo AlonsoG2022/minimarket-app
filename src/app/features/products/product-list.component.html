@@ -41,6 +41,16 @@
       </div>
     }
 
+    @if (lowStockProducts.length) {
+      <div class="stock-alert">
+        <strong>Atencion: productos en stock minimo</strong>
+        <p>
+          El stock minimo fijo es 5 unidades. Revisa:
+          {{ lowStockProducts.map(product => product.name + ' (' + product.stock + ')').join(', ') }}.
+        </p>
+      </div>
+    }
+
     @if (loadingProducts) {
       <p class="section-copy">Cargando productos...</p>
     } @else {
@@ -66,7 +76,7 @@
                 <td data-label="Categoria">{{ product.categoryName }}</td>
                 <td data-label="Precio">{{ product.price | solesPrice }}</td>
                 <td data-label="Stock">
-                  <span class="pill" [class.low]="product.stock <= product.minimumStock">
+                  <span class="pill" [class.low]="product.stock <= 5">
                     {{ product.stock }}
                   </span>
                 </td>
@@ -119,8 +129,9 @@
         </div>
 
         <div>
-          <label for="minimumStock">Stock minimo</label>
-          <input id="minimumStock" type="number" min="0" formControlName="minimumStock">
+          <label>Stock minimo</label>
+          <input value="5" readonly>
+          <small class="field-hint">Este valor es fijo para todos los productos y no se puede modificar.</small>
         </div>
 
         <div>
