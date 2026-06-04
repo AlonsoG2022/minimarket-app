@@ -21,22 +21,58 @@
 
 .pos-search-card,
 .ticket-card,
-.checkout-card {
+.checkout-card,
+.cash-status-card {
   border: 1px solid rgba(45, 30, 21, 0.08);
 }
 
 .pos-search-card h3,
 .ticket-card h3,
-.checkout-card h3 {
+.checkout-card h3,
+.cash-status-card h3 {
   margin: 0 0 0.25rem;
   font-size: 1.2rem;
 }
 
 .pos-search-card p,
 .ticket-card p,
-.checkout-card p {
+.checkout-card p,
+.cash-status-card p {
   margin: 0;
   color: var(--color-muted);
+}
+
+.cash-status-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.85rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
+.cash-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.cash-status-box {
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  background: rgba(255, 248, 241, 0.82);
+  border: 1px solid rgba(45, 30, 21, 0.08);
+}
+
+.cash-status-box span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+
+.cash-status-box strong {
+  display: block;
+  font-size: 1rem;
 }
 
 .pos-search-bar {
@@ -279,6 +315,128 @@
   padding-inline: 0.9rem;
 }
 
+.print-ticket-card {
+  width: min(520px, 100%);
+}
+
+.print-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.receipt {
+  width: min(360px, 100%);
+  margin: 0 auto;
+  padding: 1.2rem 1rem;
+  border-radius: 18px;
+  border: 1px dashed rgba(45, 30, 21, 0.24);
+  background: #fffdfb;
+}
+
+.receipt__header,
+.receipt__footer,
+.receipt__notes,
+.receipt__item,
+.receipt__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.receipt__header {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px dashed rgba(45, 30, 21, 0.2);
+}
+
+.receipt__header strong {
+  font-size: 1.2rem;
+}
+
+.receipt__header span,
+.receipt__header small,
+.receipt__meta span,
+.receipt__item span,
+.receipt__notes span {
+  color: var(--color-muted);
+}
+
+.receipt__meta,
+.receipt__items,
+.receipt__notes {
+  margin-top: 0.9rem;
+}
+
+.receipt__meta > div {
+  flex: 1 1 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.receipt__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.55rem 0;
+  border-bottom: 1px dashed rgba(45, 30, 21, 0.12);
+}
+
+.receipt__product {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.receipt__product strong {
+  display: block;
+  color: var(--color-heading);
+  font-size: 0.96rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.receipt__product span {
+  color: var(--color-muted);
+  font-size: 0.84rem;
+}
+
+.receipt__item > strong {
+  text-align: right;
+}
+
+.receipt__subtotal {
+  white-space: nowrap;
+  color: var(--color-heading);
+  font-size: 0.96rem;
+}
+
+.receipt__totals {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+}
+
+.receipt__totals > div {
+  flex: 1 1 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.receipt__footer {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed rgba(45, 30, 21, 0.2);
+  align-items: center;
+}
+
+.receipt__footer strong {
+  font-size: 1.35rem;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -332,7 +490,8 @@
 
 @media (max-width: 720px) {
   .pos-search-bar,
-  .checkout-grid {
+  .checkout-grid,
+  .cash-status-grid {
     grid-template-columns: 1fr;
   }
 
@@ -393,5 +552,45 @@
 
   .sale-detail-summary {
     align-items: flex-start;
+  }
+
+  .receipt__item {
+    gap: 0.6rem;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-backdrop,
+  .print-backdrop * {
+    visibility: visible !important;
+  }
+
+  .print-backdrop {
+    position: static;
+    padding: 0;
+    background: transparent;
+  }
+
+  .print-ticket-card {
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    box-shadow: none;
+    border: 0;
+    padding: 0;
+  }
+
+  .receipt {
+    width: 100%;
+    border: 0;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
   }
 }

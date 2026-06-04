@@ -11,7 +11,7 @@
     @if (loading) {
       <p class="section-copy">Cargando proveedores y productos...</p>
     } @else {
-      <form class="purchase-grid" [formGroup]="form" (ngSubmit)="submit()">
+      <form class="purchase-grid" [formGroup]="form" (ngSubmit)="submit()" autocomplete="off">
         <article class="card purchase-base-card">
           <h3>Datos de la compra</h3>
 
@@ -28,12 +28,12 @@
 
             <div>
               <label for="invoiceNumber">Comprobante</label>
-              <input id="invoiceNumber" formControlName="invoiceNumber" placeholder="Factura, boleta o guia">
+              <input id="invoiceNumber" formControlName="invoiceNumber" placeholder="Factura, boleta o guia" autocomplete="off">
             </div>
 
             <div class="full-width">
               <label for="notes">Notas</label>
-              <textarea id="notes" rows="3" formControlName="notes"></textarea>
+              <textarea id="notes" rows="3" formControlName="notes" autocomplete="off"></textarea>
             </div>
           </div>
         </article>
@@ -54,6 +54,7 @@
                 id="barcodeInput"
                 [(ngModel)]="barcodeInput"
                 [ngModelOptions]="{ standalone: true }"
+                autocomplete="off"
                 (keydown.enter)="addByBarcode(); $event.preventDefault()"
                 placeholder="Escanea el codigo de compra o venta"
               >
@@ -67,6 +68,7 @@
                 min="1"
                 [(ngModel)]="quickPackageQuantity"
                 [ngModelOptions]="{ standalone: true }"
+                autocomplete="off"
               >
             </div>
 
@@ -124,17 +126,17 @@
 
                   <div class="purchase-line__field">
                     <label>Paquetes</label>
-                    <input type="number" min="1" [value]="item.packageQuantity" (change)="updateLineValue(item.index, 'packageQuantity', +$any($event.target).value)">
+                    <input type="number" min="1" [value]="item.packageQuantity" autocomplete="off" (change)="updateLineValue(item.index, 'packageQuantity', +$any($event.target).value)">
                   </div>
 
                   <div class="purchase-line__field">
                     <label>Unidades por paquete</label>
-                    <input type="number" min="1" [value]="item.unitsPerPackage" (change)="updateLineValue(item.index, 'unitsPerPackage', +$any($event.target).value)">
+                    <input type="number" min="1" [value]="item.unitsPerPackage" autocomplete="off" (change)="updateLineValue(item.index, 'unitsPerPackage', +$any($event.target).value)">
                   </div>
 
                   <div class="purchase-line__field">
                     <label>Costo por paquete</label>
-                    <input type="number" min="0.01" step="0.01" [value]="item.packageCost" (change)="updateLineValue(item.index, 'packageCost', +$any($event.target).value)">
+                    <input type="number" min="0.01" step="0.01" [value]="item.packageCost" autocomplete="off" (change)="updateLineValue(item.index, 'packageCost', +$any($event.target).value)">
                   </div>
 
                   <div class="purchase-line__totals">
@@ -224,10 +226,10 @@
         <button type="button" class="secondary" (click)="closeCreateProductModal()">Cerrar</button>
       </div>
 
-      <form class="form-grid" [formGroup]="productCreateForm" (ngSubmit)="createProductOnTheFly()">
+      <form class="form-grid" [formGroup]="productCreateForm" (ngSubmit)="createProductOnTheFly()" autocomplete="off">
         <div>
           <label for="newProductName">Nombre</label>
-          <input #createProductNameRef id="newProductName" formControlName="name" placeholder="Ej. Dulce de menta">
+          <input #createProductNameRef id="newProductName" formControlName="name" placeholder="Ej. Dulce de menta" autocomplete="off">
         </div>
 
         <div>
@@ -242,37 +244,37 @@
 
         <div>
           <label for="newProductPrice">Precio de venta</label>
-          <input id="newProductPrice" type="number" min="0.1" step="0.01" formControlName="price">
+          <input id="newProductPrice" type="number" min="0.1" step="0.01" formControlName="price" autocomplete="off">
         </div>
 
         <div>
           <label for="newProductBarcode">Codigo de barras</label>
-          <input id="newProductBarcode" formControlName="barcode" placeholder="Se usara para compras y ventas">
+          <input id="newProductBarcode" formControlName="barcode" placeholder="Se usara para compras y ventas" autocomplete="off">
         </div>
 
         <div>
           <label for="newProductSalesUnit">Unidad de venta</label>
-          <input id="newProductSalesUnit" formControlName="salesUnitName" placeholder="unidad">
+          <input id="newProductSalesUnit" formControlName="salesUnitName" placeholder="unidad" autocomplete="off">
         </div>
 
         <div>
           <label for="newProductPurchaseUnit">Unidad de compra</label>
-          <input id="newProductPurchaseUnit" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba">
+          <input id="newProductPurchaseUnit" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba" autocomplete="off">
         </div>
 
         <div>
           <label for="newProductUnitsPerPurchase">Unidades por compra</label>
-          <input id="newProductUnitsPerPurchase" type="number" min="1" formControlName="unitsPerPurchaseUnit">
+          <input id="newProductUnitsPerPurchase" type="number" min="1" formControlName="unitsPerPurchaseUnit" autocomplete="off">
         </div>
 
         <div>
           <label for="newProductExpirationDate">Fecha de caducidad</label>
-          <input id="newProductExpirationDate" type="date" formControlName="expirationDate">
+          <input id="newProductExpirationDate" type="date" formControlName="expirationDate" autocomplete="off">
         </div>
 
         <div class="full-width">
           <label for="newProductDescription">Descripcion</label>
-          <textarea id="newProductDescription" rows="3" formControlName="description"></textarea>
+          <textarea id="newProductDescription" rows="3" formControlName="description" autocomplete="off"></textarea>
         </div>
 
         <div class="full-width create-product-hint">

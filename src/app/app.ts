@@ -23,6 +23,7 @@ export class App {
   readonly session = computed(() => this.auth.session());
   readonly canAccessDashboard = computed(() => this.auth.hasRole(['admin', 'cajero']));
   readonly canAccessSales = computed(() => this.auth.hasRole(['admin', 'cajero']));
+  readonly canAccessCash = computed(() => this.auth.hasRole(['admin', 'cajero']));
   readonly canAccessPurchases = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessProducts = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessReports = computed(() => this.auth.hasRole(['admin']));

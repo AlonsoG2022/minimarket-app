@@ -1,0 +1,163 @@
+<section class="cash-layout">
+  <section class="card">
+    <div class="cash-header">
+      <div>
+        <h2 class="section-title">Caja</h2>
+        <p class="section-copy">Abre turno, registra ingresos o retiros y cierra caja con cuadre.</p>
+      </div>
+      @if (currentSession) {
+        <span class="pill">Estado: {{ currentSession.status }}</span>
+      }
+    </div>
+
+    @if (message) {
+      <p class="message">{{ message }}</p>
+    }
+
+    @if (error) {
+      <p class="message error">{{ error }}</p>
+    }
+
+    @if (loading) {
+      <p class="section-copy">Cargando informacion de caja...</p>
+    } @else if (!hasOpenSession) {
+      <form class="card form-card" [formGroup]="openForm" (ngSubmit)="openCash()" autocomplete="off">
+        <h3>Abrir caja</h3>
+        <p class="section-copy">Ingresa el monto con el que empieza el turno.</p>
+        <div class="form-grid">
+          <div>
+            <label for="openingAmount">Monto inicial</label>
+            <input id="openingAmount" type="number" min="0" step="0.01" formControlName="openingAmount" autocomplete="off">
+          </div>
+          <div class="full-width">
+            <label for="openingNotes">Notas</label>
+            <textarea id="openingNotes" rows="3" formControlName="notes" autocomplete="off"></textarea>
+          </div>
+          <div class="actions full-width">
+            <button type="submit">Abrir caja</button>
+          </div>
+        </div>
+      </form>
+    } @else {
+      <div class="cash-grid">
+        <article class="card summary-card">
+          <h3>Caja abierta</h3>
+          <div class="summary-rows">
+            <div><span>Apertura</span><strong>{{ currentSession?.openingAmount | solesPrice }}</strong></div>
+            <div><span>Actual esperado</span><strong>{{ currentSession?.currentAmount | solesPrice }}</strong></div>
+            <div><span>Abierta desde</span><strong>{{ currentSession?.openedAt | date: 'dd/MM/yyyy HH:mm' }}</strong></div>
+          </div>
+        </article>
+
+        <article class="card form-card">
+          <h3>Registrar movimiento</h3>
+          <form class="form-grid" [formGroup]="movementForm" (ngSubmit)="registerMovement()" autocomplete="off">
+            <div>
+              <label for="movementType">Tipo</label>
+              <select id="movementType" formControlName="type">
+                <option value="ingreso">Ingreso</option>
+                <option value="retiro">Retiro</option>
+                <option value="gasto">Gasto</option>
+              </select>
+            </div>
+            <div>
+              <label for="movementAmount">Monto</label>
+              <input id="movementAmount" type="number" min="0.01" step="0.01" formControlName="amount" autocomplete="off">
+            </div>
+            <div class="full-width">
+              <label for="movementDescription">Descripcion</label>
+              <textarea id="movementDescription" rows="3" formControlName="description" autocomplete="off"></textarea>
+            </div>
+            <div class="actions full-width">
+              <button type="submit">Guardar movimiento</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="card form-card">
+          <h3>Cerrar caja</h3>
+          <form class="form-grid" [formGroup]="closeForm" (ngSubmit)="closeCash()" autocomplete="off">
+            <div>
+              <label for="countedAmount">Monto contado</label>
+              <input id="countedAmount" type="number" min="0" step="0.01" formControlName="countedAmount" autocomplete="off">
+            </div>
+            <div class="full-width">
+              <label for="closeNotes">Notas de cierre</label>
+              <textarea id="closeNotes" rows="3" formControlName="notes" autocomplete="off"></textarea>
+            </div>
+            <div class="actions full-width">
+              <button type="submit">Cerrar caja</button>
+            </div>
+          </form>
+        </article>
+      </div>
+
+      @if (currentSession?.movements?.length) {
+        <article class="card">
+          <h3>Movimientos del turno</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Descripcion</th>
+                  <th>Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (movement of currentSession!.movements; track movement.id) {
+                  <tr>
+                    <td>{{ movement.movementDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ movement.type }}</td>
+                    <td>{{ movement.description || '-' }}</td>
+                    <td>{{ movement.amount | solesPrice }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+      }
+    }
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Historial de caja</h2>
+    <p class="section-copy">Ultimos turnos registrados por el usuario actual.</p>
+    @if (loadingHistory) {
+      <p class="section-copy">Cargando historial...</p>
+    } @else if (recentSessions.length) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Apertura</th>
+              <th>Cierre</th>
+              <th>Inicial</th>
+              <th>Esperado</th>
+              <th>Contado</th>
+              <th>Diferencia</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (session of recentSessions; track session.id) {
+              <tr>
+                <td>{{ session.openedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ session.closedAt ? (session.closedAt | date: 'dd/MM/yyyy HH:mm') : '-' }}</td>
+                <td>{{ session.openingAmount | solesPrice }}</td>
+                <td>{{ session.closingExpectedAmount != null ? (session.closingExpectedAmount | solesPrice) : '-' }}</td>
+                <td>{{ session.closingCountedAmount != null ? (session.closingCountedAmount | solesPrice) : '-' }}</td>
+                <td>{{ session.difference != null ? (session.difference | solesPrice) : '-' }}</td>
+                <td>{{ session.status }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="section-copy">Todavia no hay turnos registrados.</p>
+    }
+  </section>
+</section>

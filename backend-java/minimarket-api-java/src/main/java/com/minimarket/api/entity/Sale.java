@@ -26,6 +26,13 @@ public class Sale {
     @JoinColumn(name = "UsuarioId", insertable = false, updatable = false)
     private User user;
 
+    @Column(name = "CajaSesionId")
+    private Integer cashSessionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CajaSesionId", insertable = false, updatable = false)
+    private CashSession cashSession;
+
     @Column(name = "Total", nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 
@@ -46,6 +53,10 @@ public class Sale {
     public void setUserId(Integer userId) { this.userId = userId; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public Integer getCashSessionId() { return cashSessionId; }
+    public void setCashSessionId(Integer cashSessionId) { this.cashSessionId = cashSessionId; }
+    public CashSession getCashSession() { return cashSession; }
+    public void setCashSession(CashSession cashSession) { this.cashSession = cashSession; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
     public String getPaymentMethod() { return paymentMethod; }

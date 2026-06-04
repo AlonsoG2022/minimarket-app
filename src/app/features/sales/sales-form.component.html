@@ -24,7 +24,43 @@
     @if (loading) {
       <p class="section-copy">Cargando productos, usuarios y reglas de venta...</p>
     } @else {
-      <form [formGroup]="form" (ngSubmit)="submit()" class="pos-grid">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="pos-grid" autocomplete="off">
+        <article class="card cash-status-card">
+          <div class="cash-status-card__header">
+            <div>
+              <h3>Estado de caja</h3>
+              <p>La venta se registra sobre la caja abierta del usuario activo.</p>
+            </div>
+            @if (currentCashSession) {
+              <span class="pill">{{ currentCashSession.status }}</span>
+            }
+          </div>
+
+          @if (loadingCashSession) {
+            <p class="section-copy">Cargando caja actual...</p>
+          } @else if (currentCashSession) {
+            <div class="cash-status-grid">
+              <div class="cash-status-box">
+                <span>Apertura</span>
+                <strong>{{ currentCashSession.openingAmount | solesPrice }}</strong>
+              </div>
+              <div class="cash-status-box">
+                <span>Disponible esperado</span>
+                <strong>{{ currentCashSession.currentAmount | solesPrice }}</strong>
+              </div>
+              <div class="cash-status-box">
+                <span>Abierta desde</span>
+                <strong>{{ currentCashSession.openedAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+              </div>
+            </div>
+          } @else {
+            <div class="ticket-empty">
+              <strong>No hay caja abierta</strong>
+              <p>Antes de cobrar, abre caja desde el modulo `Caja` para registrar el turno y el monto inicial.</p>
+            </div>
+          }
+        </article>
+
         <article class="card pos-search-card">
           <div class="pos-search-card__header">
             <div>
@@ -41,6 +77,7 @@
                 type="text"
                 [(ngModel)]="productSearch"
                 [ngModelOptions]="{ standalone: true }"
+                autocomplete="off"
                 (keydown.enter)="addFirstMatchingProduct(); $event.preventDefault()"
                 placeholder="Buscar por nombre, SKU o escanear codigo"
               >
@@ -54,6 +91,7 @@
                 min="1"
                 [(ngModel)]="quickQuantity"
                 [ngModelOptions]="{ standalone: true }"
+                autocomplete="off"
               >
             </div>
           </div>
@@ -107,6 +145,7 @@
                       type="number"
                       min="1"
                       [value]="item.quantity"
+                      autocomplete="off"
                       (change)="updateQuantity(item.index, +$any($event.target).value)"
                     >
                     <button type="button" class="secondary" (click)="incrementQuantity(item.index)">+</button>
@@ -168,12 +207,12 @@
           @if (showNotes) {
             <div class="checkout-notes">
               <label for="notes">Notas</label>
-              <textarea id="notes" rows="3" formControlName="notes"></textarea>
+              <textarea id="notes" rows="3" formControlName="notes" autocomplete="off"></textarea>
             </div>
           }
 
           <div class="checkout-actions">
-            <button type="submit" class="checkout-submit">Cobrar</button>
+            <button type="submit" class="checkout-submit" [disabled]="!currentCashSession || loadingCashSession">Cobrar</button>
           </div>
         </article>
       </form>
@@ -271,6 +310,77 @@
           </tbody>
         </table>
       </div>
+    </section>
+  </div>
+}
+
+@if (printableSale) {
+  <div class="modal-backdrop print-backdrop" (click)="closePrintableTicket()">
+    <section class="card print-ticket-card modal-card" (click)="$event.stopPropagation()">
+      <div class="sale-detail-header no-print">
+        <div>
+          <h2 class="section-title">Ticket listo</h2>
+          <p class="section-copy">Puedes imprimirlo ahora o cerrarlo y seguir vendiendo.</p>
+        </div>
+        <div class="print-actions">
+          <button type="button" class="secondary" (click)="closePrintableTicket()">Cerrar</button>
+          <button type="button" (click)="printTicket()">Imprimir ticket</button>
+        </div>
+      </div>
+
+      <article class="receipt" aria-label="Ticket de venta">
+        <header class="receipt__header">
+          <strong>Minimarket</strong>
+          <span>Ticket de venta</span>
+          <small>#{{ printableSale.id }} · {{ printableSale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </header>
+
+        <div class="receipt__meta">
+          <div>
+            <span>Cajero</span>
+            <strong>{{ printableSale.userName }}</strong>
+          </div>
+          <div>
+            <span>Pago</span>
+            <strong>{{ printableSale.paymentMethod }}</strong>
+          </div>
+        </div>
+
+        <div class="receipt__items">
+          @for (detail of printableSale.details; track detail.id) {
+            <div class="receipt__item">
+              <div class="receipt__product">
+                <strong>{{ detail.productName }}</strong>
+                <span>{{ detail.quantity }} x {{ detail.unitPrice | solesPrice }}</span>
+              </div>
+              <strong class="receipt__subtotal">{{ detail.subtotal | solesPrice }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="receipt__totals">
+          <div>
+            <span>Items</span>
+            <strong>{{ printableSale.details.length }}</strong>
+          </div>
+          <div>
+            <span>Unidades</span>
+            <strong>{{ printableSale.details.reduce((sum, detail) => sum + detail.quantity, 0) }}</strong>
+          </div>
+        </div>
+
+        @if (printableSale.notes) {
+          <div class="receipt__notes">
+            <span>Notas</span>
+            <strong>{{ printableSale.notes }}</strong>
+          </div>
+        }
+
+        <footer class="receipt__footer">
+          <span>Total</span>
+          <strong>{{ printableSale.total | solesPrice }}</strong>
+        </footer>
+      </article>
     </section>
   </div>
 }

@@ -4,6 +4,8 @@ import com.minimarket.api.dto.CreateSaleDto;
 import com.minimarket.api.dto.SaleDto;
 import com.minimarket.api.entity.Sale;
 import com.minimarket.api.entity.SaleDetail;
+import com.minimarket.api.entity.CashMovement;
+import com.minimarket.api.repository.CashSessionRepository;
 import com.minimarket.api.repository.ProductRepository;
 import com.minimarket.api.repository.SaleRepository;
 import com.minimarket.api.repository.UserRepository;
@@ -21,11 +23,13 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final CashSessionRepository cashSessionRepository;
 
-    public SaleService(SaleRepository saleRepository, UserRepository userRepository, ProductRepository productRepository) {
+    public SaleService(SaleRepository saleRepository, UserRepository userRepository, ProductRepository productRepository, CashSessionRepository cashSessionRepository) {
         this.saleRepository = saleRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.cashSessionRepository = cashSessionRepository;
     }
 
     public List<SaleDto> getAll() {
@@ -55,9 +59,23 @@ public class SaleService {
         var sale = new Sale();
         sale.setSaleDate(LocalDateTime.now());
         sale.setUserId(dto.userId());
+        sale.setCashSessionId(dto.cashSessionId());
         sale.setPaymentMethod(dto.paymentMethod().trim());
         sale.setNotes(dto.notes() != null ? dto.notes().trim() : null);
         sale.setTotal(BigDecimal.ZERO);
+
+        var cashSession = cashSessionRepository.findFirstByUserIdAndStatusOrderByOpenedAtDesc(dto.userId(), "abierta")
+            .orElse(null);
+
+        if (cashSession == null) {
+            return ServiceResult.failure("Debes abrir caja antes de registrar ventas.");
+        }
+
+        if (dto.cashSessionId() != null && !cashSession.getId().equals(dto.cashSessionId())) {
+            return ServiceResult.failure("La caja activa no coincide con la sesion enviada.");
+        }
+
+        sale.setCashSessionId(cashSession.getId());
 
         for (var item : dto.details()) {
             var product = productRepository.findById(item.productId()).orElse(null);
@@ -92,7 +110,32 @@ public class SaleService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         );
 
+        if ("Efectivo".equalsIgnoreCase(sale.getPaymentMethod())) {
+            var movement = new CashMovement();
+            movement.setCashSessionId(cashSession.getId());
+            movement.setCashSession(cashSession);
+            movement.setMovementDate(LocalDateTime.now());
+            movement.setType("venta_efectivo");
+            movement.setAmount(sale.getTotal());
+            movement.setDescription("Venta #" + (sale.getId() != null ? sale.getId() : ""));
+            movement.setReferenceType("venta");
+            cashSession.getMovements().add(movement);
+        }
+
         var saved = saleRepository.save(sale);
+        if ("Efectivo".equalsIgnoreCase(saved.getPaymentMethod())) {
+            var pendingMovement = cashSession.getMovements()
+                .stream()
+                .filter(movement -> "venta".equals(movement.getReferenceType()) && movement.getReferenceId() == null)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+            if (pendingMovement != null) {
+                pendingMovement.setReferenceId(saved.getId());
+                pendingMovement.setDescription("Venta #" + saved.getId());
+                cashSessionRepository.save(cashSession);
+            }
+        }
         var created = saleRepository.findWithRelationsById(saved.getId()).orElse(saved);
         return ServiceResult.success(DtoMapper.toDto(created));
     }

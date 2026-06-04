@@ -9,6 +9,8 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<CashSession> CashSessions => Set<CashSession>();
+    public DbSet<CashMovement> CashMovements => Set<CashMovement>();
     public DbSet<Sale> Sales => Set<Sale>();
     public DbSet<SaleDetail> SaleDetails => Set<SaleDetail>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
@@ -84,6 +86,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.HasKey(x => x.Id);
             entity.Property(x => x.SaleDate).HasColumnName("FechaVenta");
             entity.Property(x => x.UserId).HasColumnName("UsuarioId");
+            entity.Property(x => x.CashSessionId).HasColumnName("CajaSesionId");
             entity.Property(x => x.Total).HasColumnType("decimal(10,2)");
             entity.Property(x => x.PaymentMethod).HasColumnName("MetodoPago").HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasColumnName("Notas").HasMaxLength(250);
@@ -91,6 +94,46 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
                 .WithMany(x => x.Sales)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.CashSession)
+                .WithMany(x => x.Sales)
+                .HasForeignKey(x => x.CashSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CashSession>(entity =>
+        {
+            entity.ToTable("CajaSesiones");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.UserId).HasColumnName("UsuarioId");
+            entity.Property(x => x.OpenedAt).HasColumnName("FechaApertura");
+            entity.Property(x => x.ClosedAt).HasColumnName("FechaCierre");
+            entity.Property(x => x.OpeningAmount).HasColumnName("MontoInicial").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.ClosingExpectedAmount).HasColumnName("MontoEsperadoCierre").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.ClosingCountedAmount).HasColumnName("MontoContadoCierre").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.Difference).HasColumnName("Diferencia").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.Status).HasColumnName("Estado").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Notes).HasColumnName("Notas").HasMaxLength(250);
+            entity.HasOne(x => x.User)
+                .WithMany(x => x.CashSessions)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CashMovement>(entity =>
+        {
+            entity.ToTable("CajaMovimientos");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.CashSessionId).HasColumnName("CajaSesionId");
+            entity.Property(x => x.MovementDate).HasColumnName("FechaMovimiento");
+            entity.Property(x => x.Type).HasColumnName("Tipo").HasMaxLength(30).IsRequired();
+            entity.Property(x => x.Amount).HasColumnName("Monto").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.Description).HasColumnName("Descripcion").HasMaxLength(250);
+            entity.Property(x => x.ReferenceType).HasColumnName("TipoReferencia").HasMaxLength(30);
+            entity.Property(x => x.ReferenceId).HasColumnName("ReferenciaId");
+            entity.HasOne(x => x.CashSession)
+                .WithMany(x => x.Movements)
+                .HasForeignKey(x => x.CashSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<SaleDetail>(entity =>

@@ -8,7 +8,8 @@ namespace Minimarket.Api.Services;
 public class SaleService(
     ISaleRepository saleRepository,
     IUserRepository userRepository,
-    IProductRepository productRepository) : ISaleService
+    IProductRepository productRepository,
+    ICashSessionRepository cashSessionRepository) : ISaleService
 {
     public async Task<IReadOnlyCollection<SaleDto>> GetAllAsync() =>
         (await saleRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
@@ -33,9 +34,23 @@ public class SaleService(
         {
             SaleDate = DateTime.Now,
             UserId = dto.UserId,
+            CashSessionId = dto.CashSessionId,
             PaymentMethod = dto.PaymentMethod.Trim(),
             Notes = dto.Notes?.Trim()
         };
+
+        var cashSession = await cashSessionRepository.GetCurrentOpenAsync(dto.UserId);
+        if (cashSession is null)
+        {
+            return (false, "Debes abrir caja antes de registrar ventas.", null);
+        }
+
+        if (dto.CashSessionId.HasValue && cashSession.Id != dto.CashSessionId.Value)
+        {
+            return (false, "La caja activa no coincide con la sesion enviada.", null);
+        }
+
+        sale.CashSessionId = cashSession.Id;
 
         foreach (var item in dto.Details)
         {
@@ -68,8 +83,33 @@ public class SaleService(
 
         sale.Total = sale.Details.Sum(x => x.Subtotal);
 
+        if (string.Equals(sale.PaymentMethod, "Efectivo", StringComparison.OrdinalIgnoreCase))
+        {
+            cashSession.Movements.Add(new CashMovement
+            {
+                MovementDate = DateTime.Now,
+                Type = "venta_efectivo",
+                Amount = sale.Total,
+                Description = $"Venta #{sale.Id}",
+                ReferenceType = "venta"
+            });
+        }
+
         await saleRepository.AddAsync(sale);
         await saleRepository.SaveChangesAsync();
+
+        if (string.Equals(sale.PaymentMethod, "Efectivo", StringComparison.OrdinalIgnoreCase))
+        {
+            var saleMovement = cashSession.Movements
+                .LastOrDefault(movement => movement.ReferenceType == "venta" && movement.ReferenceId is null);
+
+            if (saleMovement is not null)
+            {
+                saleMovement.ReferenceId = sale.Id;
+                saleMovement.Description = $"Venta #{sale.Id}";
+                await saleRepository.SaveChangesAsync();
+            }
+        }
 
         var created = await saleRepository.GetByIdAsync(sale.Id);
         return (true, null, created?.ToDto());

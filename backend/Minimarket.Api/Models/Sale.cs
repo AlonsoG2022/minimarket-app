@@ -6,6 +6,8 @@ public class Sale
     public DateTime SaleDate { get; set; }
     public int UserId { get; set; }
     public User? User { get; set; }
+    public int? CashSessionId { get; set; }
+    public CashSession? CashSession { get; set; }
     public decimal Total { get; set; }
     public string PaymentMethod { get; set; } = string.Empty;
     public string? Notes { get; set; }

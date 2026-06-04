@@ -2,7 +2,7 @@ namespace Minimarket.Api.DTOs;
 
 public record CreateSaleDetailDto(int ProductId, int Quantity);
 
-public record CreateSaleDto(int UserId, string PaymentMethod, string? Notes, List<CreateSaleDetailDto> Details);
+public record CreateSaleDto(int UserId, int? CashSessionId, string PaymentMethod, string? Notes, List<CreateSaleDetailDto> Details);
 
 public record SaleDetailDto(
     int Id,
@@ -17,6 +17,7 @@ public record SaleDto(
     DateTime SaleDate,
     int UserId,
     string UserName,
+    int? CashSessionId,
     string PaymentMethod,
     decimal Total,
     string? Notes,

@@ -32,6 +32,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Sale> sales = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<CashSession> cashSessions = new ArrayList<>();
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getFullName() { return fullName; }
@@ -46,4 +49,6 @@ public class User {
     public void setIsActive(Boolean active) { isActive = active; }
     public List<Sale> getSales() { return sales; }
     public void setSales(List<Sale> sales) { this.sales = sales; }
+    public List<CashSession> getCashSessions() { return cashSessions; }
+    public void setCashSessions(List<CashSession> cashSessions) { this.cashSessions = cashSessions; }
 }

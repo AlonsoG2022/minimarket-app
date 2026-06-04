@@ -3,6 +3,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { LoginComponent } from './features/auth/login.component';
+import { CashSessionComponent } from './features/cash/cash-session.component';
 import { CategoryListComponent } from './features/categories/category-list.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ProductListComponent } from './features/products/product-list.component';
@@ -17,6 +18,12 @@ export const routes: Routes = [
     path: '',
     component: DashboardComponent,
     pathMatch: 'full',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin', 'cajero'] }
+  },
+  {
+    path: 'caja',
+    component: CashSessionComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['admin', 'cajero'] }
   },

@@ -1,0 +1,41 @@
+.cash-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.cash-header,
+.cash-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.cash-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 1rem;
+}
+
+.summary-card,
+.form-card {
+  border: 1px solid rgba(216, 111, 49, 0.18);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.summary-rows {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.summary-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.summary-rows span {
+  color: var(--color-muted);
+}
+
+.summary-rows strong {
+  color: var(--color-heading);
+}

@@ -9,6 +9,8 @@ GO
 
 IF OBJECT_ID('dbo.DetalleVenta', 'U') IS NOT NULL DROP TABLE dbo.DetalleVenta;
 IF OBJECT_ID('dbo.Ventas', 'U') IS NOT NULL DROP TABLE dbo.Ventas;
+IF OBJECT_ID('dbo.CajaMovimientos', 'U') IS NOT NULL DROP TABLE dbo.CajaMovimientos;
+IF OBJECT_ID('dbo.CajaSesiones', 'U') IS NOT NULL DROP TABLE dbo.CajaSesiones;
 IF OBJECT_ID('dbo.DetalleCompra', 'U') IS NOT NULL DROP TABLE dbo.DetalleCompra;
 IF OBJECT_ID('dbo.Compras', 'U') IS NOT NULL DROP TABLE dbo.Compras;
 IF OBJECT_ID('dbo.Proveedores', 'U') IS NOT NULL DROP TABLE dbo.Proveedores;
@@ -77,15 +79,47 @@ CREATE TABLE dbo.Proveedores
 );
 GO
 
+CREATE TABLE dbo.CajaSesiones
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UsuarioId INT NOT NULL,
+    FechaApertura DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    FechaCierre DATETIME2 NULL,
+    MontoInicial DECIMAL(10,2) NOT NULL,
+    MontoEsperadoCierre DECIMAL(10,2) NULL,
+    MontoContadoCierre DECIMAL(10,2) NULL,
+    Diferencia DECIMAL(10,2) NULL,
+    Estado NVARCHAR(20) NOT NULL DEFAULT 'abierta',
+    Notas NVARCHAR(250) NULL,
+    CONSTRAINT FK_CajaSesiones_Usuarios FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id)
+);
+GO
+
+CREATE TABLE dbo.CajaMovimientos
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    CajaSesionId INT NOT NULL,
+    FechaMovimiento DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    Tipo NVARCHAR(30) NOT NULL,
+    Monto DECIMAL(10,2) NOT NULL,
+    Descripcion NVARCHAR(250) NULL,
+    TipoReferencia NVARCHAR(30) NULL,
+    ReferenciaId INT NULL,
+    CONSTRAINT FK_CajaMovimientos_CajaSesiones FOREIGN KEY (CajaSesionId) REFERENCES dbo.CajaSesiones(Id) ON DELETE CASCADE
+);
+GO
+
 CREATE TABLE dbo.Ventas
 (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     FechaVenta DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
     UsuarioId INT NOT NULL,
+    CajaSesionId INT NULL,
     Total DECIMAL(10,2) NOT NULL,
     MetodoPago NVARCHAR(30) NOT NULL,
     Notas NVARCHAR(250) NULL,
-    CONSTRAINT FK_Ventas_Usuarios FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id)
+    CONSTRAINT FK_Ventas_Usuarios FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id),
+    CONSTRAINT FK_Ventas_CajaSesiones FOREIGN KEY (CajaSesionId) REFERENCES dbo.CajaSesiones(Id)
 );
 GO
 

@@ -9,6 +9,7 @@ public record SaleDto(
     LocalDateTime saleDate,
     Integer userId,
     String userName,
+    Integer cashSessionId,
     String paymentMethod,
     BigDecimal total,
     String notes,

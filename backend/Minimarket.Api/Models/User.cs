@@ -9,4 +9,5 @@ public class User
     public string Role { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+    public ICollection<CashSession> CashSessions { get; set; } = new List<CashSession>();
 }

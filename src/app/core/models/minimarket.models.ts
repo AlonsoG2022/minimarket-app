@@ -134,6 +134,7 @@ export interface Sale {
   saleDate: string;
   userId: number;
   userName: string;
+  cashSessionId?: number | null;
   paymentMethod: string;
   total: number;
   notes?: string | null;
@@ -142,6 +143,7 @@ export interface Sale {
 
 export interface CreateSale {
   userId: number;
+  cashSessionId?: number | null;
   paymentMethod: string;
   notes?: string | null;
   details: Array<{ productId: number; quantity: number }>;
@@ -208,4 +210,49 @@ export interface DashboardSummary {
   todayTransactions: number;
   productCount: number;
   lowStockProducts: number;
+}
+
+export interface CashMovement {
+  id: number;
+  movementDate: string;
+  type: string;
+  amount: number;
+  description?: string | null;
+  referenceType?: string | null;
+  referenceId?: number | null;
+}
+
+export interface CashSession {
+  id: number;
+  userId: number;
+  userName: string;
+  openedAt: string;
+  closedAt?: string | null;
+  openingAmount: number;
+  closingExpectedAmount?: number | null;
+  closingCountedAmount?: number | null;
+  difference?: number | null;
+  status: string;
+  notes?: string | null;
+  currentAmount: number;
+  movements: CashMovement[];
+}
+
+export interface OpenCashSession {
+  userId: number;
+  openingAmount: number;
+  notes?: string | null;
+}
+
+export interface CreateCashMovement {
+  userId: number;
+  type: string;
+  amount: number;
+  description?: string | null;
+}
+
+export interface CloseCashSession {
+  userId: number;
+  countedAmount: number;
+  notes?: string | null;
 }

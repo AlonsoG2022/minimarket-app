@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { Product, Sale } from '../../core/models/minimarket.models';
+import { CashSession, Product, Sale } from '../../core/models/minimarket.models';
 import { AuthService } from '../../core/services/auth.service';
+import { CashSessionsService } from '../../core/services/cash-sessions.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
@@ -22,6 +23,7 @@ export class SalesFormComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private lowStockNoticeTimeout?: ReturnType<typeof setTimeout>;
   readonly authService = inject(AuthService);
+  private readonly cashSessionsService = inject(CashSessionsService);
   private readonly salesService = inject(SalesService);
   private readonly productsService = inject(ProductsService);
   private readonly reportsService = inject(ReportsService);
@@ -35,11 +37,14 @@ export class SalesFormComponent implements OnInit {
   products: Product[] = [];
   recentSales: Sale[] = [];
   selectedSale?: Sale;
+  currentCashSession?: CashSession | null;
+  printableSale?: Sale;
   lastSaleId?: number;
   productSearch = '';
   quickQuantity = 1;
   showNotes = false;
   loading = true;
+  loadingCashSession = true;
   refreshingProducts = false;
   loadingSalesHistory = true;
   message = '';
@@ -105,6 +110,7 @@ export class SalesFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
+    this.loadCurrentCashSession();
     this.productsService.getAll().subscribe({
       next: (products) => {
         this.products = products.filter((product) => product.isActive);
@@ -176,6 +182,7 @@ export class SalesFormComponent implements OnInit {
 
   submit(): void {
     const currentUser = this.authService.session();
+    const ticketItemsSnapshot = this.currentItems.map((item) => ({ ...item }));
     const saleDetails = this.currentItems.map((item) => ({
       productId: item.productId,
       quantity: item.quantity
@@ -194,21 +201,43 @@ export class SalesFormComponent implements OnInit {
       return;
     }
 
+    if (!this.currentCashSession || this.currentCashSession.status.toLowerCase() !== 'abierta') {
+      this.error = 'Debes abrir caja antes de registrar una venta.';
+      this.message = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
     const payload = this.form.getRawValue();
 
     this.salesService.create({
       userId: currentUser.id,
+      cashSessionId: this.currentCashSession.id,
       paymentMethod: payload.paymentMethod ?? 'Efectivo',
       notes: payload.notes ?? '',
       details: saleDetails
     }).subscribe({
       next: (sale) => {
+        const printableSale = {
+          ...sale,
+          details: sale.details.map((detail) => {
+            const snapshot = ticketItemsSnapshot.find((item) => item.productId === detail.productId);
+            return {
+              ...detail,
+              productName: detail.productName?.trim() || snapshot?.productName || `Producto #${detail.productId}`,
+              unitPrice: detail.unitPrice || snapshot?.unitPrice || 0,
+              subtotal: detail.subtotal || snapshot?.subtotal || 0
+            };
+          })
+        };
+
         this.productsService.invalidateCache();
         this.reportsService.invalidateDashboardCache();
         this.message = `Venta registrada correctamente. Codigo #${sale.id}.`;
         this.error = '';
         this.clearLowStockNotice();
         this.lastSaleId = sale.id;
+        this.printableSale = printableSale;
         this.productSearch = '';
         this.quickQuantity = 1;
         this.showNotes = false;
@@ -233,6 +262,8 @@ export class SalesFormComponent implements OnInit {
             this.cdr.detectChanges();
           }
         });
+        this.cashSessionsService.invalidateCurrent(currentUser.id);
+        this.loadCurrentCashSession(true);
         this.loadRecentSales(true);
         this.cdr.detectChanges();
       },
@@ -321,10 +352,140 @@ export class SalesFormComponent implements OnInit {
     this.selectedSale = undefined;
   }
 
+  closePrintableTicket(): void {
+    this.printableSale = undefined;
+  }
+
+  printTicket(): void {
+    if (!this.printableSale) {
+      return;
+    }
+
+    const receiptWindow = window.open('', '_blank', 'width=420,height=720');
+    if (!receiptWindow) {
+      this.error = 'No se pudo abrir la ventana de impresion. Revisa si el navegador bloqueo la accion.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const sale = this.printableSale;
+    const itemsHtml = sale.details.map((detail) => `
+      <div class="item">
+        <div class="product">
+          <strong>${this.escapeHtml(detail.productName)}</strong>
+          <span>${detail.quantity} x ${this.formatCurrency(detail.unitPrice)}</span>
+        </div>
+        <strong>${this.formatCurrency(detail.subtotal)}</strong>
+      </div>
+    `).join('');
+
+    const totalUnits = sale.details.reduce((sum, detail) => sum + detail.quantity, 0);
+
+    receiptWindow.document.write(`
+      <!doctype html>
+      <html lang="es">
+        <head>
+          <meta charset="utf-8">
+          <title>Ticket ${sale.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 18px; color: #2d1e15; }
+            .receipt { max-width: 340px; margin: 0 auto; }
+            .header, .footer { text-align: center; }
+            .header strong { display:block; font-size:18px; margin-bottom:4px; }
+            .header small, .meta span, .item span, .notes span, .totals span { color:#6b5a4b; }
+            .meta, .notes, .footer, .totals { display:flex; justify-content:space-between; gap:12px; }
+            .meta { margin: 14px 0; }
+            .meta div { flex: 1 1 0; display:grid; gap: 2px; }
+            .item { display:flex; justify-content:space-between; gap:10px; align-items:start; padding:10px 0; border-bottom:1px dashed #d5c4b4; }
+            .product { display:grid; gap:2px; }
+            .product strong { font-size:14px; line-height:1.35; }
+            .item strong:last-child { text-align:right; white-space:nowrap; }
+            .totals { margin-top: 12px; }
+            .totals div { flex:1 1 0; display:grid; gap:2px; }
+            .notes { margin-top: 12px; }
+            .footer { margin-top: 16px; padding-top: 12px; border-top:1px dashed #d5c4b4; font-size:20px; font-weight:700; }
+          </style>
+        </head>
+        <body>
+          <article class="receipt">
+            <header class="header">
+              <strong>Minimarket</strong>
+              <div>Ticket de venta</div>
+              <small>#${sale.id} · ${this.formatDateTime(sale.saleDate)}</small>
+            </header>
+            <section class="meta">
+              <div><span>Cajero</span><strong>${this.escapeHtml(sale.userName)}</strong></div>
+              <div><span>Pago</span><strong>${this.escapeHtml(sale.paymentMethod)}</strong></div>
+            </section>
+            <section>${itemsHtml}</section>
+            <section class="totals">
+              <div><span>Items</span><strong>${sale.details.length}</strong></div>
+              <div><span>Unidades</span><strong>${totalUnits}</strong></div>
+            </section>
+            ${sale.notes ? `<section class="notes"><span>Notas</span><strong>${this.escapeHtml(sale.notes)}</strong></section>` : ''}
+            <footer class="footer"><span>Total</span><strong>${this.formatCurrency(sale.total)}</strong></footer>
+          </article>
+          <script>
+            window.onload = function () {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    receiptWindow.document.close();
+  }
+
   private createDetailGroup(productId: number, quantity: number) {
     return this.fb.group({
       productId: [productId, [Validators.required, Validators.min(1)]],
       quantity: [quantity, [Validators.required, Validators.min(1)]]
     });
+  }
+
+  private loadCurrentCashSession(forceRefresh = false): void {
+    const currentUser = this.authService.session();
+    if (!currentUser) {
+      this.loadingCashSession = false;
+      return;
+    }
+
+    this.loadingCashSession = true;
+    this.cashSessionsService.getCurrent(currentUser.id, forceRefresh).subscribe({
+      next: (session) => {
+        this.currentCashSession = session;
+        this.loadingCashSession = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.currentCashSession = null;
+        this.loadingCashSession = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN',
+      minimumFractionDigits: 2
+    }).format(value);
+  }
+
+  private formatDateTime(value: string): string {
+    return new Intl.DateTimeFormat('es-PE', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(value));
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
   }
 }

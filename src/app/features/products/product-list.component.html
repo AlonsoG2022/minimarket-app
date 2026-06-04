@@ -115,49 +115,49 @@
         <button type="button" class="secondary" (click)="resetForm()">Cerrar</button>
       </div>
 
-      <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+      <form class="form-grid" [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
         <div>
           <label for="name">Nombre</label>
-          <input id="name" formControlName="name">
+          <input id="name" formControlName="name" autocomplete="off">
           <small class="field-hint">El SKU se genera automaticamente segun la categoria seleccionada.</small>
         </div>
 
         <div>
           <label for="price">Precio</label>
-          <input id="price" type="number" min="0" step="0.01" formControlName="price">
+          <input id="price" type="number" min="0" step="0.01" formControlName="price" autocomplete="off">
         </div>
 
         <div>
           <label for="barcode">Codigo de barras</label>
-          <input id="barcode" formControlName="barcode" placeholder="Se usara para compras y ventas">
+          <input id="barcode" formControlName="barcode" placeholder="Se usara para compras y ventas" autocomplete="off">
           <small class="field-hint">Usaremos un solo codigo de barras para registrar compras y ventas de este producto.</small>
         </div>
 
         <div>
           <label for="salesUnitName">Unidad de venta</label>
-          <input id="salesUnitName" formControlName="salesUnitName" placeholder="unidad, botella, sobre">
+          <input id="salesUnitName" formControlName="salesUnitName" placeholder="unidad, botella, sobre" autocomplete="off">
         </div>
 
         <div>
           <label for="purchaseUnitName">Unidad de compra</label>
-          <input id="purchaseUnitName" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba">
+          <input id="purchaseUnitName" formControlName="purchaseUnitName" placeholder="frasco, caja, jaba" autocomplete="off">
         </div>
 
         <div>
           <label for="unitsPerPurchaseUnit">Unidades por compra</label>
-          <input id="unitsPerPurchaseUnit" type="number" min="1" formControlName="unitsPerPurchaseUnit">
+          <input id="unitsPerPurchaseUnit" type="number" min="1" formControlName="unitsPerPurchaseUnit" autocomplete="off">
           <small class="field-hint">Ejemplo: frasco con 100 dulces = 100 unidades por compra.</small>
         </div>
 
         <div>
           <label for="expirationDate">Fecha de caducidad</label>
-          <input id="expirationDate" type="date" formControlName="expirationDate">
+          <input id="expirationDate" type="date" formControlName="expirationDate" autocomplete="off">
         </div>
 
         @if (isEditing) {
         <div>
           <label for="stock">Stock</label>
-          <input id="stock" type="number" min="0" formControlName="stock">
+          <input id="stock" type="number" min="0" formControlName="stock" autocomplete="off">
         </div>
         } @else {
         <div>
@@ -188,7 +188,7 @@
 
         <div class="full-width">
           <label for="description">Descripcion</label>
-          <textarea id="description" rows="3" formControlName="description"></textarea>
+          <textarea id="description" rows="3" formControlName="description" autocomplete="off"></textarea>
         </div>
 
         <div class="checkbox-row full-width">

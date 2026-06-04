@@ -3,40 +3,40 @@
     <h2 class="section-title">{{ isEditing ? 'Editar proveedor' : 'Proveedores' }}</h2>
     <p class="section-copy">Registra los proveedores base para luego asociarles compras y documentos.</p>
 
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
       <div>
         <label for="name">Nombre</label>
-        <input id="name" formControlName="name" placeholder="Ej. Distribuidora Norte">
+        <input id="name" formControlName="name" placeholder="Ej. Distribuidora Norte" autocomplete="off">
       </div>
 
       <div>
         <label for="documentNumber">Documento</label>
-        <input id="documentNumber" formControlName="documentNumber" placeholder="RUC o DNI">
+        <input id="documentNumber" formControlName="documentNumber" placeholder="RUC o DNI" autocomplete="off">
       </div>
 
       <div>
         <label for="contactName">Contacto</label>
-        <input id="contactName" formControlName="contactName" placeholder="Persona de contacto">
+        <input id="contactName" formControlName="contactName" placeholder="Persona de contacto" autocomplete="off">
       </div>
 
       <div>
         <label for="phone">Telefono</label>
-        <input id="phone" formControlName="phone" placeholder="987654321">
+        <input id="phone" formControlName="phone" placeholder="987654321" autocomplete="off">
       </div>
 
       <div>
         <label for="email">Correo</label>
-        <input id="email" formControlName="email" placeholder="ventas@proveedor.pe">
+        <input id="email" formControlName="email" placeholder="ventas@proveedor.pe" autocomplete="off">
       </div>
 
       <div>
         <label for="address">Direccion</label>
-        <input id="address" formControlName="address" placeholder="Av. Principal 123">
+        <input id="address" formControlName="address" placeholder="Av. Principal 123" autocomplete="off">
       </div>
 
       <div class="full-width">
         <label for="notes">Notas</label>
-        <textarea id="notes" rows="3" formControlName="notes"></textarea>
+        <textarea id="notes" rows="3" formControlName="notes" autocomplete="off"></textarea>
       </div>
 
       <div class="checkbox-row full-width">

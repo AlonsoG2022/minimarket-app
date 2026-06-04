@@ -1,0 +1,14 @@
+[2026-06-04 12:17:20.076] [000090C4] === Logging started ===
+[2026-06-04 12:17:20.091] [000090C4] Executing: "C:\Program Files\dotnet\dotnet.exe" build --no-restore, PID: 37060, PPID: 31540
+[2026-06-04 12:17:20.099] [000090C4] IsElevated: False
+[2026-06-04 12:17:20.099] [000090C4] Is64BitProcess: True
+[2026-06-04 12:17:20.099] [000090C4] RebootPending: False
+[2026-06-04 12:17:20.099] [000090C4] ProcessorArchitecture: amd64
+[2026-06-04 12:17:20.099] [000090C4] HostArchitecture: x64
+[2026-06-04 12:17:20.099] [000090C4] SdkDirectory: 9.0.305
+[2026-06-04 12:17:20.099] [000090C4] VerifySignatures: False
+[2026-06-04 12:17:20.099] [000090C4] SDK feature band: 9.0.300
+[2026-06-04 12:17:26.814] [000090C4] Shutting down
+[2026-06-04 12:17:26.814] [000090C4] Shutdown completed.
+[2026-06-04 12:17:26.814] [000090C4] Restart required: False
+[2026-06-04 12:17:26.815] [000090C4] === Logging ended ===

@@ -549,6 +549,215 @@ ALTER TABLE dbo.Proveedores ALTER COLUMN Activo BIT NOT NULL;
 GO
 
 /* =========================================================
+   CAJA SESIONES
+   ========================================================= */
+IF OBJECT_ID('dbo.CajaSesiones', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CajaSesiones
+    (
+        Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_CajaSesiones PRIMARY KEY,
+        UsuarioId INT NOT NULL,
+        FechaApertura DATETIME2 NOT NULL CONSTRAINT DF_CajaSesiones_FechaApertura DEFAULT (SYSDATETIME()),
+        FechaCierre DATETIME2 NULL,
+        MontoInicial DECIMAL(10,2) NOT NULL,
+        MontoEsperadoCierre DECIMAL(10,2) NULL,
+        MontoContadoCierre DECIMAL(10,2) NULL,
+        Diferencia DECIMAL(10,2) NULL,
+        Estado NVARCHAR(20) NOT NULL CONSTRAINT DF_CajaSesiones_Estado DEFAULT ('abierta'),
+        Notas NVARCHAR(250) NULL
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'UsuarioId') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD UsuarioId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'FechaApertura') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD FechaApertura DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'FechaCierre') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD FechaCierre DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'MontoInicial') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD MontoInicial DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'MontoEsperadoCierre') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD MontoEsperadoCierre DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'MontoContadoCierre') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD MontoContadoCierre DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'Diferencia') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD Diferencia DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'Estado') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD Estado NVARCHAR(20) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaSesiones', 'Notas') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaSesiones ADD Notas NVARCHAR(250) NULL;
+END;
+GO
+
+UPDATE dbo.CajaSesiones
+SET
+    UsuarioId = ISNULL(UsuarioId, 1),
+    FechaApertura = ISNULL(FechaApertura, SYSDATETIME()),
+    MontoInicial = ISNULL(MontoInicial, 0),
+    Estado = ISNULL(NULLIF(Estado, ''), 'abierta')
+WHERE UsuarioId IS NULL OR FechaApertura IS NULL OR MontoInicial IS NULL OR Estado IS NULL;
+GO
+
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN UsuarioId INT NOT NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN FechaApertura DATETIME2 NOT NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN FechaCierre DATETIME2 NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN MontoInicial DECIMAL(10,2) NOT NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN MontoEsperadoCierre DECIMAL(10,2) NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN MontoContadoCierre DECIMAL(10,2) NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN Diferencia DECIMAL(10,2) NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN Estado NVARCHAR(20) NOT NULL;
+ALTER TABLE dbo.CajaSesiones ALTER COLUMN Notas NVARCHAR(250) NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaSesiones_FechaApertura')
+BEGIN
+    ALTER TABLE dbo.CajaSesiones
+    ADD CONSTRAINT DF_CajaSesiones_FechaApertura DEFAULT (SYSDATETIME()) FOR FechaApertura;
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaSesiones_Estado')
+BEGIN
+    ALTER TABLE dbo.CajaSesiones
+    ADD CONSTRAINT DF_CajaSesiones_Estado DEFAULT ('abierta') FOR Estado;
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_CajaSesiones_Usuarios')
+BEGIN
+    ALTER TABLE dbo.CajaSesiones
+    ADD CONSTRAINT FK_CajaSesiones_Usuarios FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id);
+END;
+GO
+
+/* =========================================================
+   CAJA MOVIMIENTOS
+   ========================================================= */
+IF OBJECT_ID('dbo.CajaMovimientos', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CajaMovimientos
+    (
+        Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_CajaMovimientos PRIMARY KEY,
+        CajaSesionId INT NOT NULL,
+        FechaMovimiento DATETIME2 NOT NULL CONSTRAINT DF_CajaMovimientos_FechaMovimiento DEFAULT (SYSDATETIME()),
+        Tipo NVARCHAR(30) NOT NULL,
+        Monto DECIMAL(10,2) NOT NULL,
+        Descripcion NVARCHAR(250) NULL,
+        TipoReferencia NVARCHAR(30) NULL,
+        ReferenciaId INT NULL
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'CajaSesionId') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD CajaSesionId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'FechaMovimiento') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD FechaMovimiento DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'Tipo') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD Tipo NVARCHAR(30) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'Monto') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD Monto DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'Descripcion') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD Descripcion NVARCHAR(250) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'TipoReferencia') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD TipoReferencia NVARCHAR(30) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.CajaMovimientos', 'ReferenciaId') IS NULL
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos ADD ReferenciaId INT NULL;
+END;
+GO
+
+UPDATE dbo.CajaMovimientos
+SET
+    CajaSesionId = ISNULL(CajaSesionId, 0),
+    FechaMovimiento = ISNULL(FechaMovimiento, SYSDATETIME()),
+    Tipo = ISNULL(NULLIF(Tipo, ''), 'ingreso'),
+    Monto = ISNULL(Monto, 0)
+WHERE CajaSesionId IS NULL OR FechaMovimiento IS NULL OR Tipo IS NULL OR Monto IS NULL;
+GO
+
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN CajaSesionId INT NOT NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN FechaMovimiento DATETIME2 NOT NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN Tipo NVARCHAR(30) NOT NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN Monto DECIMAL(10,2) NOT NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN Descripcion NVARCHAR(250) NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN TipoReferencia NVARCHAR(30) NULL;
+ALTER TABLE dbo.CajaMovimientos ALTER COLUMN ReferenciaId INT NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaMovimientos_FechaMovimiento')
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos
+    ADD CONSTRAINT DF_CajaMovimientos_FechaMovimiento DEFAULT (SYSDATETIME()) FOR FechaMovimiento;
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_CajaMovimientos_CajaSesiones')
+BEGIN
+    ALTER TABLE dbo.CajaMovimientos
+    ADD CONSTRAINT FK_CajaMovimientos_CajaSesiones FOREIGN KEY (CajaSesionId) REFERENCES dbo.CajaSesiones(Id) ON DELETE CASCADE;
+END;
+GO
+
+/* =========================================================
    COMPRAS
    ========================================================= */
 IF OBJECT_ID('dbo.Compras', 'U') IS NULL
@@ -771,6 +980,7 @@ BEGIN
         Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Ventas PRIMARY KEY,
         FechaVenta DATETIME2 NOT NULL CONSTRAINT DF_Ventas_FechaVenta DEFAULT (SYSDATETIME()),
         UsuarioId INT NOT NULL,
+        CajaSesionId INT NULL,
         Total DECIMAL(10,2) NOT NULL,
         MetodoPago NVARCHAR(30) NOT NULL,
         Notas NVARCHAR(250) NULL
@@ -793,6 +1003,12 @@ GO
 IF COL_LENGTH('dbo.Ventas', 'Total') IS NULL
 BEGIN
     ALTER TABLE dbo.Ventas ADD Total DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Ventas', 'CajaSesionId') IS NULL
+BEGIN
+    ALTER TABLE dbo.Ventas ADD CajaSesionId INT NULL;
 END;
 GO
 
@@ -821,6 +1037,7 @@ GO
 
 ALTER TABLE dbo.Ventas ALTER COLUMN FechaVenta DATETIME2 NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN UsuarioId INT NOT NULL;
+ALTER TABLE dbo.Ventas ALTER COLUMN CajaSesionId INT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN Total DECIMAL(10,2) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN MetodoPago NVARCHAR(30) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN Notas NVARCHAR(250) NULL;
@@ -848,6 +1065,19 @@ BEGIN
     ALTER TABLE dbo.Ventas
     ADD CONSTRAINT FK_Ventas_Usuarios
         FOREIGN KEY (UsuarioId) REFERENCES dbo.Usuarios(Id);
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.foreign_keys
+    WHERE name = 'FK_Ventas_CajaSesiones'
+)
+BEGIN
+    ALTER TABLE dbo.Ventas
+    ADD CONSTRAINT FK_Ventas_CajaSesiones
+        FOREIGN KEY (CajaSesionId) REFERENCES dbo.CajaSesiones(Id);
 END;
 GO
 

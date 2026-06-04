@@ -49,6 +49,7 @@ public static class MappingExtensions
             sale.SaleDate,
             sale.UserId,
             sale.User?.FullName ?? string.Empty,
+            sale.CashSessionId,
             sale.PaymentMethod,
             sale.Total,
             sale.Notes,
@@ -61,6 +62,48 @@ public static class MappingExtensions
                     detail.UnitPrice,
                     detail.Subtotal))
                 .ToList());
+
+    public static CashSessionDto ToDto(this CashSession session)
+    {
+        var currentAmount = session.OpeningAmount;
+
+        foreach (var movement in session.Movements)
+        {
+            currentAmount += movement.Type.ToLowerInvariant() switch
+            {
+                "ingreso" => movement.Amount,
+                "venta_efectivo" => movement.Amount,
+                "retiro" => -movement.Amount,
+                "gasto" => -movement.Amount,
+                _ => 0m
+            };
+        }
+
+        return new CashSessionDto(
+            session.Id,
+            session.UserId,
+            session.User?.FullName ?? string.Empty,
+            session.OpenedAt,
+            session.ClosedAt,
+            session.OpeningAmount,
+            session.ClosingExpectedAmount,
+            session.ClosingCountedAmount,
+            session.Difference,
+            session.Status,
+            session.Notes,
+            currentAmount,
+            session.Movements
+                .OrderByDescending(movement => movement.MovementDate)
+                .Select(movement => new CashMovementDto(
+                    movement.Id,
+                    movement.MovementDate,
+                    movement.Type,
+                    movement.Amount,
+                    movement.Description,
+                    movement.ReferenceType,
+                    movement.ReferenceId))
+                .ToList());
+    }
 
     public static PurchaseDto ToDto(this Purchase purchase) =>
         new(

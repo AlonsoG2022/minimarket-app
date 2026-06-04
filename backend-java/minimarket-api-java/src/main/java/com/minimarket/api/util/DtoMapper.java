@@ -2,6 +2,7 @@ package com.minimarket.api.util;
 
 import com.minimarket.api.dto.*;
 import com.minimarket.api.entity.Category;
+import com.minimarket.api.entity.CashSession;
 import com.minimarket.api.entity.Product;
 import com.minimarket.api.entity.Purchase;
 import com.minimarket.api.entity.Sale;
@@ -86,10 +87,52 @@ public final class DtoMapper {
             sale.getSaleDate(),
             sale.getUserId(),
             sale.getUser() != null ? sale.getUser().getFullName() : "",
+            sale.getCashSessionId(),
             sale.getPaymentMethod(),
             sale.getTotal(),
             sale.getNotes(),
             details
+        );
+    }
+
+    public static CashSessionDto toDto(CashSession session) {
+        var currentAmount = session.getOpeningAmount();
+
+        for (var movement : session.getMovements()) {
+            switch (movement.getType().toLowerCase()) {
+                case "ingreso", "venta_efectivo" -> currentAmount = currentAmount.add(movement.getAmount());
+                case "retiro", "gasto" -> currentAmount = currentAmount.subtract(movement.getAmount());
+            }
+        }
+
+        var movements = session.getMovements()
+            .stream()
+            .sorted((left, right) -> right.getMovementDate().compareTo(left.getMovementDate()))
+            .map(movement -> new CashMovementDto(
+                movement.getId(),
+                movement.getMovementDate(),
+                movement.getType(),
+                movement.getAmount(),
+                movement.getDescription(),
+                movement.getReferenceType(),
+                movement.getReferenceId()
+            ))
+            .toList();
+
+        return new CashSessionDto(
+            session.getId(),
+            session.getUserId(),
+            session.getUser() != null ? session.getUser().getFullName() : "",
+            session.getOpenedAt(),
+            session.getClosedAt(),
+            session.getOpeningAmount(),
+            session.getClosingExpectedAmount(),
+            session.getClosingCountedAmount(),
+            session.getDifference(),
+            session.getStatus(),
+            session.getNotes(),
+            currentAmount,
+            movements
         );
     }
 

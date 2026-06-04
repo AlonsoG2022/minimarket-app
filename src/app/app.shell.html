@@ -33,9 +33,9 @@
       </section>
       }
 
-      @if (canAccessSales() || canAccessPurchases()) {
+      @if (canAccessSales() || canAccessCash() || canAccessPurchases()) {
       <section class="nav-module">
-        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas', '/compras'])" (click)="toggleModule('ventas')">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('ventas', ['/ventas', '/caja', '/compras'])" (click)="toggleModule('ventas')">
           <span class="nav-icon">VT</span>
           <span class="nav-copy">
             <span>Ventas</span>
@@ -44,8 +44,14 @@
           <span class="nav-caret">{{ isModuleExpanded('ventas', ['/ventas', '/compras']) ? '-' : '+' }}</span>
         </button>
 
-        @if (isModuleExpanded('ventas', ['/ventas', '/compras'])) {
+        @if (isModuleExpanded('ventas', ['/ventas', '/caja', '/compras'])) {
           <div class="nav-module__items">
+            @if (canAccessCash()) {
+            <a routerLink="/caja" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Caja</span>
+            </a>
+            }
             @if (canAccessSales()) {
             <a routerLink="/ventas" routerLinkActive="active">
               <span class="nav-bullet"></span>
@@ -156,7 +162,7 @@
 
       <div class="topbar__actions">
         @if (canAccessProducts()) {
-          <form class="global-search" (ngSubmit)="searchProducts()">
+          <form class="global-search" (ngSubmit)="searchProducts()" autocomplete="off">
             <label for="globalProductSearch">Buscar producto</label>
             <div class="global-search__bar">
               <input
@@ -164,6 +170,7 @@
                 type="text"
                 [(ngModel)]="productSearch"
                 name="productSearch"
+                autocomplete="off"
                 placeholder="Buscar por nombre del producto"
               >
               <button type="submit">Buscar</button>
