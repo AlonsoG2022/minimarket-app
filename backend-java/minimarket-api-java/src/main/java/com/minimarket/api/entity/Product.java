@@ -3,6 +3,7 @@ package com.minimarket.api.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,9 @@ public class Product {
 
     @Column(name = "StockMinimo", nullable = false)
     private Integer minimumStock;
+
+    @Column(name = "FechaCaducidad")
+    private LocalDate expirationDate;
 
     @Column(name = "UnidadVenta", nullable = false, length = 30)
     private String salesUnitName;
@@ -87,6 +91,8 @@ public class Product {
     public void setStock(Integer stock) { this.stock = stock; }
     public Integer getMinimumStock() { return minimumStock; }
     public void setMinimumStock(Integer minimumStock) { this.minimumStock = minimumStock; }
+    public LocalDate getExpirationDate() { return expirationDate; }
+    public void setExpirationDate(LocalDate expirationDate) { this.expirationDate = expirationDate; }
     public String getSalesUnitName() { return salesUnitName; }
     public void setSalesUnitName(String salesUnitName) { this.salesUnitName = salesUnitName; }
     public String getPurchaseUnitName() { return purchaseUnitName; }

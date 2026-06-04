@@ -24,6 +24,16 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             return (false, "Los datos del producto no son validos.", null);
         }
 
+        if (!TryResolveBarcode(dto.Barcode, dto.PurchaseBarcode, out var unifiedBarcode, out var barcodeError))
+        {
+            return (false, barcodeError, null);
+        }
+
+        if (!TryParseExpirationDate(dto.ExpirationDate, out var expirationDate, out var expirationError))
+        {
+            return (false, expirationError, null);
+        }
+
         var validationError = await ValidateBarcodesAsync(dto, null);
         if (validationError is not null)
         {
@@ -40,13 +50,14 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         {
             Name = dto.Name.Trim(),
             Sku = await GenerateSkuAsync(category.Name),
-            Barcode = NormalizeOptional(dto.Barcode),
-            PurchaseBarcode = NormalizeOptional(dto.PurchaseBarcode),
+            Barcode = unifiedBarcode,
+            PurchaseBarcode = unifiedBarcode,
             Description = dto.Description?.Trim(),
             Price = dto.Price,
             Cost = 0m,
             Stock = dto.Stock,
             MinimumStock = FixedMinimumStock,
+            ExpirationDate = expirationDate,
             SalesUnitName = NormalizeUnitName(dto.SalesUnitName),
             PurchaseUnitName = NormalizeUnitName(dto.PurchaseUnitName),
             UnitsPerPurchaseUnit = dto.UnitsPerPurchaseUnit,
@@ -74,6 +85,16 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             return (false, "Los datos del producto no son validos.", null);
         }
 
+        if (!TryResolveBarcode(dto.Barcode, dto.PurchaseBarcode, out var unifiedBarcode, out var barcodeError))
+        {
+            return (false, barcodeError, null);
+        }
+
+        if (!TryParseExpirationDate(dto.ExpirationDate, out var expirationDate, out var expirationError))
+        {
+            return (false, expirationError, null);
+        }
+
         var validationError = await ValidateBarcodesAsync(dto, id);
         if (validationError is not null)
         {
@@ -86,12 +107,13 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         }
 
         product.Name = dto.Name.Trim();
-        product.Barcode = NormalizeOptional(dto.Barcode);
-        product.PurchaseBarcode = NormalizeOptional(dto.PurchaseBarcode);
+        product.Barcode = unifiedBarcode;
+        product.PurchaseBarcode = unifiedBarcode;
         product.Description = dto.Description?.Trim();
         product.Price = dto.Price;
         product.Stock = dto.Stock;
         product.MinimumStock = FixedMinimumStock;
+        product.ExpirationDate = expirationDate;
         product.SalesUnitName = NormalizeUnitName(dto.SalesUnitName);
         product.PurchaseUnitName = NormalizeUnitName(dto.PurchaseUnitName);
         product.UnitsPerPurchaseUnit = dto.UnitsPerPurchaseUnit;
@@ -144,6 +166,12 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
                 continue;
             }
 
+            if (row.UnitsPerPurchaseUnit is <= 0)
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, "Las unidades por compra deben ser mayores que cero."));
+                continue;
+            }
+
             var category = await categoryRepository.GetByNameAsync(categoryName);
             if (category is null)
             {
@@ -151,21 +179,40 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
                 continue;
             }
 
+            if (!TryResolveBarcode(row.Barcode, row.Barcode, out var unifiedBarcode, out var barcodeError))
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, barcodeError!));
+                continue;
+            }
+
+            if (unifiedBarcode is not null && await BarcodeExistsForAnotherProductAsync(unifiedBarcode))
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, $"El codigo de barras '{unifiedBarcode}' ya existe."));
+                continue;
+            }
+
+            if (!TryParseExpirationDate(row.ExpirationDate, out var expirationDate, out var expirationError))
+            {
+                errors.Add(new ProductImportErrorDto(row.RowNumber, expirationError!));
+                continue;
+            }
+
             var product = new Product
             {
                 Name = name,
                 Sku = await GenerateSkuAsync(category.Name),
-                Barcode = null,
-                PurchaseBarcode = null,
-                Description = null,
+                Barcode = unifiedBarcode,
+                PurchaseBarcode = unifiedBarcode,
+                Description = NormalizeOptional(row.Description),
                 Price = row.Price,
                 Cost = 0m,
                 Stock = row.Stock,
                 MinimumStock = FixedMinimumStock,
-                SalesUnitName = "unidad",
-                PurchaseUnitName = "unidad",
-                UnitsPerPurchaseUnit = 1,
-                IsActive = true,
+                ExpirationDate = expirationDate,
+                SalesUnitName = NormalizeUnitName(row.SalesUnitName),
+                PurchaseUnitName = NormalizeUnitName(row.PurchaseUnitName),
+                UnitsPerPurchaseUnit = row.UnitsPerPurchaseUnit ?? 1,
+                IsActive = row.IsActive ?? true,
                 CategoryId = category.Id
             };
 
@@ -177,17 +224,26 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         return new ProductImportResultDto(createdCount, errors);
     }
 
-    public async Task<(bool Success, string? Error)> DeleteAsync(int id)
+    public async Task<(bool Success, string? Error, DeleteProductResultDto? Result)> DeleteAsync(int id)
     {
         var product = await productRepository.GetByIdAsync(id);
         if (product is null)
         {
-            return (false, "Producto no encontrado.");
+            return (false, "Producto no encontrado.", null);
+        }
+
+        var hasMovements = await productRepository.HasSaleDetailsAsync(id) || await productRepository.HasPurchaseDetailsAsync(id);
+        if (hasMovements)
+        {
+            product.IsActive = false;
+            productRepository.Update(product);
+            await productRepository.SaveChangesAsync();
+            return (true, null, new DeleteProductResultDto("El producto tiene compras o ventas registradas. Se desactivo en lugar de eliminarlo.", true));
         }
 
         productRepository.Remove(product);
         await productRepository.SaveChangesAsync();
-        return (true, null);
+        return (true, null, new DeleteProductResultDto("Producto eliminado correctamente.", false));
     }
 
     private async Task<string> GenerateSkuAsync(string categoryName)
@@ -251,42 +307,64 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
 
     private async Task<string?> ValidateBarcodesAsync(SaveProductDto dto, int? excludingId)
     {
-        var barcode = NormalizeOptional(dto.Barcode);
-        var purchaseBarcode = NormalizeOptional(dto.PurchaseBarcode);
+        if (!TryResolveBarcode(dto.Barcode, dto.PurchaseBarcode, out var barcode, out var barcodeError))
+        {
+            return barcodeError;
+        }
 
         if (barcode is not null && await productRepository.ExistsByBarcodeAsync(barcode, excludingId))
         {
-            return "El codigo de barras de venta ya existe.";
+            return "El codigo de barras ya existe.";
         }
 
-        if (barcode is not null)
+        if (barcode is not null && await productRepository.ExistsByPurchaseBarcodeAsync(barcode, excludingId))
         {
-            var existingPurchaseBarcode = await productRepository.GetByPurchaseBarcodeAsync(barcode);
-            if (existingPurchaseBarcode is not null
-                && existingPurchaseBarcode.Id != excludingId
-                && !string.Equals(existingPurchaseBarcode.Barcode, barcode, StringComparison.OrdinalIgnoreCase))
-            {
-                return "El codigo de barras de venta ya esta siendo usado como codigo de compra.";
-            }
-        }
-
-        if (purchaseBarcode is not null && await productRepository.ExistsByPurchaseBarcodeAsync(purchaseBarcode, excludingId))
-        {
-            return "El codigo de barras de compra ya existe.";
-        }
-
-        if (purchaseBarcode is not null)
-        {
-            var existingBarcode = await productRepository.GetByBarcodeAsync(purchaseBarcode);
-            if (existingBarcode is not null
-                && existingBarcode.Id != excludingId
-                && !string.Equals(existingBarcode.PurchaseBarcode, purchaseBarcode, StringComparison.OrdinalIgnoreCase))
-            {
-                return "El codigo de barras de compra ya esta siendo usado como codigo de venta.";
-            }
+            return "El codigo de barras ya existe.";
         }
 
         return null;
+    }
+
+    private async Task<bool> BarcodeExistsForAnotherProductAsync(string barcode) =>
+        await productRepository.ExistsByBarcodeAsync(barcode) || await productRepository.ExistsByPurchaseBarcodeAsync(barcode);
+
+    private static bool TryResolveBarcode(string? barcodeValue, string? purchaseBarcodeValue, out string? unifiedBarcode, out string? error)
+    {
+        var barcode = NormalizeOptional(barcodeValue);
+        var purchaseBarcode = NormalizeOptional(purchaseBarcodeValue);
+
+        if (barcode is not null && purchaseBarcode is not null && !string.Equals(barcode, purchaseBarcode, StringComparison.OrdinalIgnoreCase))
+        {
+            unifiedBarcode = null;
+            error = "Usa un unico codigo de barras para compras y ventas.";
+            return false;
+        }
+
+        unifiedBarcode = barcode ?? purchaseBarcode;
+        error = null;
+        return true;
+    }
+
+    private static bool TryParseExpirationDate(string? rawValue, out DateOnly? expirationDate, out string? error)
+    {
+        var value = NormalizeOptional(rawValue);
+        if (value is null)
+        {
+            expirationDate = null;
+            error = null;
+            return true;
+        }
+
+        if (DateOnly.TryParseExact(value, ["yyyy-MM-dd", "dd/MM/yyyy", "d/M/yyyy"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        {
+            expirationDate = parsed;
+            error = null;
+            return true;
+        }
+
+        expirationDate = null;
+        error = "La fecha de caducidad no tiene un formato valido.";
+        return false;
     }
 
     private static string? NormalizeOptional(string? value)

@@ -246,13 +246,8 @@
         </div>
 
         <div>
-          <label for="newProductBarcode">Codigo de barras venta</label>
-          <input id="newProductBarcode" formControlName="barcode" placeholder="Opcional">
-        </div>
-
-        <div>
-          <label for="newProductPurchaseBarcode">Codigo de barras compra</label>
-          <input id="newProductPurchaseBarcode" formControlName="purchaseBarcode" placeholder="Codigo del paquete">
+          <label for="newProductBarcode">Codigo de barras</label>
+          <input id="newProductBarcode" formControlName="barcode" placeholder="Se usara para compras y ventas">
         </div>
 
         <div>
@@ -268,6 +263,11 @@
         <div>
           <label for="newProductUnitsPerPurchase">Unidades por compra</label>
           <input id="newProductUnitsPerPurchase" type="number" min="1" formControlName="unitsPerPurchaseUnit">
+        </div>
+
+        <div>
+          <label for="newProductExpirationDate">Fecha de caducidad</label>
+          <input id="newProductExpirationDate" type="date" formControlName="expirationDate">
         </div>
 
         <div class="full-width">

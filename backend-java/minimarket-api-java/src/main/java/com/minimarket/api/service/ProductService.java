@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +46,16 @@ public class ProductService {
             return ServiceResult.failure("Los datos del producto no son validos.");
         }
 
+        var resolvedBarcode = resolveUnifiedBarcode(dto.barcode(), dto.purchaseBarcode());
+        if (!resolvedBarcode.success()) {
+            return ServiceResult.failure(resolvedBarcode.error());
+        }
+
+        var parsedExpirationDate = parseExpirationDate(dto.expirationDate());
+        if (!parsedExpirationDate.success()) {
+            return ServiceResult.failure(parsedExpirationDate.error());
+        }
+
         var barcodeError = validateBarcodes(dto, null);
         if (barcodeError != null) {
             return ServiceResult.failure(barcodeError);
@@ -56,13 +69,14 @@ public class ProductService {
         var product = new Product();
         product.setName(dto.name().trim());
         product.setSku(generateSku(category.getName()));
-        product.setBarcode(normalizeOptional(dto.barcode()));
-        product.setPurchaseBarcode(normalizeOptional(dto.purchaseBarcode()));
+        product.setBarcode(resolvedBarcode.data());
+        product.setPurchaseBarcode(resolvedBarcode.data());
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setCost(java.math.BigDecimal.ZERO);
         product.setStock(dto.stock());
         product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setExpirationDate(parsedExpirationDate.data());
         product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
         product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
         product.setUnitsPerPurchaseUnit(dto.unitsPerPurchaseUnit());
@@ -85,6 +99,16 @@ public class ProductService {
             return ServiceResult.failure("Los datos del producto no son validos.");
         }
 
+        var resolvedBarcode = resolveUnifiedBarcode(dto.barcode(), dto.purchaseBarcode());
+        if (!resolvedBarcode.success()) {
+            return ServiceResult.failure(resolvedBarcode.error());
+        }
+
+        var parsedExpirationDate = parseExpirationDate(dto.expirationDate());
+        if (!parsedExpirationDate.success()) {
+            return ServiceResult.failure(parsedExpirationDate.error());
+        }
+
         var barcodeError = validateBarcodes(dto, id);
         if (barcodeError != null) {
             return ServiceResult.failure(barcodeError);
@@ -95,12 +119,13 @@ public class ProductService {
         }
 
         product.setName(dto.name().trim());
-        product.setBarcode(normalizeOptional(dto.barcode()));
-        product.setPurchaseBarcode(normalizeOptional(dto.purchaseBarcode()));
+        product.setBarcode(resolvedBarcode.data());
+        product.setPurchaseBarcode(resolvedBarcode.data());
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
         product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setExpirationDate(parsedExpirationDate.data());
         product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
         product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
         product.setUnitsPerPurchaseUnit(dto.unitsPerPurchaseUnit());
@@ -147,26 +172,54 @@ public class ProductService {
                 continue;
             }
 
+            var unitsPerPurchaseUnit = row.unitsPerPurchaseUnit() != null ? row.unitsPerPurchaseUnit() : 1;
+            if (unitsPerPurchaseUnit <= 0) {
+                errors.add(new ProductImportErrorDto(rowNumber, "Las unidades por compra deben ser mayores que cero."));
+                continue;
+            }
+
             var category = categoryRepository.findByNameIgnoreCase(categoryName).orElse(null);
             if (category == null) {
                 errors.add(new ProductImportErrorDto(rowNumber, "La categoria '%s' no existe.".formatted(categoryName)));
                 continue;
             }
 
+            var resolvedBarcode = resolveUnifiedBarcode(row.barcode(), row.barcode());
+            if (!resolvedBarcode.success()) {
+                errors.add(new ProductImportErrorDto(rowNumber, resolvedBarcode.error()));
+                continue;
+            }
+
+            if (resolvedBarcode.data() != null) {
+                var barcodeExists = productRepository.existsByBarcodeIgnoreCase(resolvedBarcode.data())
+                    || productRepository.existsByPurchaseBarcodeIgnoreCase(resolvedBarcode.data());
+                if (barcodeExists) {
+                    errors.add(new ProductImportErrorDto(rowNumber, "El codigo de barras '%s' ya existe.".formatted(resolvedBarcode.data())));
+                    continue;
+                }
+            }
+
+            var parsedExpirationDate = parseExpirationDate(row.expirationDate());
+            if (!parsedExpirationDate.success()) {
+                errors.add(new ProductImportErrorDto(rowNumber, parsedExpirationDate.error()));
+                continue;
+            }
+
             var product = new Product();
             product.setName(name);
             product.setSku(generateSku(category.getName()));
-            product.setBarcode(null);
-            product.setPurchaseBarcode(null);
-            product.setDescription(null);
+            product.setBarcode(resolvedBarcode.data());
+            product.setPurchaseBarcode(resolvedBarcode.data());
+            product.setDescription(normalizeOptional(row.description()));
             product.setPrice(row.price());
             product.setCost(java.math.BigDecimal.ZERO);
             product.setStock(stock);
             product.setMinimumStock(FIXED_MINIMUM_STOCK);
-            product.setSalesUnitName("unidad");
-            product.setPurchaseUnitName("unidad");
-            product.setUnitsPerPurchaseUnit(1);
-            product.setIsActive(true);
+            product.setExpirationDate(parsedExpirationDate.data());
+            product.setSalesUnitName(normalizeUnitName(row.salesUnitName()));
+            product.setPurchaseUnitName(normalizeUnitName(row.purchaseUnitName()));
+            product.setUnitsPerPurchaseUnit(unitsPerPurchaseUnit);
+            product.setIsActive(row.isActive() == null || row.isActive());
             product.setCategoryId(category.getId());
 
             productRepository.save(product);
@@ -177,14 +230,25 @@ public class ProductService {
     }
 
     @Transactional
-    public ServiceResult<Void> delete(Integer id) {
+    public ServiceResult<ProductDeleteResultDto> delete(Integer id) {
         var product = productRepository.findById(id).orElse(null);
         if (product == null) {
             return ServiceResult.failure("Producto no encontrado.");
         }
 
+        var hasMovements = productRepository.existsSaleDetailsByProductId(id)
+            || productRepository.existsPurchaseDetailsByProductId(id);
+        if (hasMovements) {
+            product.setIsActive(false);
+            productRepository.save(product);
+            return ServiceResult.success(new ProductDeleteResultDto(
+                "El producto tiene compras o ventas registradas. Se desactivo en lugar de eliminarlo.",
+                true
+            ));
+        }
+
         productRepository.delete(product);
-        return ServiceResult.success(null);
+        return ServiceResult.success(new ProductDeleteResultDto("Producto eliminado correctamente.", false));
     }
 
     private String generateSku(String categoryName) {
@@ -227,42 +291,63 @@ public class ProductService {
     }
 
     private String validateBarcodes(SaveProductDto dto, Integer excludingId) {
-        var barcode = normalizeOptional(dto.barcode());
-        var purchaseBarcode = normalizeOptional(dto.purchaseBarcode());
+        var resolvedBarcode = resolveUnifiedBarcode(dto.barcode(), dto.purchaseBarcode());
+        if (!resolvedBarcode.success()) {
+            return resolvedBarcode.error();
+        }
+
+        var barcode = resolvedBarcode.data();
 
         if (barcode != null) {
             var exists = excludingId == null
                 ? productRepository.existsByBarcodeIgnoreCase(barcode)
                 : productRepository.existsByBarcodeIgnoreCaseAndIdNot(barcode, excludingId);
             if (exists) {
-                return "El codigo de barras de venta ya existe.";
+                return "El codigo de barras ya existe.";
             }
 
-            var existingPurchaseBarcode = productRepository.findWithCategoryByPurchaseBarcode(barcode).orElse(null);
-            if (existingPurchaseBarcode != null
-                && !existingPurchaseBarcode.getId().equals(excludingId)
-                && (existingPurchaseBarcode.getBarcode() == null || !existingPurchaseBarcode.getBarcode().equalsIgnoreCase(barcode))) {
-                return "El codigo de barras de venta ya esta siendo usado como codigo de compra.";
-            }
-        }
-
-        if (purchaseBarcode != null) {
-            var exists = excludingId == null
-                ? productRepository.existsByPurchaseBarcodeIgnoreCase(purchaseBarcode)
-                : productRepository.existsByPurchaseBarcodeIgnoreCaseAndIdNot(purchaseBarcode, excludingId);
-            if (exists) {
-                return "El codigo de barras de compra ya existe.";
-            }
-
-            var existingBarcode = productRepository.findWithCategoryByBarcode(purchaseBarcode).orElse(null);
-            if (existingBarcode != null
-                && !existingBarcode.getId().equals(excludingId)
-                && (existingBarcode.getPurchaseBarcode() == null || !existingBarcode.getPurchaseBarcode().equalsIgnoreCase(purchaseBarcode))) {
-                return "El codigo de barras de compra ya esta siendo usado como codigo de venta.";
+            var existsInPurchaseBarcode = excludingId == null
+                ? productRepository.existsByPurchaseBarcodeIgnoreCase(barcode)
+                : productRepository.existsByPurchaseBarcodeIgnoreCaseAndIdNot(barcode, excludingId);
+            if (existsInPurchaseBarcode) {
+                return "El codigo de barras ya existe.";
             }
         }
 
         return null;
+    }
+
+    private ServiceResult<String> resolveUnifiedBarcode(String barcodeValue, String purchaseBarcodeValue) {
+        var barcode = normalizeOptional(barcodeValue);
+        var purchaseBarcode = normalizeOptional(purchaseBarcodeValue);
+
+        if (barcode != null && purchaseBarcode != null && !barcode.equalsIgnoreCase(purchaseBarcode)) {
+            return ServiceResult.failure("Usa un unico codigo de barras para compras y ventas.");
+        }
+
+        return ServiceResult.success(barcode != null ? barcode : purchaseBarcode);
+    }
+
+    private ServiceResult<LocalDate> parseExpirationDate(String rawValue) {
+        var value = normalizeOptional(rawValue);
+        if (value == null) {
+            return ServiceResult.success(null);
+        }
+
+        var patterns = List.of(
+            DateTimeFormatter.ISO_LOCAL_DATE,
+            DateTimeFormatter.ofPattern("d/M/yyyy"),
+            DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        );
+
+        for (var formatter : patterns) {
+            try {
+                return ServiceResult.success(LocalDate.parse(value, formatter));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+
+        return ServiceResult.failure("La fecha de caducidad no tiene un formato valido.");
     }
 
     private String normalizeOptional(String value) {

@@ -36,4 +36,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     boolean existsByPurchaseBarcodeIgnoreCase(String purchaseBarcode);
 
     boolean existsByPurchaseBarcodeIgnoreCaseAndIdNot(String purchaseBarcode, Integer id);
+
+    @Query("select count(sd) > 0 from SaleDetail sd where sd.productId = :productId")
+    boolean existsSaleDetailsByProductId(@Param("productId") Integer productId);
+
+    @Query("select count(pd) > 0 from PurchaseDetail pd where pd.productId = :productId")
+    boolean existsPurchaseDetailsByProductId(@Param("productId") Integer productId);
 }

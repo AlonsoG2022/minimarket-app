@@ -38,6 +38,7 @@ CREATE TABLE dbo.Productos
     Costo DECIMAL(10,2) NOT NULL DEFAULT 0,
     Stock INT NOT NULL,
     StockMinimo INT NOT NULL DEFAULT 5,
+    FechaCaducidad DATE NULL,
     UnidadVenta NVARCHAR(30) NOT NULL DEFAULT 'unidad',
     UnidadCompra NVARCHAR(30) NOT NULL DEFAULT 'unidad',
     UnidadesPorCompra INT NOT NULL DEFAULT 1,
@@ -140,13 +141,13 @@ VALUES
 ('Limpieza', 'Articulos de limpieza', 1);
 GO
 
-INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
 VALUES
-('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, 'unidad', 'fardo', 12, 1, 1),
-('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, 'unidad', 'fardo', 10, 1, 1),
-('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, 'botella', 'jaba', 12, 1, 2),
-('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, 'botella', 'jaba', 24, 1, 2),
-('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, 'unidad', 'caja', 12, 1, 3);
+('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, NULL, 'unidad', 'fardo', 12, 1, 1),
+('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, NULL, 'unidad', 'fardo', 10, 1, 1),
+('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, NULL, 'botella', 'jaba', 12, 1, 2),
+('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, NULL, 'botella', 'jaba', 24, 1, 2),
+('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, NULL, 'unidad', 'caja', 12, 1, 3);
 GO
 
 INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)

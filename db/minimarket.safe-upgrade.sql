@@ -164,6 +164,12 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.Productos', 'FechaCaducidad') IS NULL
+BEGIN
+    ALTER TABLE dbo.Productos ADD FechaCaducidad DATE NULL;
+END;
+GO
+
 IF COL_LENGTH('dbo.Productos', 'UnidadVenta') IS NULL
 BEGIN
     ALTER TABLE dbo.Productos ADD UnidadVenta NVARCHAR(30) NULL;
@@ -235,6 +241,7 @@ ALTER TABLE dbo.Productos ALTER COLUMN Precio DECIMAL(10,2) NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN Costo DECIMAL(10,2) NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN Stock INT NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN StockMinimo INT NOT NULL;
+ALTER TABLE dbo.Productos ALTER COLUMN FechaCaducidad DATE NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN UnidadVenta NVARCHAR(30) NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN UnidadCompra NVARCHAR(30) NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN UnidadesPorCompra INT NOT NULL;
@@ -1000,32 +1007,32 @@ END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-001')
 BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, 'unidad', 'fardo', 12, 1, @CategoriaAbarrotesId);
+    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+    VALUES ('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, NULL, 'unidad', 'fardo', 12, 1, @CategoriaAbarrotesId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-002')
 BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, 'unidad', 'fardo', 10, 1, @CategoriaAbarrotesId);
+    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+    VALUES ('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, NULL, 'unidad', 'fardo', 10, 1, @CategoriaAbarrotesId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-001')
 BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, 'botella', 'jaba', 12, 1, @CategoriaBebidasId);
+    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+    VALUES ('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, NULL, 'botella', 'jaba', 12, 1, @CategoriaBebidasId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-002')
 BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, 'botella', 'jaba', 24, 1, @CategoriaBebidasId);
+    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+    VALUES ('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, NULL, 'botella', 'jaba', 24, 1, @CategoriaBebidasId);
 END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'LIM-001')
 BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, 'unidad', 'caja', 12, 1, @CategoriaLimpiezaId);
+    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
+    VALUES ('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, NULL, 'unidad', 'caja', 12, 1, @CategoriaLimpiezaId);
 END;
 GO
 

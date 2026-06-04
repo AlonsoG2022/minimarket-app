@@ -34,7 +34,7 @@ export class PurchaseListComponent implements OnInit {
     categoryId: [0, [Validators.required, Validators.min(1)]],
     price: [0, [Validators.required, Validators.min(0.1)]],
     barcode: [''],
-    purchaseBarcode: [''],
+    expirationDate: [''],
     salesUnitName: ['unidad', Validators.required],
     purchaseUnitName: ['unidad', Validators.required],
     unitsPerPurchaseUnit: [1, [Validators.required, Validators.min(1)]],
@@ -332,8 +332,8 @@ export class PurchaseListComponent implements OnInit {
       name: '',
       categoryId: 0,
       price: 0,
-      barcode: '',
-      purchaseBarcode: scannedCode,
+      barcode: scannedCode,
+      expirationDate: '',
       salesUnitName: 'unidad',
       purchaseUnitName: 'unidad',
       unitsPerPurchaseUnit: 1,
@@ -355,12 +355,14 @@ export class PurchaseListComponent implements OnInit {
     }
 
     const value = this.productCreateForm.getRawValue();
+    const normalizedBarcode = value.barcode.trim() || null;
     const payload: SaveProduct = {
       name: value.name,
-      barcode: value.barcode || null,
-      purchaseBarcode: value.purchaseBarcode || null,
+      barcode: normalizedBarcode,
+      purchaseBarcode: normalizedBarcode,
       description: value.description || null,
       price: Number(value.price),
+      expirationDate: value.expirationDate || null,
       salesUnitName: value.salesUnitName,
       purchaseUnitName: value.purchaseUnitName,
       unitsPerPurchaseUnit: Number(value.unitsPerPurchaseUnit),
@@ -380,13 +382,13 @@ export class PurchaseListComponent implements OnInit {
         this.createProductError = '';
         this.message = `Producto ${product.name} creado y listo para agregar a la compra.`;
         this.error = '';
-        this.addProduct(product, this.quickPackageQuantity, this.pendingScannedCode || product.purchaseBarcode || null);
+        this.addProduct(product, this.quickPackageQuantity, this.pendingScannedCode || product.barcode || product.purchaseBarcode || null);
         this.productCreateForm.reset({
           name: '',
           categoryId: 0,
           price: 0,
           barcode: '',
-          purchaseBarcode: '',
+          expirationDate: '',
           salesUnitName: 'unidad',
           purchaseUnitName: 'unidad',
           unitsPerPurchaseUnit: 1,

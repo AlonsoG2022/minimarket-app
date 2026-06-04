@@ -37,6 +37,12 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
     public Task<bool> ExistsByPurchaseBarcodeAsync(string barcode, int? excludingId = null) =>
         context.Products.AnyAsync(x => x.PurchaseBarcode == barcode && (!excludingId.HasValue || x.Id != excludingId.Value));
 
+    public Task<bool> HasSaleDetailsAsync(int productId) =>
+        context.SaleDetails.AnyAsync(x => x.ProductId == productId);
+
+    public Task<bool> HasPurchaseDetailsAsync(int productId) =>
+        context.PurchaseDetails.AnyAsync(x => x.ProductId == productId);
+
     public Task<List<string>> GetSkusByPrefixAsync(string prefix) =>
         context.Products
             .AsNoTracking()

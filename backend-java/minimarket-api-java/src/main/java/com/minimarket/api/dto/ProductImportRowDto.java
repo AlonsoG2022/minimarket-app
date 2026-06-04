@@ -7,6 +7,13 @@ public record ProductImportRowDto(
     String name,
     BigDecimal price,
     String categoryName,
-    Integer stock
+    String barcode,
+    String description,
+    String salesUnitName,
+    String purchaseUnitName,
+    Integer unitsPerPurchaseUnit,
+    Integer stock,
+    String expirationDate,
+    Boolean isActive
 ) {
 }

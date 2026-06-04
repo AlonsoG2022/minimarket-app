@@ -37,6 +37,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.Property(x => x.Price).HasColumnName("Precio").HasColumnType("decimal(10,2)");
             entity.Property(x => x.Cost).HasColumnName("Costo").HasColumnType("decimal(10,2)");
             entity.Property(x => x.MinimumStock).HasColumnName("StockMinimo");
+            entity.Property(x => x.ExpirationDate).HasColumnName("FechaCaducidad").HasColumnType("date");
             entity.Property(x => x.SalesUnitName).HasColumnName("UnidadVenta").HasMaxLength(30).IsRequired();
             entity.Property(x => x.PurchaseUnitName).HasColumnName("UnidadCompra").HasMaxLength(30).IsRequired();
             entity.Property(x => x.UnitsPerPurchaseUnit).HasColumnName("UnidadesPorCompra");
@@ -161,11 +162,11 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             new Category { Id = 3, Name = "Limpieza", Description = "Articulos de limpieza", IsActive = true });
 
         modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, Name = "Arroz Superior 1Kg", Sku = "ABR-001", Description = "Bolsa de arroz blanco", Price = 4.50m, Cost = 3.60m, Stock = 80, MinimumStock = 5, SalesUnitName = "unidad", PurchaseUnitName = "fardo", UnitsPerPurchaseUnit = 12, CategoryId = 1, IsActive = true },
-            new Product { Id = 2, Name = "Azucar Rubia 1Kg", Sku = "ABR-002", Description = "Azucar rubia embolsada", Price = 4.20m, Cost = 3.30m, Stock = 60, MinimumStock = 5, SalesUnitName = "unidad", PurchaseUnitName = "fardo", UnitsPerPurchaseUnit = 10, CategoryId = 1, IsActive = true },
-            new Product { Id = 3, Name = "Gaseosa Cola 3L", Sku = "BEB-001", Description = "Botella retornable", Price = 9.80m, Cost = 7.20m, Stock = 30, MinimumStock = 5, SalesUnitName = "botella", PurchaseUnitName = "jaba", UnitsPerPurchaseUnit = 12, CategoryId = 2, IsActive = true },
-            new Product { Id = 4, Name = "Agua Mineral 625ml", Sku = "BEB-002", Description = "Botella personal", Price = 2.50m, Cost = 1.40m, Stock = 48, MinimumStock = 5, SalesUnitName = "botella", PurchaseUnitName = "jaba", UnitsPerPurchaseUnit = 24, CategoryId = 2, IsActive = true },
-            new Product { Id = 5, Name = "Detergente Floral 900g", Sku = "LIM-001", Description = "Detergente en polvo", Price = 8.90m, Cost = 6.80m, Stock = 22, MinimumStock = 5, SalesUnitName = "unidad", PurchaseUnitName = "caja", UnitsPerPurchaseUnit = 12, CategoryId = 3, IsActive = true });
+            new Product { Id = 1, Name = "Arroz Superior 1Kg", Sku = "ABR-001", Description = "Bolsa de arroz blanco", Price = 4.50m, Cost = 3.60m, Stock = 80, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "unidad", PurchaseUnitName = "fardo", UnitsPerPurchaseUnit = 12, CategoryId = 1, IsActive = true },
+            new Product { Id = 2, Name = "Azucar Rubia 1Kg", Sku = "ABR-002", Description = "Azucar rubia embolsada", Price = 4.20m, Cost = 3.30m, Stock = 60, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "unidad", PurchaseUnitName = "fardo", UnitsPerPurchaseUnit = 10, CategoryId = 1, IsActive = true },
+            new Product { Id = 3, Name = "Gaseosa Cola 3L", Sku = "BEB-001", Description = "Botella retornable", Price = 9.80m, Cost = 7.20m, Stock = 30, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "botella", PurchaseUnitName = "jaba", UnitsPerPurchaseUnit = 12, CategoryId = 2, IsActive = true },
+            new Product { Id = 4, Name = "Agua Mineral 625ml", Sku = "BEB-002", Description = "Botella personal", Price = 2.50m, Cost = 1.40m, Stock = 48, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "botella", PurchaseUnitName = "jaba", UnitsPerPurchaseUnit = 24, CategoryId = 2, IsActive = true },
+            new Product { Id = 5, Name = "Detergente Floral 900g", Sku = "LIM-001", Description = "Detergente en polvo", Price = 8.90m, Cost = 6.80m, Stock = 22, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "unidad", PurchaseUnitName = "caja", UnitsPerPurchaseUnit = 12, CategoryId = 3, IsActive = true });
 
         modelBuilder.Entity<Supplier>().HasData(
             new Supplier

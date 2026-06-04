@@ -27,9 +27,9 @@ export class ProductListComponent implements OnInit {
     id: [0],
     name: ['', Validators.required],
     barcode: [''],
-    purchaseBarcode: [''],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.1)]],
+    expirationDate: [''],
     salesUnitName: ['unidad', Validators.required],
     purchaseUnitName: ['unidad', Validators.required],
     unitsPerPurchaseUnit: [1, [Validators.required, Validators.min(1)]],
@@ -82,7 +82,7 @@ export class ProductListComponent implements OnInit {
   }
 
   loadData(forceRefreshProducts = false): void {
-    this.loadingProducts = true;  
+    this.loadingProducts = true;
     this.productsService.getAll(forceRefreshProducts).subscribe({
       next: (products) => {
         this.products = products;
@@ -119,12 +119,14 @@ export class ProductListComponent implements OnInit {
     }
 
     const value = this.form.getRawValue();
+    const normalizedBarcode = value.barcode.trim() || null;
     const payload: SaveProduct = {
       name: value.name,
-      barcode: value.barcode || null,
-      purchaseBarcode: value.purchaseBarcode || null,
+      barcode: normalizedBarcode,
+      purchaseBarcode: normalizedBarcode,
       description: value.description,
       price: Number(value.price),
+      expirationDate: value.expirationDate || null,
       salesUnitName: value.salesUnitName,
       purchaseUnitName: value.purchaseUnitName,
       unitsPerPurchaseUnit: Number(value.unitsPerPurchaseUnit),
@@ -162,10 +164,10 @@ export class ProductListComponent implements OnInit {
     this.form.patchValue({
       id: product.id,
       name: product.name,
-      barcode: product.barcode ?? '',
-      purchaseBarcode: product.purchaseBarcode ?? '',
+      barcode: product.barcode ?? product.purchaseBarcode ?? '',
       description: product.description ?? '',
       price: product.price,
+      expirationDate: product.expirationDate ?? '',
       salesUnitName: product.salesUnitName,
       purchaseUnitName: product.purchaseUnitName,
       unitsPerPurchaseUnit: product.unitsPerPurchaseUnit,
@@ -182,14 +184,14 @@ export class ProductListComponent implements OnInit {
     }
 
     this.productsService.delete(product.id).subscribe({
-      next: () => {
-        this.message = 'Producto eliminado.';
+      next: (result) => {
+        this.message = result.message;
         this.error = '';
         this.loadData(true);
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.error = 'No se pudo eliminar el producto.';
+      error: (response) => {
+        this.error = response.error?.message ?? 'No se pudo eliminar el producto.';
         this.cdr.detectChanges();
       }
     });
@@ -202,9 +204,9 @@ export class ProductListComponent implements OnInit {
       id: 0,
       name: '',
       barcode: '',
-      purchaseBarcode: '',
       description: '',
       price: 0,
+      expirationDate: '',
       salesUnitName: 'unidad',
       purchaseUnitName: 'unidad',
       unitsPerPurchaseUnit: 1,
@@ -228,9 +230,9 @@ export class ProductListComponent implements OnInit {
       id: 0,
       name: '',
       barcode: '',
-      purchaseBarcode: '',
       description: '',
       price: 0,
+      expirationDate: '',
       salesUnitName: 'unidad',
       purchaseUnitName: 'unidad',
       unitsPerPurchaseUnit: 1,
@@ -243,7 +245,7 @@ export class ProductListComponent implements OnInit {
 
   downloadImportTemplate(): void {
     const productsWorksheet = utils.aoa_to_sheet([
-      ['NombreProducto', 'Precio', 'Categoria', 'Stock']
+      ['NombreProducto', 'Precio', 'Categoria', 'CodigoBarras', 'UnidadVenta', 'UnidadCompra', 'UnidadesPorCompra', 'Stock', 'FechaCaducidad']
     ]);
     const categoriesWorksheet = utils.aoa_to_sheet([
       ['Categoria'],
@@ -270,15 +272,16 @@ export class ProductListComponent implements OnInit {
         NombreProducto: product.name,
         Precio: product.price,
         Categoria: product.categoryName,
-        Stock: product.stock,
-        SKU: product.sku,
-        CodigoBarras: product.barcode ?? '',
-        CodigoBarrasCompra: product.purchaseBarcode ?? '',
+        CodigoBarras: product.barcode ?? product.purchaseBarcode ?? '',
+        Descripcion: product.description ?? '',
         UnidadVenta: product.salesUnitName,
         UnidadCompra: product.purchaseUnitName,
         UnidadesPorCompra: product.unitsPerPurchaseUnit,
-        Costo: product.cost,
-        Activo: product.isActive ? 'Si' : 'No'
+        Stock: product.stock,
+        FechaCaducidad: product.expirationDate ?? '',
+        Activo: product.isActive ? 'Si' : 'No',
+        SKU: product.sku,
+        Costo: product.cost
       }));
 
     const worksheet = utils.json_to_sheet(rows);
@@ -364,19 +367,32 @@ export class ProductListComponent implements OnInit {
         const name = this.readCell(row, ['NombreProducto', 'Nombre Producto', 'nombreproducto']);
         const categoryName = this.readCell(row, ['Categoria', 'Categoría', 'categoria']);
         const priceText = this.readCell(row, ['Precio', 'precio']);
+        const barcode = this.readCell(row, ['CodigoBarras', 'Codigo Barras', 'codigoBarras', 'codigobarras']);
+        const salesUnitName = this.readCell(row, ['UnidadVenta', 'Unidad Venta', 'unidadventa']);
+        const purchaseUnitName = this.readCell(row, ['UnidadCompra', 'Unidad Compra', 'unidadcompra']);
+        const unitsPerPurchaseText = this.readCell(row, ['UnidadesPorCompra', 'Unidades Por Compra', 'unidadesporcompra']);
         const stockText = this.readCell(row, ['Stock', 'stock']);
+        const expirationDateText = this.readCell(row, ['FechaCaducidad', 'Fecha Caducidad', 'fechacaducidad', 'Caducidad']);
         const normalizedPrice = priceText.replace(',', '.').trim();
+        const normalizedUnitsPerPurchase = unitsPerPurchaseText.replace(',', '.').trim();
         const normalizedStock = stockText.replace(',', '.').trim();
 
         return {
           rowNumber: index + 2,
           name: name.trim(),
           categoryName: categoryName.trim(),
+          barcode: barcode.trim() || null,
+          description: null,
           price: Number(normalizedPrice),
-          stock: normalizedStock ? Number(normalizedStock) : 0
+          salesUnitName: salesUnitName.trim() || 'unidad',
+          purchaseUnitName: purchaseUnitName.trim() || 'unidad',
+          unitsPerPurchaseUnit: normalizedUnitsPerPurchase ? Number(normalizedUnitsPerPurchase) : 1,
+          stock: normalizedStock ? Number(normalizedStock) : 0,
+          expirationDate: this.normalizeImportDate(expirationDateText),
+          isActive: true
         };
       })
-      .filter((row) => row.name || row.categoryName || Number.isFinite(row.price) || row.stock > 0);
+      .filter((row) => row.name || row.categoryName || Number.isFinite(row.price) || row.stock > 0 || !!row.barcode);
   }
 
   private readCell(row: Record<string, unknown>, keys: string[]): string {
@@ -388,4 +404,24 @@ export class ProductListComponent implements OnInit {
 
     return '';
   }
+
+  private normalizeImportDate(rawValue: string): string | null {
+    const value = rawValue.trim();
+    if (!value) {
+      return null;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+
+    const slashMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, first, second, year] = slashMatch;
+      return `${year}-${second.padStart(2, '0')}-${first.padStart(2, '0')}`;
+    }
+
+    return value;
+  }
+
 }

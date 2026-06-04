@@ -72,9 +72,13 @@ public class ProductsController {
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         var result = productService.delete(id);
         if (!result.success()) {
-            return ResponseEntity.status(404).body(new ApiMessageResponse(result.error()));
+            if ("Producto no encontrado.".equals(result.error())) {
+                return ResponseEntity.status(404).body(new ApiMessageResponse(result.error()));
+            }
+
+            return ResponseEntity.badRequest().body(new ApiMessageResponse(result.error()));
         }
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(result.data());
     }
 }

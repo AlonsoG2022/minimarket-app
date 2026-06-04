@@ -63,6 +63,7 @@
               <th>Precio</th>
               <th>Costo</th>
               <th>Stock</th>
+              <th>Caducidad</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -82,6 +83,7 @@
                     {{ product.stock }}
                   </span>
                 </td>
+                <td data-label="Caducidad">{{ product.expirationDate ? (product.expirationDate | date: 'dd/MM/yyyy') : 'Sin fecha' }}</td>
                 <td data-label="Estado">{{ product.isActive ? 'Activo' : 'Inactivo' }}</td>
                 <td data-label="Acciones" class="actions-cell">
                   <button type="button" class="secondary" (click)="edit(product)">Editar</button>
@@ -126,13 +128,9 @@
         </div>
 
         <div>
-          <label for="barcode">Codigo de barras venta</label>
-          <input id="barcode" formControlName="barcode" placeholder="Escanea o escribe el codigo de venta">
-        </div>
-
-        <div>
-          <label for="purchaseBarcode">Codigo de barras compra</label>
-          <input id="purchaseBarcode" formControlName="purchaseBarcode" placeholder="Escanea o escribe el codigo del paquete">
+          <label for="barcode">Codigo de barras</label>
+          <input id="barcode" formControlName="barcode" placeholder="Se usara para compras y ventas">
+          <small class="field-hint">Usaremos un solo codigo de barras para registrar compras y ventas de este producto.</small>
         </div>
 
         <div>
@@ -149,6 +147,11 @@
           <label for="unitsPerPurchaseUnit">Unidades por compra</label>
           <input id="unitsPerPurchaseUnit" type="number" min="1" formControlName="unitsPerPurchaseUnit">
           <small class="field-hint">Ejemplo: frasco con 100 dulces = 100 unidades por compra.</small>
+        </div>
+
+        <div>
+          <label for="expirationDate">Fecha de caducidad</label>
+          <input id="expirationDate" type="date" formControlName="expirationDate">
         </div>
 
         @if (isEditing) {

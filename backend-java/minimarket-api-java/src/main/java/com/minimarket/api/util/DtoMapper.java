@@ -34,6 +34,7 @@ public final class DtoMapper {
             product.getCost(),
             product.getStock(),
             product.getMinimumStock(),
+            product.getExpirationDate() != null ? product.getExpirationDate().toString() : null,
             product.getSalesUnitName(),
             product.getPurchaseUnitName(),
             product.getUnitsPerPurchaseUnit(),

@@ -50,14 +50,16 @@ public class ProductsController(IProductService productService) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<ActionResult<DeleteProductResultDto>> Delete(int id)
     {
         var result = await productService.DeleteAsync(id);
         if (!result.Success)
         {
-            return NotFound(new { message = result.Error });
+            return result.Error == "Producto no encontrado."
+                ? NotFound(new { message = result.Error })
+                : BadRequest(new { message = result.Error });
         }
 
-        return NoContent();
+        return Ok(result.Result);
     }
 }

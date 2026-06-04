@@ -8,6 +8,7 @@ public record SaveProductDto(
     String purchaseBarcode,
     String description,
     BigDecimal price,
+    String expirationDate,
     String salesUnitName,
     String purchaseUnitName,
     Integer unitsPerPurchaseUnit,

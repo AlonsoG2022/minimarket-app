@@ -11,6 +11,7 @@ public record ProductDto(
     decimal Cost,
     int Stock,
     int MinimumStock,
+    string? ExpirationDate,
     string SalesUnitName,
     string PurchaseUnitName,
     int UnitsPerPurchaseUnit,
@@ -24,6 +25,7 @@ public record SaveProductDto(
     string? PurchaseBarcode,
     string? Description,
     decimal Price,
+    string? ExpirationDate,
     string SalesUnitName,
     string PurchaseUnitName,
     int UnitsPerPurchaseUnit,
@@ -37,7 +39,14 @@ public record ProductImportRowDto(
     string Name,
     decimal Price,
     string CategoryName,
-    int Stock);
+    string? Barcode,
+    string? Description,
+    string? SalesUnitName,
+    string? PurchaseUnitName,
+    int? UnitsPerPurchaseUnit,
+    int Stock,
+    string? ExpirationDate,
+    bool? IsActive);
 
 public record ProductImportErrorDto(
     int RowNumber,
@@ -46,3 +55,7 @@ public record ProductImportErrorDto(
 public record ProductImportResultDto(
     int CreatedCount,
     IReadOnlyCollection<ProductImportErrorDto> Errors);
+
+public record DeleteProductResultDto(
+    string Message,
+    bool Deactivated);

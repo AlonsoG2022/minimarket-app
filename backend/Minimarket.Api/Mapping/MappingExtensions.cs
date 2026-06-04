@@ -17,6 +17,7 @@ public static class MappingExtensions
             product.Cost,
             product.Stock,
             product.MinimumStock,
+            product.ExpirationDate?.ToString("yyyy-MM-dd"),
             product.SalesUnitName,
             product.PurchaseUnitName,
             product.UnitsPerPurchaseUnit,

@@ -12,6 +12,7 @@ public class Product
     public decimal Cost { get; set; }
     public int Stock { get; set; }
     public int MinimumStock { get; set; }
+    public DateOnly? ExpirationDate { get; set; }
     public string SalesUnitName { get; set; } = "unidad";
     public string PurchaseUnitName { get; set; } = "unidad";
     public int UnitsPerPurchaseUnit { get; set; } = 1;

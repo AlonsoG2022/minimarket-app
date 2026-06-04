@@ -13,6 +13,7 @@ public record ProductDto(
     BigDecimal cost,
     Integer stock,
     Integer minimumStock,
+    String expirationDate,
     String salesUnitName,
     String purchaseUnitName,
     Integer unitsPerPurchaseUnit,

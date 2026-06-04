@@ -16,6 +16,7 @@ export interface Product {
   cost: number;
   stock: number;
   minimumStock: number;
+  expirationDate?: string | null;
   salesUnitName: string;
   purchaseUnitName: string;
   unitsPerPurchaseUnit: number;
@@ -30,6 +31,7 @@ export interface SaveProduct {
   purchaseBarcode?: string | null;
   description?: string | null;
   price: number;
+  expirationDate?: string | null;
   salesUnitName: string;
   purchaseUnitName: string;
   unitsPerPurchaseUnit: number;
@@ -44,7 +46,14 @@ export interface ProductImportRow {
   name: string;
   price: number;
   categoryName: string;
+  barcode?: string | null;
+  description?: string | null;
+  salesUnitName?: string | null;
+  purchaseUnitName?: string | null;
+  unitsPerPurchaseUnit?: number;
   stock: number;
+  expirationDate?: string | null;
+  isActive?: boolean;
 }
 
 export interface ProductImportError {
@@ -55,6 +64,11 @@ export interface ProductImportError {
 export interface ProductImportResult {
   createdCount: number;
   errors: ProductImportError[];
+}
+
+export interface DeleteProductResult {
+  message: string;
+  deactivated: boolean;
 }
 
 export interface SaveCategory {
