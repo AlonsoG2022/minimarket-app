@@ -7,6 +7,7 @@ public interface ISaleRepository
 {
     Task<List<Sale>> GetAllAsync();
     Task<Sale?> GetByIdAsync(int id);
+    Task<Sale?> GetByIdWithoutRelationsAsync(int id);
     Task AddAsync(Sale sale);
     Task<int> SaveChangesAsync();
     Task<List<SalesSummaryDto>> GetSalesSummaryAsync(DateTime startDate, DateTime endDate);

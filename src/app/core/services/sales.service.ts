@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { API_BASE_URL } from './api-base';
-import { CreateSale, Sale } from '../models/minimarket.models';
+import { CreateSale, PrintJob, Sale } from '../models/minimarket.models';
 
 @Injectable({ providedIn: 'root' })
 export class SalesService {
@@ -20,6 +20,12 @@ export class SalesService {
 
   create(payload: CreateSale): Observable<Sale> {
     return this.http.post<Sale>(this.apiUrl, payload).pipe(
+      tap(() => this.invalidateCache())
+    );
+  }
+
+  enqueuePrintJob(saleId: number): Observable<PrintJob> {
+    return this.http.post<PrintJob>(`${API_BASE_URL}/print-jobs/sales/${saleId}/enqueue`, {}).pipe(
       tap(() => this.invalidateCache())
     );
   }

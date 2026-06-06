@@ -29,6 +29,7 @@ builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICashSessionRepository, CashSessionRepository>();
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<IPrintJobRepository, PrintJobRepository>();
 builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -37,6 +38,7 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICashSessionService, CashSessionService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IPrintJobService, PrintJobService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();

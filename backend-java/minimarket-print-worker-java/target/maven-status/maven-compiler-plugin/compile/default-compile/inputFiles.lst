@@ -1,0 +1,10 @@
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\config\PrintingProperties.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\dto\TicketPrintItemDto.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\dto\TicketPrintPayloadDto.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\entity\PrintJob.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\MinimarketPrintWorkerApplication.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\repository\PrintJobRepository.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\service\PrinterDispatcher.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\service\PrintQueueWorkerService.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\service\TicketTextRenderer.java
+D:\Angular\Proyectos-Angular\minimarket1-app\backend-java\minimarket-print-worker-java\src\main\java\com\minimarket\printworker\service\WindowsPrinterDispatcher.java

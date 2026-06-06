@@ -242,6 +242,7 @@
               <th>Fecha</th>
               <th>Usuario</th>
               <th>Pago</th>
+              <th>Impresion</th>
               <th>Total</th>
               <th></th>
             </tr>
@@ -253,6 +254,7 @@
                 <td>{{ sale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ sale.userName }}</td>
                 <td>{{ sale.paymentMethod }}</td>
+                <td>{{ getPrintStatusLabel(sale.printStatus) }}</td>
                 <td>{{ sale.total | solesPrice }}</td>
                 <td>
                   <button type="button" class="secondary" (click)="showSaleDetail(sale)">Ver detalle</button>
@@ -285,8 +287,17 @@
 
       <div class="sale-detail-summary">
         <span class="pill">Items: {{ selectedSale.details.length }}</span>
+        <span class="pill">Impresion: {{ getPrintStatusLabel(selectedSale.printStatus) }}</span>
         <strong>Total: {{ selectedSale.total | solesPrice }}</strong>
       </div>
+
+      @if (selectedSale.lastPrintJobId) {
+        <div class="sale-detail-actions">
+          <button type="button" class="secondary" (click)="requeueLastTicket(selectedSale)">
+            Reencolar ticket
+          </button>
+        </div>
+      }
 
       <div class="table-wrap">
         <table>
@@ -320,7 +331,7 @@
       <div class="sale-detail-header no-print">
         <div>
           <h2 class="section-title">Ticket listo</h2>
-          <p class="section-copy">Puedes imprimirlo ahora o cerrarlo y seguir vendiendo.</p>
+          <p class="section-copy">Puedes imprimirlo ahora o cerrarlo y seguir vendiendo. La venta tambien ya quedo en cola para impresion local si el worker esta activo.</p>
         </div>
         <div class="print-actions">
           <button type="button" class="secondary" (click)="closePrintableTicket()">Cerrar</button>
@@ -384,3 +395,57 @@
     </section>
   </div>
 }
+
+<section class="card" id="cola-impresion">
+  <h2 class="section-title">Cola de impresion</h2>
+  <p class="section-copy">Aqui se muestran los ultimos trabajos de impresion generados por las ventas.</p>
+
+  @if (printQueueMessage) {
+    <p class="message">{{ printQueueMessage }}</p>
+  }
+
+  @if (printQueueError) {
+    <p class="message error">{{ printQueueError }}</p>
+  }
+
+  @if (loadingPrintJobs) {
+    <p class="section-copy">Cargando cola de impresion...</p>
+  } @else if (recentPrintJobs.length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Trabajo</th>
+            <th>Venta</th>
+            <th>Estado</th>
+            <th>Intentos</th>
+            <th>Solicitado</th>
+            <th>Error</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of recentPrintJobs; track job.id) {
+            <tr>
+              <td>#{{ job.id }}</td>
+              <td>{{ job.saleId ? ('#' + job.saleId) : '-' }}</td>
+              <td>{{ getPrintStatusLabel(job.status) }}</td>
+              <td>{{ job.attempts }}</td>
+              <td>{{ job.requestedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ job.lastError || '-' }}</td>
+              <td>
+                @if (job.status === 'error') {
+                  <button type="button" class="secondary" (click)="requeuePrintJob(job.id)">
+                    Reencolar
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <p>No hay trabajos de impresion generados aun.</p>
+  }
+</section>

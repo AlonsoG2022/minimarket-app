@@ -10,6 +10,8 @@ public record SaleDto(
     Integer userId,
     String userName,
     Integer cashSessionId,
+    String printStatus,
+    Integer lastPrintJobId,
     String paymentMethod,
     BigDecimal total,
     String notes,

@@ -18,6 +18,8 @@ public record SaleDto(
     int UserId,
     string UserName,
     int? CashSessionId,
+    string? PrintStatus,
+    int? LastPrintJobId,
     string PaymentMethod,
     decimal Total,
     string? Notes,

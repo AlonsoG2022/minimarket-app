@@ -3,9 +3,11 @@ package com.minimarket.api.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "Ventas")
@@ -45,6 +47,9 @@ public class Sale {
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleDetail> details = new ArrayList<>();
 
+    @OneToMany(mappedBy = "sale")
+    private Set<PrintJob> printJobs = new LinkedHashSet<>();
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public LocalDateTime getSaleDate() { return saleDate; }
@@ -65,4 +70,6 @@ public class Sale {
     public void setNotes(String notes) { this.notes = notes; }
     public List<SaleDetail> getDetails() { return details; }
     public void setDetails(List<SaleDetail> details) { this.details = details; }
+    public Set<PrintJob> getPrintJobs() { return printJobs; }
+    public void setPrintJobs(Set<PrintJob> printJobs) { this.printJobs = printJobs; }
 }

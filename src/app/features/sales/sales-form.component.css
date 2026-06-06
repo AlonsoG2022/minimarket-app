@@ -476,6 +476,12 @@
   margin-bottom: 1rem;
 }
 
+.sale-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 900px) {
   .ticket-item {
     grid-template-columns: 1fr;

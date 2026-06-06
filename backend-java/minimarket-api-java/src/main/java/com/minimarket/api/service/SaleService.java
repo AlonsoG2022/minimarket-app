@@ -12,6 +12,8 @@ import com.minimarket.api.repository.UserRepository;
 import com.minimarket.api.util.DtoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,16 +22,20 @@ import java.util.List;
 @Service
 public class SaleService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SaleService.class);
+
     private final SaleRepository saleRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CashSessionRepository cashSessionRepository;
+    private final PrintJobService printJobService;
 
-    public SaleService(SaleRepository saleRepository, UserRepository userRepository, ProductRepository productRepository, CashSessionRepository cashSessionRepository) {
+    public SaleService(SaleRepository saleRepository, UserRepository userRepository, ProductRepository productRepository, CashSessionRepository cashSessionRepository, PrintJobService printJobService) {
         this.saleRepository = saleRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cashSessionRepository = cashSessionRepository;
+        this.printJobService = printJobService;
     }
 
     public List<SaleDto> getAll() {
@@ -137,6 +143,12 @@ public class SaleService {
             }
         }
         var created = saleRepository.findWithRelationsById(saved.getId()).orElse(saved);
+        try {
+            printJobService.enqueueSaleTicket(created.getId());
+        } catch (Exception ex) {
+            logger.error("La venta {} se guardo, pero no se pudo encolar el ticket.", created.getId(), ex);
+        }
+        created = saleRepository.findWithRelationsById(saved.getId()).orElse(saved);
         return ServiceResult.success(DtoMapper.toDto(created));
     }
 }

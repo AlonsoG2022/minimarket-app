@@ -1,0 +1,14 @@
+[2026-06-04 19:18:30.459] [00004F80] === Logging started ===
+[2026-06-04 19:18:30.467] [00004F80] Executing: "C:\Program Files\dotnet\dotnet.exe" build -p:BaseIntermediateOutputPath=d:\Angular\Proyectos-Angular\minimarket1-app\backend\Minimarket.PrintWorker\obj-local\ -p:NuGetAudit=false -p:RestoreDisableParallel=true, PID: 20352, PPID: 40220
+[2026-06-04 19:18:30.468] [00004F80] IsElevated: False
+[2026-06-04 19:18:30.468] [00004F80] Is64BitProcess: True
+[2026-06-04 19:18:30.468] [00004F80] RebootPending: False
+[2026-06-04 19:18:30.468] [00004F80] ProcessorArchitecture: amd64
+[2026-06-04 19:18:30.468] [00004F80] HostArchitecture: x64
+[2026-06-04 19:18:30.468] [00004F80] SdkDirectory: 9.0.305
+[2026-06-04 19:18:30.468] [00004F80] VerifySignatures: False
+[2026-06-04 19:18:30.468] [00004F80] SDK feature band: 9.0.300
+[2026-06-04 19:18:31.862] [00004F80] Shutting down
+[2026-06-04 19:18:31.862] [00004F80] Shutdown completed.
+[2026-06-04 19:18:31.862] [00004F80] Restart required: False
+[2026-06-04 19:18:31.863] [00004F80] === Logging ended ===

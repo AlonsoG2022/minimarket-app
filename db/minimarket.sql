@@ -1,3 +1,14 @@
+/*
+    Script destructivo de reseteo para desarrollo
+    ---------------------------------------------
+    Uso recomendado:
+    - Solo para desarrollo cuando quieras recrear toda la base desde cero.
+    - NO usar en produccion.
+
+    Para instalaciones y upgrades normales usa:
+    - `db/minimarket.safe-upgrade.sql`
+*/
+
 IF DB_ID('MinimarketDb') IS NULL
 BEGIN
     CREATE DATABASE MinimarketDb;
@@ -8,6 +19,7 @@ USE MinimarketDb;
 GO
 
 IF OBJECT_ID('dbo.DetalleVenta', 'U') IS NOT NULL DROP TABLE dbo.DetalleVenta;
+IF OBJECT_ID('dbo.TrabajosImpresion', 'U') IS NOT NULL DROP TABLE dbo.TrabajosImpresion;
 IF OBJECT_ID('dbo.Ventas', 'U') IS NOT NULL DROP TABLE dbo.Ventas;
 IF OBJECT_ID('dbo.CajaMovimientos', 'U') IS NOT NULL DROP TABLE dbo.CajaMovimientos;
 IF OBJECT_ID('dbo.CajaSesiones', 'U') IS NOT NULL DROP TABLE dbo.CajaSesiones;
@@ -133,6 +145,24 @@ CREATE TABLE dbo.DetalleVenta
     Subtotal DECIMAL(10,2) NOT NULL,
     CONSTRAINT FK_DetalleVenta_Ventas FOREIGN KEY (VentaId) REFERENCES dbo.Ventas(Id) ON DELETE CASCADE,
     CONSTRAINT FK_DetalleVenta_Productos FOREIGN KEY (ProductoId) REFERENCES dbo.Productos(Id)
+);
+GO
+
+CREATE TABLE dbo.TrabajosImpresion
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    VentaId INT NULL,
+    TipoOrigen NVARCHAR(30) NOT NULL CONSTRAINT DF_TrabajosImpresion_TipoOrigen DEFAULT ('sale'),
+    TipoDocumento NVARCHAR(20) NOT NULL CONSTRAINT DF_TrabajosImpresion_TipoDocumento DEFAULT ('ticket'),
+    Estado NVARCHAR(20) NOT NULL CONSTRAINT DF_TrabajosImpresion_Estado DEFAULT ('pendiente'),
+    Intentos INT NOT NULL CONSTRAINT DF_TrabajosImpresion_Intentos DEFAULT (0),
+    NombreImpresora NVARCHAR(120) NULL,
+    SolicitadoEn DATETIME2 NOT NULL CONSTRAINT DF_TrabajosImpresion_SolicitadoEn DEFAULT SYSDATETIME(),
+    ProcesandoEn DATETIME2 NULL,
+    ProcesadoEn DATETIME2 NULL,
+    UltimoError NVARCHAR(500) NULL,
+    PayloadJson NVARCHAR(MAX) NOT NULL,
+    CONSTRAINT FK_TrabajosImpresion_Ventas FOREIGN KEY (VentaId) REFERENCES dbo.Ventas(Id) ON DELETE CASCADE
 );
 GO
 

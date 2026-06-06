@@ -1,5 +1,13 @@
 # Minimarket Central
 
+## Documentación viva del proyecto
+
+Para contexto, roadmap y prompts reutilizables del proyecto, revisa:
+
+- [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md)
+- [docs/IMPLEMENTATION_ROADMAP.md](docs/IMPLEMENTATION_ROADMAP.md)
+- [docs/CODEX_PROMPTS.md](docs/CODEX_PROMPTS.md)
+
 Aplicacion web full-stack para un minimarket con Angular, ASP.NET Core Web API y SQL Server.
 
 ## Estructura

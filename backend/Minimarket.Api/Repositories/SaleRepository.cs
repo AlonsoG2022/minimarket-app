@@ -10,6 +10,7 @@ public class SaleRepository(MinimarketDbContext context) : ISaleRepository
     public Task<List<Sale>> GetAllAsync() =>
         context.Sales
             .Include(x => x.User)
+            .Include(x => x.PrintJobs)
             .Include(x => x.Details)
                 .ThenInclude(x => x.Product)
             .OrderByDescending(x => x.SaleDate)
@@ -18,9 +19,13 @@ public class SaleRepository(MinimarketDbContext context) : ISaleRepository
     public Task<Sale?> GetByIdAsync(int id) =>
         context.Sales
             .Include(x => x.User)
+            .Include(x => x.PrintJobs)
             .Include(x => x.Details)
                 .ThenInclude(x => x.Product)
             .FirstOrDefaultAsync(x => x.Id == id);
+
+    public Task<Sale?> GetByIdWithoutRelationsAsync(int id) =>
+        context.Sales.FirstOrDefaultAsync(x => x.Id == id);
 
     public Task AddAsync(Sale sale) => context.Sales.AddAsync(sale).AsTask();
 

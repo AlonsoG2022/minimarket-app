@@ -50,6 +50,14 @@ public static class MappingExtensions
             sale.UserId,
             sale.User?.FullName ?? string.Empty,
             sale.CashSessionId,
+            sale.PrintJobs
+                .OrderByDescending(job => job.RequestedAt)
+                .Select(job => job.Status)
+                .FirstOrDefault(),
+            sale.PrintJobs
+                .OrderByDescending(job => job.RequestedAt)
+                .Select(job => (int?)job.Id)
+                .FirstOrDefault(),
             sale.PaymentMethod,
             sale.Total,
             sale.Notes,
@@ -104,6 +112,20 @@ public static class MappingExtensions
                     movement.ReferenceId))
                 .ToList());
     }
+
+    public static PrintJobDto ToDto(this PrintJob job) =>
+        new(
+            job.Id,
+            job.SaleId,
+            job.SourceType,
+            job.DocumentType,
+            job.Status,
+            job.Attempts,
+            job.PrinterName,
+            job.RequestedAt,
+            job.StartedAt,
+            job.ProcessedAt,
+            job.LastError);
 
     public static PurchaseDto ToDto(this Purchase purchase) =>
         new(

@@ -9,7 +9,9 @@ public class SaleService(
     ISaleRepository saleRepository,
     IUserRepository userRepository,
     IProductRepository productRepository,
-    ICashSessionRepository cashSessionRepository) : ISaleService
+    ICashSessionRepository cashSessionRepository,
+    IPrintJobService printJobService,
+    ILogger<SaleService> logger) : ISaleService
 {
     public async Task<IReadOnlyCollection<SaleDto>> GetAllAsync() =>
         (await saleRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
@@ -112,6 +114,19 @@ public class SaleService(
         }
 
         var created = await saleRepository.GetByIdAsync(sale.Id);
+        if (created is not null)
+        {
+            try
+            {
+                await printJobService.EnqueueSaleTicketAsync(created.Id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "La venta {SaleId} se guardo, pero no se pudo encolar el ticket.", created.Id);
+            }
+
+            created = await saleRepository.GetByIdAsync(created.Id);
+        }
         return (true, null, created?.ToDto());
     }
 }

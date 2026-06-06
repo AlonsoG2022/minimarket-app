@@ -88,10 +88,36 @@ public final class DtoMapper {
             sale.getUserId(),
             sale.getUser() != null ? sale.getUser().getFullName() : "",
             sale.getCashSessionId(),
+            sale.getPrintJobs().stream()
+                .sorted((left, right) -> right.getRequestedAt().compareTo(left.getRequestedAt()))
+                .map(job -> job.getStatus())
+                .findFirst()
+                .orElse(null),
+            sale.getPrintJobs().stream()
+                .sorted((left, right) -> right.getRequestedAt().compareTo(left.getRequestedAt()))
+                .map(job -> job.getId())
+                .findFirst()
+                .orElse(null),
             sale.getPaymentMethod(),
             sale.getTotal(),
             sale.getNotes(),
             details
+        );
+    }
+
+    public static PrintJobDto toDto(com.minimarket.api.entity.PrintJob job) {
+        return new PrintJobDto(
+            job.getId(),
+            job.getSaleId(),
+            job.getSourceType(),
+            job.getDocumentType(),
+            job.getStatus(),
+            job.getAttempts(),
+            job.getPrinterName(),
+            job.getRequestedAt(),
+            job.getStartedAt(),
+            job.getProcessedAt(),
+            job.getLastError()
         );
     }
 

@@ -1,19 +1,24 @@
 /*
-    Script de actualizacion segura para MinimarketDb
-    ------------------------------------------------
+    Script unico recomendado para instalacion o actualizacion de MinimarketDb
+    -----------------------------------------------------------------------
     Objetivo:
     - NO elimina tablas ni datos existentes.
     - Crea la base si no existe.
+    - Crea o actualiza el login SQL `minimarket_user`.
+    - Crea el usuario de base de datos y le asigna `db_owner` si falta.
     - Crea tablas si no existen.
     - Agrega columnas faltantes con ALTER TABLE.
     - Ajusta tipos / nulabilidad de columnas actuales.
     - Crea restricciones, indices y llaves foraneas si faltan.
     - Inserta datos base solo si no existen.
 
-    Recomendacion:
-    - Ejecutar primero en QA o en una copia de respaldo.
-    - Guardar este script como base para futuras evoluciones del esquema.
+    Nota:
+    - Este es el script recomendado para despliegues y upgrades.
+    - `minimarket.sql` queda solo para reseteo completo en desarrollo.
 */
+
+USE master;
+GO
 
 IF DB_ID('MinimarketDb') IS NULL
 BEGIN
@@ -21,10 +26,91 @@ BEGIN
 END;
 GO
 
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.server_principals
+    WHERE name = 'minimarket_user'
+)
+BEGIN
+    CREATE LOGIN minimarket_user
+    WITH PASSWORD = 'Minimarket123!',
+         CHECK_POLICY = OFF,
+         CHECK_EXPIRATION = OFF;
+END;
+ELSE
+BEGIN
+    ALTER LOGIN minimarket_user
+    WITH PASSWORD = 'Minimarket123!',
+         CHECK_POLICY = OFF,
+         CHECK_EXPIRATION = OFF;
+END;
+GO
+
 USE MinimarketDb;
 GO
 
 SET NOCOUNT ON;
+GO
+
+IF DATABASE_PRINCIPAL_ID('minimarket_user') IS NULL
+BEGIN
+    CREATE USER minimarket_user FOR LOGIN minimarket_user;
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.database_role_members drm
+    INNER JOIN sys.database_principals rolep ON rolep.principal_id = drm.role_principal_id
+    INNER JOIN sys.database_principals memberp ON memberp.principal_id = drm.member_principal_id
+    WHERE rolep.name = 'db_owner'
+      AND memberp.name = 'minimarket_user'
+)
+BEGIN
+    ALTER ROLE db_owner ADD MEMBER minimarket_user;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_EnsureDefaultConstraint
+    @SchemaName SYSNAME,
+    @TableName SYSNAME,
+    @ColumnName SYSNAME,
+    @ConstraintName SYSNAME,
+    @Definition NVARCHAR(4000)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @QualifiedTable NVARCHAR(517) = QUOTENAME(@SchemaName) + N'.' + QUOTENAME(@TableName);
+    DECLARE @ObjectId INT = OBJECT_ID(@QualifiedTable);
+
+    IF @ObjectId IS NULL
+    BEGIN
+        RETURN;
+    END;
+
+    IF NOT EXISTS
+    (
+        SELECT 1
+        FROM sys.default_constraints dc
+        INNER JOIN sys.columns c
+            ON c.object_id = dc.parent_object_id
+           AND c.column_id = dc.parent_column_id
+        WHERE dc.parent_object_id = @ObjectId
+          AND c.name = @ColumnName
+    )
+    BEGIN
+        DECLARE @Sql NVARCHAR(MAX) =
+            N'ALTER TABLE ' + @QualifiedTable
+            + N' ADD CONSTRAINT ' + QUOTENAME(@ConstraintName)
+            + N' DEFAULT ' + @Definition
+            + N' FOR ' + QUOTENAME(@ColumnName) + N';';
+
+        EXEC sp_executesql @Sql;
+    END;
+END;
 GO
 
 /* =========================================================
@@ -72,16 +158,7 @@ ALTER TABLE dbo.Categorias ALTER COLUMN Descripcion NVARCHAR(250) NULL;
 ALTER TABLE dbo.Categorias ALTER COLUMN Activo BIT NOT NULL;
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Categorias_Activo'
-)
-BEGIN
-    ALTER TABLE dbo.Categorias
-    ADD CONSTRAINT DF_Categorias_Activo DEFAULT (1) FOR Activo;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Categorias', 'Activo', 'DF_Categorias_Activo', '(1)';
 GO
 
 /* =========================================================
@@ -249,76 +326,22 @@ ALTER TABLE dbo.Productos ALTER COLUMN Activo BIT NOT NULL;
 ALTER TABLE dbo.Productos ALTER COLUMN CategoriaId INT NOT NULL;
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_Activo'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_Activo DEFAULT (1) FOR Activo;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'Activo', 'DF_Productos_Activo', '(1)';
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_StockMinimo'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_StockMinimo DEFAULT (5) FOR StockMinimo;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'StockMinimo', 'DF_Productos_StockMinimo', '(5)';
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_Costo'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_Costo DEFAULT (0) FOR Costo;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'Costo', 'DF_Productos_Costo', '(0)';
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_UnidadVenta'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_UnidadVenta DEFAULT ('unidad') FOR UnidadVenta;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'UnidadVenta', 'DF_Productos_UnidadVenta', '(''unidad'')';
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_UnidadCompra'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_UnidadCompra DEFAULT ('unidad') FOR UnidadCompra;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'UnidadCompra', 'DF_Productos_UnidadCompra', '(''unidad'')';
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Productos_UnidadesPorCompra'
-)
-BEGIN
-    ALTER TABLE dbo.Productos
-    ADD CONSTRAINT DF_Productos_UnidadesPorCompra DEFAULT (1) FOR UnidadesPorCompra;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Productos', 'UnidadesPorCompra', 'DF_Productos_UnidadesPorCompra', '(1)';
 GO
 
 IF NOT EXISTS
@@ -439,16 +462,7 @@ ALTER TABLE dbo.Usuarios ALTER COLUMN Rol NVARCHAR(20) NOT NULL;
 ALTER TABLE dbo.Usuarios ALTER COLUMN Activo BIT NOT NULL;
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Usuarios_Activo'
-)
-BEGIN
-    ALTER TABLE dbo.Usuarios
-    ADD CONSTRAINT DF_Usuarios_Activo DEFAULT (1) FOR Activo;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Usuarios', 'Activo', 'DF_Usuarios_Activo', '(1)';
 GO
 
 IF NOT EXISTS
@@ -643,18 +657,10 @@ ALTER TABLE dbo.CajaSesiones ALTER COLUMN Estado NVARCHAR(20) NOT NULL;
 ALTER TABLE dbo.CajaSesiones ALTER COLUMN Notas NVARCHAR(250) NULL;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaSesiones_FechaApertura')
-BEGIN
-    ALTER TABLE dbo.CajaSesiones
-    ADD CONSTRAINT DF_CajaSesiones_FechaApertura DEFAULT (SYSDATETIME()) FOR FechaApertura;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'CajaSesiones', 'FechaApertura', 'DF_CajaSesiones_FechaApertura', '(SYSDATETIME())';
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaSesiones_Estado')
-BEGIN
-    ALTER TABLE dbo.CajaSesiones
-    ADD CONSTRAINT DF_CajaSesiones_Estado DEFAULT ('abierta') FOR Estado;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'CajaSesiones', 'Estado', 'DF_CajaSesiones_Estado', '(''abierta'')';
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_CajaSesiones_Usuarios')
@@ -743,11 +749,7 @@ ALTER TABLE dbo.CajaMovimientos ALTER COLUMN TipoReferencia NVARCHAR(30) NULL;
 ALTER TABLE dbo.CajaMovimientos ALTER COLUMN ReferenciaId INT NULL;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.default_constraints WHERE name = 'DF_CajaMovimientos_FechaMovimiento')
-BEGIN
-    ALTER TABLE dbo.CajaMovimientos
-    ADD CONSTRAINT DF_CajaMovimientos_FechaMovimiento DEFAULT (SYSDATETIME()) FOR FechaMovimiento;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'CajaMovimientos', 'FechaMovimiento', 'DF_CajaMovimientos_FechaMovimiento', '(SYSDATETIME())';
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_CajaMovimientos_CajaSesiones')
@@ -1043,16 +1045,7 @@ ALTER TABLE dbo.Ventas ALTER COLUMN MetodoPago NVARCHAR(30) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN Notas NVARCHAR(250) NULL;
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.default_constraints
-    WHERE name = 'DF_Ventas_FechaVenta'
-)
-BEGIN
-    ALTER TABLE dbo.Ventas
-    ADD CONSTRAINT DF_Ventas_FechaVenta DEFAULT (SYSDATETIME()) FOR FechaVenta;
-END;
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Ventas', 'FechaVenta', 'DF_Ventas_FechaVenta', '(SYSDATETIME())';
 GO
 
 IF NOT EXISTS
@@ -1169,6 +1162,153 @@ BEGIN
     ALTER TABLE dbo.DetalleVenta
     ADD CONSTRAINT FK_DetalleVenta_Productos
         FOREIGN KEY (ProductoId) REFERENCES dbo.Productos(Id);
+END;
+GO
+
+/* =========================================================
+   TRABAJOS DE IMPRESION
+   ========================================================= */
+IF OBJECT_ID('dbo.TrabajosImpresion', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TrabajosImpresion
+    (
+        Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_TrabajosImpresion PRIMARY KEY,
+        VentaId INT NULL,
+        TipoOrigen NVARCHAR(30) NOT NULL CONSTRAINT DF_TrabajosImpresion_TipoOrigen DEFAULT ('sale'),
+        TipoDocumento NVARCHAR(20) NOT NULL CONSTRAINT DF_TrabajosImpresion_TipoDocumento DEFAULT ('ticket'),
+        Estado NVARCHAR(20) NOT NULL CONSTRAINT DF_TrabajosImpresion_Estado DEFAULT ('pendiente'),
+        Intentos INT NOT NULL CONSTRAINT DF_TrabajosImpresion_Intentos DEFAULT (0),
+        NombreImpresora NVARCHAR(120) NULL,
+        SolicitadoEn DATETIME2 NOT NULL CONSTRAINT DF_TrabajosImpresion_SolicitadoEn DEFAULT (SYSDATETIME()),
+        ProcesandoEn DATETIME2 NULL,
+        ProcesadoEn DATETIME2 NULL,
+        UltimoError NVARCHAR(500) NULL,
+        PayloadJson NVARCHAR(MAX) NOT NULL
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'VentaId') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD VentaId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'TipoOrigen') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD TipoOrigen NVARCHAR(30) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'TipoDocumento') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD TipoDocumento NVARCHAR(20) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'Estado') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD Estado NVARCHAR(20) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'Intentos') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD Intentos INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'NombreImpresora') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD NombreImpresora NVARCHAR(120) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'SolicitadoEn') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD SolicitadoEn DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'ProcesandoEn') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD ProcesandoEn DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'ProcesadoEn') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD ProcesadoEn DATETIME2 NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'UltimoError') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD UltimoError NVARCHAR(500) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.TrabajosImpresion', 'PayloadJson') IS NULL
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion ADD PayloadJson NVARCHAR(MAX) NULL;
+END;
+GO
+
+UPDATE dbo.TrabajosImpresion
+SET
+    TipoOrigen = ISNULL(NULLIF(TipoOrigen, ''), 'sale'),
+    TipoDocumento = ISNULL(NULLIF(TipoDocumento, ''), 'ticket'),
+    Estado = ISNULL(NULLIF(Estado, ''), 'pendiente'),
+    Intentos = ISNULL(Intentos, 0),
+    SolicitadoEn = ISNULL(SolicitadoEn, SYSDATETIME()),
+    PayloadJson = ISNULL(PayloadJson, N'{}')
+WHERE
+    TipoOrigen IS NULL
+    OR TipoDocumento IS NULL
+    OR Estado IS NULL
+    OR Intentos IS NULL
+    OR SolicitadoEn IS NULL
+    OR PayloadJson IS NULL;
+GO
+
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN VentaId INT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN TipoOrigen NVARCHAR(30) NOT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN TipoDocumento NVARCHAR(20) NOT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN Estado NVARCHAR(20) NOT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN Intentos INT NOT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN NombreImpresora NVARCHAR(120) NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN SolicitadoEn DATETIME2 NOT NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN ProcesandoEn DATETIME2 NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN ProcesadoEn DATETIME2 NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN UltimoError NVARCHAR(500) NULL;
+ALTER TABLE dbo.TrabajosImpresion ALTER COLUMN PayloadJson NVARCHAR(MAX) NOT NULL;
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'TrabajosImpresion', 'TipoOrigen', 'DF_TrabajosImpresion_TipoOrigen', '(''sale'')';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'TrabajosImpresion', 'TipoDocumento', 'DF_TrabajosImpresion_TipoDocumento', '(''ticket'')';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'TrabajosImpresion', 'Estado', 'DF_TrabajosImpresion_Estado', '(''pendiente'')';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'TrabajosImpresion', 'Intentos', 'DF_TrabajosImpresion_Intentos', '(0)';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'TrabajosImpresion', 'SolicitadoEn', 'DF_TrabajosImpresion_SolicitadoEn', '(SYSDATETIME())';
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.foreign_keys
+    WHERE name = 'FK_TrabajosImpresion_Ventas'
+)
+BEGIN
+    ALTER TABLE dbo.TrabajosImpresion
+    ADD CONSTRAINT FK_TrabajosImpresion_Ventas
+        FOREIGN KEY (VentaId) REFERENCES dbo.Ventas(Id) ON DELETE CASCADE;
 END;
 GO
 

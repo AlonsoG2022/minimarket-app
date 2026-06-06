@@ -135,10 +135,26 @@ export interface Sale {
   userId: number;
   userName: string;
   cashSessionId?: number | null;
+  printStatus?: string | null;
+  lastPrintJobId?: number | null;
   paymentMethod: string;
   total: number;
   notes?: string | null;
   details: SaleDetail[];
+}
+
+export interface PrintJob {
+  id: number;
+  saleId?: number | null;
+  sourceType: string;
+  documentType: string;
+  status: string;
+  attempts: number;
+  printerName?: string | null;
+  requestedAt: string;
+  startedAt?: string | null;
+  processedAt?: string | null;
+  lastError?: string | null;
 }
 
 export interface CreateSale {

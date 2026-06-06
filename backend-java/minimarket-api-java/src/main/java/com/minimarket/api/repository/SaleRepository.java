@@ -13,13 +13,14 @@ import java.util.Optional;
 
 public interface SaleRepository extends JpaRepository<Sale, Integer> {
 
-    @EntityGraph(attributePaths = {"user", "details", "details.product"})
+    @EntityGraph(attributePaths = {"user", "details", "details.product", "printJobs"})
     List<Sale> findAllByOrderBySaleDateDesc();
 
     @Query("""
         select distinct s
         from Sale s
         left join fetch s.user
+        left join fetch s.printJobs pj
         left join fetch s.details d
         left join fetch d.product
         where s.id = :id

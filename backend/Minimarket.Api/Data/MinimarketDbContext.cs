@@ -11,6 +11,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
     public DbSet<User> Users => Set<User>();
     public DbSet<CashSession> CashSessions => Set<CashSession>();
     public DbSet<CashMovement> CashMovements => Set<CashMovement>();
+    public DbSet<PrintJob> PrintJobs => Set<PrintJob>();
     public DbSet<Sale> Sales => Set<Sale>();
     public DbSet<SaleDetail> SaleDetails => Set<SaleDetail>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
@@ -98,6 +99,27 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
                 .WithMany(x => x.Sales)
                 .HasForeignKey(x => x.CashSessionId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<PrintJob>(entity =>
+        {
+            entity.ToTable("TrabajosImpresion");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.SaleId).HasColumnName("VentaId");
+            entity.Property(x => x.SourceType).HasColumnName("TipoOrigen").HasMaxLength(30).IsRequired();
+            entity.Property(x => x.DocumentType).HasColumnName("TipoDocumento").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("Estado").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Attempts).HasColumnName("Intentos");
+            entity.Property(x => x.PrinterName).HasColumnName("NombreImpresora").HasMaxLength(120);
+            entity.Property(x => x.RequestedAt).HasColumnName("SolicitadoEn");
+            entity.Property(x => x.StartedAt).HasColumnName("ProcesandoEn");
+            entity.Property(x => x.ProcessedAt).HasColumnName("ProcesadoEn");
+            entity.Property(x => x.LastError).HasColumnName("UltimoError").HasMaxLength(500);
+            entity.Property(x => x.PayloadJson).HasColumnName("PayloadJson").IsRequired();
+            entity.HasOne(x => x.Sale)
+                .WithMany(x => x.PrintJobs)
+                .HasForeignKey(x => x.SaleId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<CashSession>(entity =>

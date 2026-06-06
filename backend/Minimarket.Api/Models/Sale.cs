@@ -12,4 +12,5 @@ public class Sale
     public string PaymentMethod { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public ICollection<SaleDetail> Details { get; set; } = new List<SaleDetail>();
+    public ICollection<PrintJob> PrintJobs { get; set; } = new List<PrintJob>();
 }

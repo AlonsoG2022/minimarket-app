@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
-import { CashSession, Product, Sale } from '../../core/models/minimarket.models';
+import { CashSession, PrintJob, Product, Sale } from '../../core/models/minimarket.models';
 import { AuthService } from '../../core/services/auth.service';
 import { CashSessionsService } from '../../core/services/cash-sessions.service';
+import { PrintJobsService } from '../../core/services/print-jobs.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
@@ -25,6 +26,7 @@ export class SalesFormComponent implements OnInit {
   readonly authService = inject(AuthService);
   private readonly cashSessionsService = inject(CashSessionsService);
   private readonly salesService = inject(SalesService);
+  private readonly printJobsService = inject(PrintJobsService);
   private readonly productsService = inject(ProductsService);
   private readonly reportsService = inject(ReportsService);
 
@@ -36,6 +38,7 @@ export class SalesFormComponent implements OnInit {
 
   products: Product[] = [];
   recentSales: Sale[] = [];
+  recentPrintJobs: PrintJob[] = [];
   selectedSale?: Sale;
   currentCashSession?: CashSession | null;
   printableSale?: Sale;
@@ -47,9 +50,12 @@ export class SalesFormComponent implements OnInit {
   loadingCashSession = true;
   refreshingProducts = false;
   loadingSalesHistory = true;
+  loadingPrintJobs = true;
   message = '';
   error = '';
   lowStockNotice = '';
+  printQueueMessage = '';
+  printQueueError = '';
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
@@ -126,6 +132,7 @@ export class SalesFormComponent implements OnInit {
     });
 
     this.loadRecentSales();
+    this.loadRecentPrintJobs();
   }
 
   addProduct(product: Product, quantity = this.quickQuantity): void {
@@ -265,6 +272,7 @@ export class SalesFormComponent implements OnInit {
         this.cashSessionsService.invalidateCurrent(currentUser.id);
         this.loadCurrentCashSession(true);
         this.loadRecentSales(true);
+        this.loadRecentPrintJobs(true);
         this.cdr.detectChanges();
       },
       error: (response) => {
@@ -354,6 +362,46 @@ export class SalesFormComponent implements OnInit {
 
   closePrintableTicket(): void {
     this.printableSale = undefined;
+  }
+
+  loadRecentPrintJobs(forceRefresh = false): void {
+    this.loadingPrintJobs = true;
+    this.printJobsService.getRecent(forceRefresh).subscribe({
+      next: (jobs) => {
+        this.recentPrintJobs = jobs;
+        this.loadingPrintJobs = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingPrintJobs = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  requeueLastTicket(sale: Sale): void {
+    if (!sale.lastPrintJobId) {
+      return;
+    }
+
+    this.requeuePrintJob(sale.lastPrintJobId, `Ticket de la venta #${sale.id} reencolado correctamente.`);
+  }
+
+  requeuePrintJob(jobId: number, successMessage = 'Trabajo de impresion reencolado correctamente.'): void {
+    this.printJobsService.requeue(jobId).subscribe({
+      next: () => {
+        this.printQueueMessage = successMessage;
+        this.printQueueError = '';
+        this.loadRecentPrintJobs(true);
+        this.loadRecentSales(true);
+        this.cdr.detectChanges();
+      },
+      error: (response) => {
+        this.printQueueError = response.error?.message ?? 'No se pudo reencolar el ticket.';
+        this.printQueueMessage = '';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   printTicket(): void {
@@ -487,5 +535,20 @@ export class SalesFormComponent implements OnInit {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
+  }
+
+  getPrintStatusLabel(status?: string | null): string {
+    switch ((status ?? '').toLowerCase()) {
+      case 'pendiente':
+        return 'Pendiente';
+      case 'imprimiendo':
+        return 'Imprimiendo';
+      case 'impreso':
+        return 'Impreso';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Sin cola';
+    }
   }
 }
