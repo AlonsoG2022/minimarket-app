@@ -380,8 +380,8 @@
           <div class="receipt__table-head">
             <span>Cant.</span>
             <span>Descripcion</span>
-            <span>P. Unit</span>
-            <span>Importe</span>
+            <span class="receipt__unit-price">P. Unit</span>
+            <span class="receipt__subtotal">Importe</span>
           </div>
           @for (detail of printableSale.details; track detail.id) {
             <div class="receipt__item">
@@ -406,7 +406,11 @@
           </div>
           <div class="receipt__summary-row">
             <span>Subtotal</span>
-            <strong>{{ printableSale.details.reduce((sum, detail) => sum + detail.subtotal, 0) | solesPrice }}</strong>
+            <strong>{{ printableSale.subTotal | solesPrice }}</strong>
+          </div>
+          <div class="receipt__summary-row">
+            <span>IGV (18%)</span>
+            <strong>{{ printableSale.igv | solesPrice }}</strong>
           </div>
         </div>
 
