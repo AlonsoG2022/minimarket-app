@@ -229,7 +229,7 @@ export class SalesFormComponent implements OnInit {
     if (!currentUser || this.form.get('paymentMethod')?.invalid || !saleDetails.length) {
       this.form.markAllAsTouched();
       if (!currentUser) {
-        this.error = 'Tu sesiÃ³n no estÃ¡ disponible. Vuelve a ingresar.';
+        this.error = 'Tu sesión no está disponible. Vuelve a ingresar.';
         this.message = '';
       }
       if (!saleDetails.length) {
@@ -614,4 +614,3 @@ export class SalesFormComponent implements OnInit {
     }
   }
 }
-
