@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
@@ -32,6 +33,7 @@ builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 builder.Services.AddScoped<IPrintJobRepository, PrintJobRepository>();
 builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();

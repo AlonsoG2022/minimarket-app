@@ -16,6 +16,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
     public DbSet<SaleDetail> SaleDetails => Set<SaleDetail>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<PurchaseDetail> PurchaseDetails => Set<PurchaseDetail>();
+    public DbSet<Company> Companies => Set<Company>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -219,6 +220,23 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
                 .WithMany(x => x.PurchaseDetails)
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Company>(entity =>
+        {
+            entity.ToTable("ConfiguracionEmpresa");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).ValueGeneratedNever();
+            entity.Property(x => x.BusinessName).HasColumnName("NombreComercial").HasMaxLength(150).IsRequired();
+            entity.Property(x => x.LegalName).HasColumnName("RazonSocial").HasMaxLength(200).IsRequired();
+            entity.Property(x => x.TaxId).HasColumnName("Ruc").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.AddressLine).HasColumnName("Direccion").HasMaxLength(250).IsRequired();
+            entity.Property(x => x.Phone).HasColumnName("Telefono").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Tagline).HasColumnName("Eslogan").HasMaxLength(250).IsRequired();
+            entity.Property(x => x.DocumentTitle).HasColumnName("TituloDocumento").HasMaxLength(100).IsRequired();
+            entity.Property(x => x.CustomerLabel).HasColumnName("EtiquetaCliente").HasMaxLength(100).IsRequired();
+            entity.Property(x => x.FooterLine1).HasColumnName("PiePagina1").HasMaxLength(150).IsRequired();
+            entity.Property(x => x.FooterLine2).HasColumnName("PiePagina2").HasMaxLength(150).IsRequired();
         });
 
         modelBuilder.Entity<Category>().HasData(

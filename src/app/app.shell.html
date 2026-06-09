@@ -132,6 +132,28 @@
         }
       </section>
       }
+
+      @if (canAccessCompany()) {
+      <section class="nav-module">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('configuracion', ['/configuracion'])" (click)="toggleModule('configuracion')">
+          <span class="nav-icon">CF</span>
+          <span class="nav-copy">
+            <span>Configuracion</span>
+            <small>Datos de empresa</small>
+          </span>
+          <span class="nav-caret">{{ isModuleExpanded('configuracion', ['/configuracion']) ? '-' : '+' }}</span>
+        </button>
+
+        @if (isModuleExpanded('configuracion', ['/configuracion'])) {
+          <div class="nav-module__items">
+            <a routerLink="/configuracion" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Empresa</span>
+            </a>
+          </div>
+        }
+      </section>
+      }
     </nav>
 
     <div class="sidebar-note">

@@ -1,0 +1,106 @@
+<section class="company-config-layout">
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Configuracion de empresa</h2>
+        <p class="section-copy">Estos datos aparecen en el encabezado y pie del ticket de venta.</p>
+      </div>
+    </div>
+
+    @if (loading) {
+      <p class="section-copy">Cargando configuracion...</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
+
+        <fieldset class="form-section">
+          <legend>Datos de identidad</legend>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="businessName">Nombre comercial <span class="required">*</span></label>
+              <input id="businessName" type="text" formControlName="businessName" placeholder="Ej: Minimarket Don Jose">
+              @if (form.get('businessName')?.invalid && form.get('businessName')?.touched) {
+                <small class="field-error">El nombre comercial es obligatorio.</small>
+              }
+            </div>
+
+            <div class="form-field">
+              <label for="legalName">Razon social</label>
+              <input id="legalName" type="text" formControlName="legalName" placeholder="Ej: Jose Garcia S.A.C.">
+            </div>
+
+            <div class="form-field">
+              <label for="taxId">RUC <span class="required">*</span></label>
+              <input id="taxId" type="text" formControlName="taxId" placeholder="Ej: 20601234567">
+              @if (form.get('taxId')?.invalid && form.get('taxId')?.touched) {
+                <small class="field-error">El RUC es obligatorio.</small>
+              }
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Contacto</legend>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="addressLine">Direccion</label>
+              <input id="addressLine" type="text" formControlName="addressLine" placeholder="Ej: Av. Los Heroes 123, Lima">
+            </div>
+
+            <div class="form-field">
+              <label for="phone">Telefono</label>
+              <input id="phone" type="text" formControlName="phone" placeholder="Ej: 987 654 321">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Ticket de venta</legend>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="tagline">Eslogan o rubro</label>
+              <input id="tagline" type="text" formControlName="tagline" placeholder="Ej: Abarrotes · Bebidas · Limpieza">
+            </div>
+
+            <div class="form-field">
+              <label for="documentTitle">Titulo del ticket</label>
+              <input id="documentTitle" type="text" formControlName="documentTitle" placeholder="Ej: Ticket de venta">
+            </div>
+
+            <div class="form-field">
+              <label for="customerLabel">Etiqueta de cliente</label>
+              <input id="customerLabel" type="text" formControlName="customerLabel" placeholder="Ej: Consumidor final">
+            </div>
+
+            <div class="form-field">
+              <label for="footerLine1">Mensaje de cierre (linea 1)</label>
+              <input id="footerLine1" type="text" formControlName="footerLine1" placeholder="Ej: Gracias por su compra">
+            </div>
+
+            <div class="form-field">
+              <label for="footerLine2">Mensaje de cierre (linea 2)</label>
+              <input id="footerLine2" type="text" formControlName="footerLine2" placeholder="Ej: Vuelva pronto">
+            </div>
+          </div>
+        </fieldset>
+
+        @if (message) {
+          <p class="message">{{ message }}</p>
+        }
+
+        @if (error) {
+          <p class="message error">{{ error }}</p>
+        }
+
+        <div class="form-actions">
+          <button type="submit" [disabled]="saving">
+            {{ saving ? 'Guardando...' : 'Guardar configuracion' }}
+          </button>
+        </div>
+
+      </form>
+    }
+  </section>
+</section>

@@ -3,6 +3,7 @@ package com.minimarket.api.util;
 import com.minimarket.api.dto.*;
 import com.minimarket.api.entity.Category;
 import com.minimarket.api.entity.CashSession;
+import com.minimarket.api.entity.Company;
 import com.minimarket.api.entity.Product;
 import com.minimarket.api.entity.Purchase;
 import com.minimarket.api.entity.Sale;
@@ -12,6 +13,22 @@ import com.minimarket.api.entity.User;
 public final class DtoMapper {
 
     private DtoMapper() {
+    }
+
+    public static CompanyDto toDto(Company company) {
+        return new CompanyDto(
+            company.getId(),
+            company.getBusinessName(),
+            company.getLegalName(),
+            company.getTaxId(),
+            company.getAddressLine(),
+            company.getPhone(),
+            company.getTagline(),
+            company.getDocumentTitle(),
+            company.getCustomerLabel(),
+            company.getFooterLine1(),
+            company.getFooterLine2()
+        );
     }
 
     public static CategoryDto toDto(Category category) {

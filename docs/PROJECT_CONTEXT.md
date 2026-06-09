@@ -94,6 +94,23 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - soporte para compras por paquete y venta por unidad
 - alta rapida de producto desde compra si el codigo no existe
 
+### Configuracion de empresa
+- pantalla accesible solo para `admin` en `/configuracion`
+- datos almacenados en tabla `ConfiguracionEmpresa` (fila unica con Id = 1)
+- campos configurables:
+  - nombre comercial
+  - razon social
+  - RUC
+  - direccion
+  - telefono
+  - eslogan / rubro
+  - titulo del ticket
+  - etiqueta de cliente
+  - mensaje de cierre (linea 1 y 2)
+- endpoint `GET /api/company` y `PUT /api/company` disponible en .NET y Java
+- el ticket de venta carga estos datos desde la API al iniciar el componente
+- preparado para extenderse con series, correlativos y datos SUNAT en Fase 2
+
 ### Ticket e impresion
 - ticket de navegador en primera fase
 - vista previa luego de la venta
@@ -147,6 +164,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 2. Boleta / factura con serie y correlativo
 3. Preparacion estructural para SUNAT
 4. Mejoras visuales y operativas de ticketera
+5. Series y correlativos (tabla `SeriesDocumentos`) para Fase 2 del ticket
 
 ---
 

@@ -228,6 +228,33 @@ export interface DashboardSummary {
   lowStockProducts: number;
 }
 
+export interface Company {
+  id: number;
+  businessName: string;
+  legalName: string;
+  taxId: string;
+  addressLine: string;
+  phone: string;
+  tagline: string;
+  documentTitle: string;
+  customerLabel: string;
+  footerLine1: string;
+  footerLine2: string;
+}
+
+export interface SaveCompany {
+  businessName: string;
+  legalName: string;
+  taxId: string;
+  addressLine: string;
+  phone: string;
+  tagline: string;
+  documentTitle: string;
+  customerLabel: string;
+  footerLine1: string;
+  footerLine2: string;
+}
+
 export interface CashMovement {
   id: number;
   movementDate: string;

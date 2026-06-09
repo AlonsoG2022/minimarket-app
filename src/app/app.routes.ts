@@ -10,6 +10,7 @@ import { ProductListComponent } from './features/products/product-list.component
 import { PurchaseListComponent } from './features/purchases/purchase-list.component';
 import { ReportsComponent } from './features/reports/reports.component';
 import { SalesFormComponent } from './features/sales/sales-form.component';
+import { CompanyConfigComponent } from './features/company/company-config.component';
 import { SupplierListComponent } from './features/suppliers/supplier-list.component';
 
 export const routes: Routes = [
@@ -60,6 +61,12 @@ export const routes: Routes = [
   {
     path: 'proveedores',
     component: SupplierListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'configuracion',
+    component: CompanyConfigComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['admin'] }
   },

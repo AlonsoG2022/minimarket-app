@@ -219,7 +219,26 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 
 ---
 
-## 7. Proximas implementaciones sugeridas
+## 7. Configuracion de empresa
+
+### Pantalla de configuracion
+- Estado: `Implementado`
+- Ruta: `/configuracion` (solo rol `admin`)
+- Tabla: `ConfiguracionEmpresa` (fila unica Id = 1)
+- Campos:
+  - nombre comercial, razon social, RUC
+  - direccion, telefono
+  - eslogan/rubro del ticket
+  - titulo del documento
+  - etiqueta de cliente
+  - mensaje de cierre (2 lineas)
+- Endpoints: `GET /api/company` y `PUT /api/company`
+- El ticket de ventas carga los datos desde la API al iniciar
+- Preparado para extenderse con series y correlativos en Fase 2
+
+---
+
+## 8. Proximas implementaciones sugeridas
 
 1. Modelo documental de boleta/factura
 2. Series y correlativos
@@ -230,7 +249,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 
 ---
 
-## 8. Mantenimiento SQL
+## 9. Mantenimiento SQL
 
 ### Script unico de despliegue
 - Estado: `Implementado`

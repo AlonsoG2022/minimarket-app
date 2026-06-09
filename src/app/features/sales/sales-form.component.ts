@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CashSession, PrintJob, Product, Sale } from '../../core/models/minimarket.models';
 import { AuthService } from '../../core/services/auth.service';
 import { CashSessionsService } from '../../core/services/cash-sessions.service';
+import { CompanyService } from '../../core/services/company.service';
 import { PrintJobsService } from '../../core/services/print-jobs.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
@@ -20,12 +21,13 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 })
 export class SalesFormComponent implements OnInit {
   private readonly fixedMinimumStock = 5;
-  readonly receiptProfile = {
+  receiptProfile = {
     businessName: 'Minimarket',
-    legalName: 'Minimarket Casa',
-    taxId: 'RUC por definir',
-    addressLine: 'Direccion por definir',
-    phone: 'Telefono por definir',
+    legalName: '',
+    taxId: '',
+    addressLine: '',
+    phone: '',
+    tagline: '',
     documentTitle: 'Ticket de venta',
     customerLabel: 'Consumidor final',
     footerLine1: 'Gracias por su compra',
@@ -36,6 +38,7 @@ export class SalesFormComponent implements OnInit {
   private lowStockNoticeTimeout?: ReturnType<typeof setTimeout>;
   readonly authService = inject(AuthService);
   private readonly cashSessionsService = inject(CashSessionsService);
+  private readonly companyService = inject(CompanyService);
   private readonly salesService = inject(SalesService);
   private readonly printJobsService = inject(PrintJobsService);
   private readonly productsService = inject(ProductsService);
@@ -128,6 +131,23 @@ export class SalesFormComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.loadCurrentCashSession();
+    this.companyService.get().subscribe({
+      next: (company) => {
+        this.receiptProfile = {
+          businessName: company.businessName,
+          legalName: company.legalName,
+          taxId: company.taxId,
+          addressLine: company.addressLine,
+          phone: company.phone,
+          tagline: company.tagline,
+          documentTitle: company.documentTitle,
+          customerLabel: company.customerLabel,
+          footerLine1: company.footerLine1,
+          footerLine2: company.footerLine2
+        };
+      },
+      error: () => {}
+    });
     this.productsService.getAll().subscribe({
       next: (products) => {
         this.products = products.filter((product) => product.isActive);

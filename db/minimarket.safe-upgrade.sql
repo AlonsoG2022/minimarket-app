@@ -1313,6 +1313,98 @@ END;
 GO
 
 /* =========================================================
+   CONFIGURACION EMPRESA
+   ========================================================= */
+IF OBJECT_ID('dbo.ConfiguracionEmpresa', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ConfiguracionEmpresa
+    (
+        Id              INT           NOT NULL CONSTRAINT PK_ConfiguracionEmpresa PRIMARY KEY,
+        NombreComercial NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_NombreComercial DEFAULT ('Minimarket'),
+        RazonSocial     NVARCHAR(200) NOT NULL CONSTRAINT DF_ConfigEmpresa_RazonSocial     DEFAULT ('Minimarket Casa'),
+        Ruc             NVARCHAR(20)  NOT NULL CONSTRAINT DF_ConfigEmpresa_Ruc             DEFAULT ('RUC por definir'),
+        Direccion       NVARCHAR(250) NOT NULL CONSTRAINT DF_ConfigEmpresa_Direccion       DEFAULT ('Direccion por definir'),
+        Telefono        NVARCHAR(50)  NOT NULL CONSTRAINT DF_ConfigEmpresa_Telefono        DEFAULT ('Telefono por definir'),
+        Eslogan         NVARCHAR(250) NOT NULL CONSTRAINT DF_ConfigEmpresa_Eslogan         DEFAULT ('Abarrotes y mas'),
+        TituloDocumento NVARCHAR(100) NOT NULL CONSTRAINT DF_ConfigEmpresa_TituloDocumento DEFAULT ('Ticket de venta'),
+        EtiquetaCliente NVARCHAR(100) NOT NULL CONSTRAINT DF_ConfigEmpresa_EtiquetaCliente DEFAULT ('Consumidor final'),
+        PiePagina1      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina1      DEFAULT ('Gracias por su compra'),
+        PiePagina2      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina2      DEFAULT ('Vuelva pronto')
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'NombreComercial') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD NombreComercial NVARCHAR(150) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_NombreComercial DEFAULT ('Minimarket');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'RazonSocial') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD RazonSocial NVARCHAR(200) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_RazonSocial DEFAULT ('Minimarket Casa');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'Ruc') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD Ruc NVARCHAR(20) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_Ruc DEFAULT ('RUC por definir');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'Direccion') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD Direccion NVARCHAR(250) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_Direccion DEFAULT ('Direccion por definir');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'Telefono') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD Telefono NVARCHAR(50) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_Telefono DEFAULT ('Telefono por definir');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'Eslogan') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD Eslogan NVARCHAR(250) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_Eslogan DEFAULT ('Abarrotes y mas');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'TituloDocumento') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD TituloDocumento NVARCHAR(100) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_TituloDocumento DEFAULT ('Ticket de venta');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'EtiquetaCliente') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD EtiquetaCliente NVARCHAR(100) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_EtiquetaCliente DEFAULT ('Consumidor final');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'PiePagina1') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD PiePagina1 NVARCHAR(150) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_PiePagina1 DEFAULT ('Gracias por su compra');
+END;
+GO
+
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'PiePagina2') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD PiePagina2 NVARCHAR(150) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_PiePagina2 DEFAULT ('Vuelva pronto');
+END;
+GO
+
+/* =========================================================
    DATOS BASE
    ========================================================= */
 IF NOT EXISTS (SELECT 1 FROM dbo.Categorias WHERE Nombre = 'Abarrotes')
@@ -1417,6 +1509,16 @@ SELECT
     SUM(Total) AS TotalVendido
 FROM dbo.Ventas
 GROUP BY CAST(FechaVenta AS DATE);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.ConfiguracionEmpresa WHERE Id = 1)
+BEGIN
+    INSERT INTO dbo.ConfiguracionEmpresa
+        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2)
+    VALUES
+        (1, 'Minimarket', 'Minimarket Casa', 'RUC por definir', 'Direccion por definir', 'Telefono por definir',
+         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto');
+END;
 GO
 
 PRINT 'Actualizacion segura de MinimarketDb finalizada correctamente.';

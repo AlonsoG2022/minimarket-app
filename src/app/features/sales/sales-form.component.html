@@ -342,7 +342,9 @@
       <article class="receipt" aria-label="Ticket de venta">
         <header class="receipt__header">
           <strong>{{ receiptProfile.businessName }}</strong>
-          <span class="receipt__tagline">Abarrotes · Bebidas · Limpieza</span>
+          @if (receiptProfile.tagline) {
+            <span class="receipt__tagline">{{ receiptProfile.tagline }}</span>
+          }
           <div class="receipt__divider"></div>
           <span class="receipt__legal-name">{{ receiptProfile.legalName }}</span>
           <small>RUC: {{ receiptProfile.taxId }}</small>

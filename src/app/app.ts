@@ -18,7 +18,8 @@ export class App {
     principal: false,
     ventas: false,
     inventario: false,
-    mantenimiento: false
+    mantenimiento: false,
+    configuracion: false
   };
   readonly session = computed(() => this.auth.session());
   readonly canAccessDashboard = computed(() => this.auth.hasRole(['admin', 'cajero']));
@@ -29,6 +30,7 @@ export class App {
   readonly canAccessReports = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessCategories = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessSuppliers = computed(() => this.auth.hasRole(['admin']));
+  readonly canAccessCompany = computed(() => this.auth.hasRole(['admin']));
 
   searchProducts(): void {
     if (!this.canAccessProducts()) {

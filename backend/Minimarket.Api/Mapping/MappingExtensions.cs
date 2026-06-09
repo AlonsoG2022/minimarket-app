@@ -3,8 +3,23 @@ using Minimarket.Api.Models;
 
 namespace Minimarket.Api.Mapping;
 
+
 public static class MappingExtensions
 {
+    public static CompanyDto ToDto(this Company company) =>
+        new(
+            company.Id,
+            company.BusinessName,
+            company.LegalName,
+            company.TaxId,
+            company.AddressLine,
+            company.Phone,
+            company.Tagline,
+            company.DocumentTitle,
+            company.CustomerLabel,
+            company.FooterLine1,
+            company.FooterLine2);
+
     public static ProductDto ToDto(this Product product) =>
         new(
             product.Id,
