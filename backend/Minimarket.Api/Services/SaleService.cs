@@ -13,6 +13,8 @@ public class SaleService(
     IPrintJobService printJobService,
     ILogger<SaleService> logger) : ISaleService
 {
+    private const decimal IgvDivisor = 1.18m;
+
     public async Task<IReadOnlyCollection<SaleDto>> GetAllAsync() =>
         (await saleRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
 
@@ -38,7 +40,10 @@ public class SaleService(
             UserId = dto.UserId,
             CashSessionId = dto.CashSessionId,
             PaymentMethod = dto.PaymentMethod.Trim(),
-            Notes = dto.Notes?.Trim()
+            Notes = dto.Notes?.Trim(),
+            SubTotal = 0m,
+            Igv = 0m,
+            Total = 0m
         };
 
         var cashSession = await cashSessionRepository.GetCurrentOpenAsync(dto.UserId);
@@ -84,6 +89,8 @@ public class SaleService(
         }
 
         sale.Total = sale.Details.Sum(x => x.Subtotal);
+        sale.SubTotal = CalculateSubTotalFromGross(sale.Total);
+        sale.Igv = CalculateIgvFromGross(sale.Total, sale.SubTotal);
 
         if (string.Equals(sale.PaymentMethod, "Efectivo", StringComparison.OrdinalIgnoreCase))
         {
@@ -129,4 +136,10 @@ public class SaleService(
         }
         return (true, null, created?.ToDto());
     }
+
+    private static decimal CalculateSubTotalFromGross(decimal total) =>
+        decimal.Round(total / IgvDivisor, 2, MidpointRounding.AwayFromZero);
+
+    private static decimal CalculateIgvFromGross(decimal total, decimal subTotal) =>
+        decimal.Round(total - subTotal, 2, MidpointRounding.AwayFromZero);
 }

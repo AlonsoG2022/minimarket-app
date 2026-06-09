@@ -39,6 +39,12 @@ public class Purchase {
     @Column(name = "Notas", length = 250)
     private String notes;
 
+    @Column(name = "SubTotal", nullable = false, precision = 12, scale = 2)
+    private BigDecimal subTotal;
+
+    @Column(name = "Igv", nullable = false, precision = 12, scale = 2)
+    private BigDecimal igv;
+
     @Column(name = "Total", nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
 
@@ -61,6 +67,10 @@ public class Purchase {
     public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public BigDecimal getSubTotal() { return subTotal; }
+    public void setSubTotal(BigDecimal subTotal) { this.subTotal = subTotal; }
+    public BigDecimal getIgv() { return igv; }
+    public void setIgv(BigDecimal igv) { this.igv = igv; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
     public List<PurchaseDetail> getDetails() { return details; }

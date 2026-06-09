@@ -13,6 +13,8 @@ public record SaleDto(
     String printStatus,
     Integer lastPrintJobId,
     String paymentMethod,
+    BigDecimal subTotal,
+    BigDecimal igv,
     BigDecimal total,
     String notes,
     List<SaleDetailDto> details

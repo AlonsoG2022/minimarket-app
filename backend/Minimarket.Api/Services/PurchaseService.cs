@@ -11,6 +11,8 @@ public class PurchaseService(
     IUserRepository userRepository,
     IProductRepository productRepository) : IPurchaseService
 {
+    private const decimal IgvDivisor = 1.18m;
+
     public async Task<IReadOnlyCollection<PurchaseDto>> GetAllAsync() =>
         (await purchaseRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
 
@@ -42,7 +44,10 @@ public class PurchaseService(
             SupplierId = dto.SupplierId,
             UserId = dto.UserId,
             InvoiceNumber = NormalizeOptional(dto.InvoiceNumber),
-            Notes = NormalizeOptional(dto.Notes)
+            Notes = NormalizeOptional(dto.Notes),
+            SubTotal = 0m,
+            Igv = 0m,
+            Total = 0m
         };
 
         foreach (var item in dto.Details)
@@ -86,6 +91,8 @@ public class PurchaseService(
         }
 
         purchase.Total = purchase.Details.Sum(x => x.Subtotal);
+        purchase.SubTotal = CalculateSubTotalFromGross(purchase.Total);
+        purchase.Igv = CalculateIgvFromGross(purchase.Total, purchase.SubTotal);
 
         await purchaseRepository.AddAsync(purchase);
         await purchaseRepository.SaveChangesAsync();
@@ -105,4 +112,10 @@ public class PurchaseService(
         var trimmed = providedValue?.Trim();
         return string.IsNullOrWhiteSpace(trimmed) ? fallbackValue : trimmed;
     }
+
+    private static decimal CalculateSubTotalFromGross(decimal total) =>
+        decimal.Round(total / IgvDivisor, 2, MidpointRounding.AwayFromZero);
+
+    private static decimal CalculateIgvFromGross(decimal total, decimal subTotal) =>
+        decimal.Round(total - subTotal, 2, MidpointRounding.AwayFromZero);
 }

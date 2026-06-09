@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class SaleService {
 
     private static final Logger logger = LoggerFactory.getLogger(SaleService.class);
+    private static final BigDecimal IGV_DIVISOR = new BigDecimal("1.18");
 
     private final SaleRepository saleRepository;
     private final UserRepository userRepository;
@@ -68,6 +70,8 @@ public class SaleService {
         sale.setCashSessionId(dto.cashSessionId());
         sale.setPaymentMethod(dto.paymentMethod().trim());
         sale.setNotes(dto.notes() != null ? dto.notes().trim() : null);
+        sale.setSubTotal(BigDecimal.ZERO);
+        sale.setIgv(BigDecimal.ZERO);
         sale.setTotal(BigDecimal.ZERO);
 
         var cashSession = cashSessionRepository.findFirstByUserIdAndStatusOrderByOpenedAtDesc(dto.userId(), "abierta")
@@ -115,6 +119,8 @@ public class SaleService {
                 .map(SaleDetail::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         );
+        sale.setSubTotal(calculateSubTotalFromGross(sale.getTotal()));
+        sale.setIgv(calculateIgvFromGross(sale.getTotal(), sale.getSubTotal()));
 
         if ("Efectivo".equalsIgnoreCase(sale.getPaymentMethod())) {
             var movement = new CashMovement();
@@ -150,5 +156,13 @@ public class SaleService {
         }
         created = saleRepository.findWithRelationsById(saved.getId()).orElse(saved);
         return ServiceResult.success(DtoMapper.toDto(created));
+    }
+
+    private BigDecimal calculateSubTotalFromGross(BigDecimal total) {
+        return total.divide(IGV_DIVISOR, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateIgvFromGross(BigDecimal total, BigDecimal subTotal) {
+        return total.subtract(subTotal).setScale(2, RoundingMode.HALF_UP);
     }
 }

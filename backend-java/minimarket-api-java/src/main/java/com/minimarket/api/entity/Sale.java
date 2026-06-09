@@ -35,6 +35,12 @@ public class Sale {
     @JoinColumn(name = "CajaSesionId", insertable = false, updatable = false)
     private CashSession cashSession;
 
+    @Column(name = "SubTotal", nullable = false, precision = 10, scale = 2)
+    private BigDecimal subTotal;
+
+    @Column(name = "Igv", nullable = false, precision = 10, scale = 2)
+    private BigDecimal igv;
+
     @Column(name = "Total", nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 
@@ -62,6 +68,10 @@ public class Sale {
     public void setCashSessionId(Integer cashSessionId) { this.cashSessionId = cashSessionId; }
     public CashSession getCashSession() { return cashSession; }
     public void setCashSession(CashSession cashSession) { this.cashSession = cashSession; }
+    public BigDecimal getSubTotal() { return subTotal; }
+    public void setSubTotal(BigDecimal subTotal) { this.subTotal = subTotal; }
+    public BigDecimal getIgv() { return igv; }
+    public void setIgv(BigDecimal igv) { this.igv = igv; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
     public String getPaymentMethod() { return paymentMethod; }

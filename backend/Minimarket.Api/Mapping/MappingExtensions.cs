@@ -74,6 +74,8 @@ public static class MappingExtensions
                 .Select(job => (int?)job.Id)
                 .FirstOrDefault(),
             sale.PaymentMethod,
+            sale.SubTotal,
+            sale.Igv,
             sale.Total,
             sale.Notes,
             sale.Details
@@ -152,6 +154,8 @@ public static class MappingExtensions
             purchase.User?.FullName ?? string.Empty,
             purchase.InvoiceNumber,
             purchase.Notes,
+            purchase.SubTotal,
+            purchase.Igv,
             purchase.Total,
             purchase.Details
                 .Select(detail => new PurchaseDetailDto(

@@ -21,6 +21,8 @@ public record SaleDto(
     string? PrintStatus,
     int? LastPrintJobId,
     string PaymentMethod,
+    decimal SubTotal,
+    decimal Igv,
     decimal Total,
     string? Notes,
     IReadOnlyCollection<SaleDetailDto> Details);

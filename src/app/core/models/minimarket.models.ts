@@ -138,6 +138,8 @@ export interface Sale {
   printStatus?: string | null;
   lastPrintJobId?: number | null;
   paymentMethod: string;
+  subTotal: number;
+  igv: number;
   total: number;
   notes?: string | null;
   details: SaleDetail[];
@@ -188,6 +190,8 @@ export interface Purchase {
   userName: string;
   invoiceNumber?: string | null;
   notes?: string | null;
+  subTotal: number;
+  igv: number;
   total: number;
   details: PurchaseDetail[];
 }

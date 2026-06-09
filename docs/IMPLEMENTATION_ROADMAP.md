@@ -40,6 +40,8 @@ Estados sugeridos:
   - compra por proveedor
   - paquete a unidad
   - creacion rapida de producto desde compras
+  - guarda `SubTotal`, `IGV` y `Total` en cabecera
+  - regla actual: el costo/precio unitario registrado ya incluye IGV
 
 ### Ventas
 - Estado: `Implementado`
@@ -47,6 +49,8 @@ Estados sugeridos:
   - buscador rapido
   - ticket actual
   - soporte de lector
+  - guarda `SubTotal`, `IGV` y `Total` en cabecera
+  - regla actual: el precio unitario ya incluye IGV
 
 ---
 
@@ -190,6 +194,17 @@ Estados sugeridos:
   - total
   - moneda
   - estado de envio
+
+### Base tributaria en compras y ventas
+- Estado: `Implementado`
+- Alcance:
+  - tablas `Compras` y `Ventas` persistiendo `SubTotal`, `IGV` y `Total`
+  - calculo inicial con IGV incluido en precio/costo unitario
+  - formula actual de cabecera:
+    - `SubTotal = Total / 1.18`
+    - `IGV = Total - SubTotal`
+- Nota:
+  - esta base sirve para preparar SUNAT, pero todavia no reemplaza una logica tributaria completa por tipo de documento o afectacion
 
 ### Datos tributarios de producto
 - Estado: `Pendiente`

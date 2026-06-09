@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 public class PurchaseService {
+    private static final BigDecimal IGV_DIVISOR = new BigDecimal("1.18");
 
     private final PurchaseRepository purchaseRepository;
     private final SupplierRepository supplierRepository;
@@ -72,6 +73,8 @@ public class PurchaseService {
         purchase.setUserId(dto.userId());
         purchase.setInvoiceNumber(normalizeOptional(dto.invoiceNumber()));
         purchase.setNotes(normalizeOptional(dto.notes()));
+        purchase.setSubTotal(BigDecimal.ZERO);
+        purchase.setIgv(BigDecimal.ZERO);
         purchase.setTotal(BigDecimal.ZERO);
 
         for (var item : dto.details()) {
@@ -123,6 +126,8 @@ public class PurchaseService {
                 .map(PurchaseDetail::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
         );
+        purchase.setSubTotal(calculateSubTotalFromGross(purchase.getTotal()));
+        purchase.setIgv(calculateIgvFromGross(purchase.getTotal(), purchase.getSubTotal()));
 
         var saved = purchaseRepository.save(purchase);
         var created = purchaseRepository.findById(saved.getId()).orElse(saved);
@@ -145,5 +150,13 @@ public class PurchaseService {
 
         var trimmed = providedValue.trim();
         return trimmed.isBlank() ? fallbackValue : trimmed;
+    }
+
+    private BigDecimal calculateSubTotalFromGross(BigDecimal total) {
+        return total.divide(IGV_DIVISOR, 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateIgvFromGross(BigDecimal total, BigDecimal subTotal) {
+        return total.subtract(subTotal).setScale(2, RoundingMode.HALF_UP);
     }
 }

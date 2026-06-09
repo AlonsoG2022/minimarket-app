@@ -10,6 +10,8 @@ public class Purchase
     public User? User { get; set; }
     public string? InvoiceNumber { get; set; }
     public string? Notes { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal Igv { get; set; }
     public decimal Total { get; set; }
     public ICollection<PurchaseDetail> Details { get; set; } = new List<PurchaseDetail>();
 }

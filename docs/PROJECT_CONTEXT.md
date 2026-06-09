@@ -70,6 +70,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - usuario autenticado asociado a la venta
 - aviso visual de stock minimo
 - ticket imprimible desde navegador
+- cabecera con `SubTotal`, `IGV` y `Total` persistidos en BD
 
 ### Caja
 - apertura de caja con monto inicial
@@ -93,6 +94,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - productos con unidades de compra y venta
 - soporte para compras por paquete y venta por unidad
 - alta rapida de producto desde compra si el codigo no existe
+- cabecera con `SubTotal`, `IGV` y `Total` persistidos en BD
 
 ### Configuracion de empresa
 - pantalla accesible solo para `admin` en `/configuracion`
@@ -136,6 +138,20 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - un solo codigo de barras puede usarse para compra y venta del mismo producto
 - no debe repetirse entre productos distintos
 
+### Montos tributarios base
+- las tablas `Ventas` y `Compras` deben persistir:
+  - `SubTotal`
+  - `IGV`
+  - `Total`
+- regla actual:
+  - el precio unitario de venta ya incluye IGV
+  - el costo/precio unitario de compra registrado tambien se considera con IGV incluido
+- calculo actual de cabecera:
+  - `Total` = suma final de lineas
+  - `SubTotal` = `Total / 1.18`
+  - `IGV` = `Total - SubTotal`
+- estos campos se guardan para preparar la futura implementacion de boleta/factura y envio a SUNAT
+
 ### Stock
 - el alta manual de producto inicia con `stock = 0`
 - el stock real debe entrar por compras
@@ -165,6 +181,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 3. Preparacion estructural para SUNAT
 4. Mejoras visuales y operativas de ticketera
 5. Series y correlativos (tabla `SeriesDocumentos`) para Fase 2 del ticket
+6. Evolucionar de calculo tributario fijo (IGV 18% incluido) a reglas tributarias configurables por documento/producto
 
 ---
 

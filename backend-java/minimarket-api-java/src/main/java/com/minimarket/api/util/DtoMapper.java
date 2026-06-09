@@ -116,6 +116,8 @@ public final class DtoMapper {
                 .findFirst()
                 .orElse(null),
             sale.getPaymentMethod(),
+            sale.getSubTotal(),
+            sale.getIgv(),
             sale.getTotal(),
             sale.getNotes(),
             details
@@ -206,6 +208,8 @@ public final class DtoMapper {
             purchase.getUser() != null ? purchase.getUser().getFullName() : "",
             purchase.getInvoiceNumber(),
             purchase.getNotes(),
+            purchase.getSubTotal(),
+            purchase.getIgv(),
             purchase.getTotal(),
             details
         );

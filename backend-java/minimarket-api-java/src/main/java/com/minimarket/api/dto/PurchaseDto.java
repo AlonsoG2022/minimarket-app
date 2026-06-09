@@ -13,6 +13,8 @@ public record PurchaseDto(
     String userName,
     String invoiceNumber,
     String notes,
+    BigDecimal subTotal,
+    BigDecimal igv,
     BigDecimal total,
     List<PurchaseDetailDto> details
 ) {

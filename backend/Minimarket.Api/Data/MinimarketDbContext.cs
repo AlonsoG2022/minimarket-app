@@ -89,6 +89,8 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.Property(x => x.SaleDate).HasColumnName("FechaVenta");
             entity.Property(x => x.UserId).HasColumnName("UsuarioId");
             entity.Property(x => x.CashSessionId).HasColumnName("CajaSesionId");
+            entity.Property(x => x.SubTotal).HasColumnName("SubTotal").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.Igv).HasColumnName("Igv").HasColumnType("decimal(10,2)");
             entity.Property(x => x.Total).HasColumnType("decimal(10,2)");
             entity.Property(x => x.PaymentMethod).HasColumnName("MetodoPago").HasMaxLength(30).IsRequired();
             entity.Property(x => x.Notes).HasColumnName("Notas").HasMaxLength(250);
@@ -187,6 +189,8 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.Property(x => x.UserId).HasColumnName("UsuarioId");
             entity.Property(x => x.InvoiceNumber).HasColumnName("NumeroComprobante").HasMaxLength(50);
             entity.Property(x => x.Notes).HasColumnName("Notas").HasMaxLength(250);
+            entity.Property(x => x.SubTotal).HasColumnName("SubTotal").HasColumnType("decimal(12,2)");
+            entity.Property(x => x.Igv).HasColumnName("Igv").HasColumnType("decimal(12,2)");
             entity.Property(x => x.Total).HasColumnType("decimal(12,2)");
             entity.HasOne(x => x.Supplier)
                 .WithMany(x => x.Purchases)

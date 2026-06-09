@@ -37,5 +37,7 @@ public record PurchaseDto(
     string UserName,
     string? InvoiceNumber,
     string? Notes,
+    decimal SubTotal,
+    decimal Igv,
     decimal Total,
     IReadOnlyCollection<PurchaseDetailDto> Details);

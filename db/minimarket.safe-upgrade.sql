@@ -772,6 +772,8 @@ BEGIN
         UsuarioId INT NOT NULL,
         NumeroComprobante NVARCHAR(50) NULL,
         Notas NVARCHAR(250) NULL,
+        SubTotal DECIMAL(12,2) NOT NULL CONSTRAINT DF_Compras_SubTotal DEFAULT (0),
+        Igv DECIMAL(12,2) NOT NULL CONSTRAINT DF_Compras_Igv DEFAULT (0),
         Total DECIMAL(12,2) NOT NULL
     );
 END;
@@ -807,10 +809,28 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.Compras', 'SubTotal') IS NULL
+BEGIN
+    ALTER TABLE dbo.Compras ADD SubTotal DECIMAL(12,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Compras', 'Igv') IS NULL
+BEGIN
+    ALTER TABLE dbo.Compras ADD Igv DECIMAL(12,2) NULL;
+END;
+GO
+
 IF COL_LENGTH('dbo.Compras', 'Total') IS NULL
 BEGIN
     ALTER TABLE dbo.Compras ADD Total DECIMAL(12,2) NULL;
 END;
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Compras', 'SubTotal', 'DF_Compras_SubTotal', '(0)';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Compras', 'Igv', 'DF_Compras_Igv', '(0)';
 GO
 
 UPDATE dbo.Compras
@@ -818,8 +838,10 @@ SET
     FechaCompra = ISNULL(FechaCompra, SYSDATETIME()),
     ProveedorId = ISNULL(ProveedorId, 1),
     UsuarioId = ISNULL(UsuarioId, 1),
+    SubTotal = ISNULL(SubTotal, ROUND(ISNULL(Total, 0) / 1.18, 2)),
+    Igv = ISNULL(Igv, ROUND(ISNULL(Total, 0) - ROUND(ISNULL(Total, 0) / 1.18, 2), 2)),
     Total = ISNULL(Total, 0)
-WHERE FechaCompra IS NULL OR ProveedorId IS NULL OR UsuarioId IS NULL OR Total IS NULL;
+WHERE FechaCompra IS NULL OR ProveedorId IS NULL OR UsuarioId IS NULL OR SubTotal IS NULL OR Igv IS NULL OR Total IS NULL;
 GO
 
 ALTER TABLE dbo.Compras ALTER COLUMN FechaCompra DATETIME2 NOT NULL;
@@ -827,6 +849,8 @@ ALTER TABLE dbo.Compras ALTER COLUMN ProveedorId INT NOT NULL;
 ALTER TABLE dbo.Compras ALTER COLUMN UsuarioId INT NOT NULL;
 ALTER TABLE dbo.Compras ALTER COLUMN NumeroComprobante NVARCHAR(50) NULL;
 ALTER TABLE dbo.Compras ALTER COLUMN Notas NVARCHAR(250) NULL;
+ALTER TABLE dbo.Compras ALTER COLUMN SubTotal DECIMAL(12,2) NOT NULL;
+ALTER TABLE dbo.Compras ALTER COLUMN Igv DECIMAL(12,2) NOT NULL;
 ALTER TABLE dbo.Compras ALTER COLUMN Total DECIMAL(12,2) NOT NULL;
 GO
 
@@ -983,6 +1007,8 @@ BEGIN
         FechaVenta DATETIME2 NOT NULL CONSTRAINT DF_Ventas_FechaVenta DEFAULT (SYSDATETIME()),
         UsuarioId INT NOT NULL,
         CajaSesionId INT NULL,
+        SubTotal DECIMAL(10,2) NOT NULL CONSTRAINT DF_Ventas_SubTotal DEFAULT (0),
+        Igv DECIMAL(10,2) NOT NULL CONSTRAINT DF_Ventas_Igv DEFAULT (0),
         Total DECIMAL(10,2) NOT NULL,
         MetodoPago NVARCHAR(30) NOT NULL,
         Notas NVARCHAR(250) NULL
@@ -999,6 +1025,18 @@ GO
 IF COL_LENGTH('dbo.Ventas', 'UsuarioId') IS NULL
 BEGIN
     ALTER TABLE dbo.Ventas ADD UsuarioId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Ventas', 'SubTotal') IS NULL
+BEGIN
+    ALTER TABLE dbo.Ventas ADD SubTotal DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Ventas', 'Igv') IS NULL
+BEGIN
+    ALTER TABLE dbo.Ventas ADD Igv DECIMAL(10,2) NULL;
 END;
 GO
 
@@ -1026,13 +1064,23 @@ BEGIN
 END;
 GO
 
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Ventas', 'SubTotal', 'DF_Ventas_SubTotal', '(0)';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Ventas', 'Igv', 'DF_Ventas_Igv', '(0)';
+GO
+
 UPDATE dbo.Ventas
 SET
     FechaVenta = ISNULL(FechaVenta, SYSDATETIME()),
+    SubTotal = ISNULL(SubTotal, ROUND(ISNULL(Total, 0) / 1.18, 2)),
+    Igv = ISNULL(Igv, ROUND(ISNULL(Total, 0) - ROUND(ISNULL(Total, 0) / 1.18, 2), 2)),
     Total = ISNULL(Total, 0),
     MetodoPago = ISNULL(MetodoPago, 'Efectivo')
 WHERE
     FechaVenta IS NULL
+    OR SubTotal IS NULL
+    OR Igv IS NULL
     OR Total IS NULL
     OR MetodoPago IS NULL;
 GO
@@ -1040,6 +1088,8 @@ GO
 ALTER TABLE dbo.Ventas ALTER COLUMN FechaVenta DATETIME2 NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN UsuarioId INT NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN CajaSesionId INT NULL;
+ALTER TABLE dbo.Ventas ALTER COLUMN SubTotal DECIMAL(10,2) NOT NULL;
+ALTER TABLE dbo.Ventas ALTER COLUMN Igv DECIMAL(10,2) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN Total DECIMAL(10,2) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN MetodoPago NVARCHAR(30) NOT NULL;
 ALTER TABLE dbo.Ventas ALTER COLUMN Notas NVARCHAR(250) NULL;
