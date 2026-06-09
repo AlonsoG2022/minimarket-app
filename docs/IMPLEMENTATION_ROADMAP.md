@@ -78,6 +78,48 @@ Estados sugeridos:
   - detalle de productos
   - impresion con `window.print`
 
+### Fase 1: Ticket operativo mejorado
+- Estado: `Implementado`
+- Objetivo:
+  - dejar el ticket mas cercano a operacion real de minimarket sin depender todavia de boleta/factura formal
+- Debe incluir:
+  - nombre comercial del negocio
+  - RUC
+  - direccion y telefono
+  - fecha y hora
+  - numero de venta
+  - cajero
+  - cliente simple o consumidor final
+  - columnas de detalle:
+    - cantidad
+    - descripcion
+    - precio unitario
+    - importe
+  - subtotal o total operativo segun aplique
+  - mensaje final comercial
+- Nota:
+  - esta fase reemplaza el ticket muy basico actual, pero todavia no representa una boleta electronica formal
+  - la vista previa web y los workers de impresion deben mantenerse consistentes en esta fase
+
+### Fase 2: Ticket documental preparado para boleta/factura
+- Estado: `Pendiente`
+- Objetivo:
+  - evolucionar el ticket a una estructura documental lista para enlazarse con boleta/factura y SUNAT
+- Debe incluir:
+  - tipo de documento
+  - serie
+  - correlativo
+  - subtotal
+  - IGV
+  - total
+  - monto en letras
+  - cliente mas formal
+  - codigo de barras o QR si se decide usar
+- Dependencias:
+  - modelo documental de venta
+  - series y correlativos
+  - reglas tributarias futuras
+
 ### Servicio local de impresion
 - Estado: `Primera fase`
 - Incluye:

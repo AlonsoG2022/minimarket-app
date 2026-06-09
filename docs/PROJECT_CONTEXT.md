@@ -107,6 +107,9 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - `impreso`
   - `error`
 - reencolado manual disponible desde ventas
+- roadmap visual de ticket definido en dos fases:
+  - `Fase 1`: implementada con encabezado comercial, datos de venta, cliente simple, detalle tabular por producto, subtotal, total y mensaje final
+  - `Fase 2`: ticket documental preparado para boleta/factura con serie, correlativo, subtotal, IGV, monto en letras y base para SUNAT
 
 ---
 
@@ -134,6 +137,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - la cola guarda un snapshot JSON del ticket para no depender del estado futuro del producto
 - si la cola de impresion falla, la venta igual debe registrarse
 - aun no se implementan boleta, factura, serie, correlativo ni estados SUNAT
+- mientras la impresion automatica conviva con la vista previa web, el modal posterior a la venta funciona como respaldo manual y confirmacion visual
 
 ---
 

@@ -91,6 +91,30 @@ Ademas:
 
 ---
 
+## Prompt 3B: Mejorar ticket por fases
+
+```md
+Quiero mejorar el ticket de venta tomando como referencia `docs/PROJECT_CONTEXT.md` y `docs/IMPLEMENTATION_ROADMAP.md`.
+
+Trabaja solo la fase indicada:
+- Fase 1: ticket operativo mejorado para minimarket
+- Fase 2: ticket documental preparado para boleta/factura
+
+Reglas:
+- no mezcles fases sin avisar
+- si la fase depende de otra estructura pendiente, dejalo documentado
+- mantén alineado frontend, backend y worker de impresion donde corresponda
+- actualiza los archivos `.md` al finalizar
+
+Fase a implementar:
+[FASE 1 / FASE 2]
+
+Objetivo o referencia visual:
+[DESCRIBIR AQUI]
+```
+
+---
+
 ## Prompt 4: Despliegue
 
 ```md

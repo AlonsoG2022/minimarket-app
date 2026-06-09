@@ -15,16 +15,26 @@ public class TicketTextRenderer {
         var width = Math.max(32, properties.getLineWidth());
         var lines = new ArrayList<String>();
         lines.add(center(properties.getBusinessName(), width));
-        lines.add(center("TICKET DE VENTA", width));
+        lines.add(center("Abarrotes - Bebidas - Limpieza", width));
         lines.add("-".repeat(width));
-        lines.add("Venta: #" + payload.saleId());
+        lines.add(center(properties.getLegalName(), width));
+        lines.add(center("RUC: " + properties.getTaxId(), width));
+        lines.add(center(properties.getAddressLine(), width));
+        lines.add(center("Telefono: " + properties.getPhone(), width));
+        lines.add("-".repeat(width));
+        lines.add(center("TICKET DE VENTA", width));
+        lines.add(center("#" + payload.saleId(), width));
+        lines.add("-".repeat(width));
         lines.add("Fecha: " + payload.saleDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         lines.add("Cajero: " + payload.cashierName());
+        lines.add("Cliente: " + properties.getCustomerLabel());
         lines.add("Pago: " + payload.paymentMethod());
+        lines.add("-".repeat(width));
+        lines.add(ticketHeader(width));
         lines.add("-".repeat(width));
 
         for (var item : payload.items()) {
-            lines.addAll(wrap(item.productName(), width));
+            lines.addAll(wrap(item.productName(), width - 2));
             var subtotal = formatMoney(item.subtotal());
             var detail = item.quantity() + " x " + formatMoney(item.unitPrice());
             lines.add(padRight(detail, Math.max(0, width - subtotal.length())) + subtotal);
@@ -34,6 +44,7 @@ public class TicketTextRenderer {
         lines.add(padRight("Items", Math.max(0, width - String.valueOf(payload.items().size()).length())) + payload.items().size());
         var totalUnits = payload.items().stream().mapToInt(item -> item.quantity() == null ? 0 : item.quantity()).sum();
         lines.add(padRight("Unidades", Math.max(0, width - String.valueOf(totalUnits).length())) + totalUnits);
+        lines.add(padRight("Subtotal", Math.max(0, width - formatMoney(payload.total()).length())) + formatMoney(payload.total()));
 
         if (payload.notes() != null && !payload.notes().isBlank()) {
             lines.add("-".repeat(width));
@@ -44,7 +55,8 @@ public class TicketTextRenderer {
         lines.add("-".repeat(width));
         lines.add(padRight("TOTAL", Math.max(0, width - formatMoney(payload.total()).length())) + formatMoney(payload.total()));
         lines.add("");
-        lines.add(center("Gracias por su compra", width));
+        lines.add(center(properties.getFooterLine1(), width));
+        lines.add(center(properties.getFooterLine2(), width));
         lines.add("");
         lines.add("");
 
@@ -95,5 +107,10 @@ public class TicketTextRenderer {
         }
 
         return lines;
+    }
+
+    private static String ticketHeader(int width) {
+        var header = "CANT DESCRIPCION P.UNIT IMPORTE";
+        return header.length() <= width ? header : header.substring(0, width);
     }
 }

@@ -1,4 +1,4 @@
-<section class="sales-layout" id="nueva-venta">
+﻿<section class="sales-layout" id="nueva-venta">
   @if (lowStockNotice) {
     <aside class="stock-toast" aria-live="polite">
       <div class="stock-toast__content">
@@ -13,11 +13,11 @@
     <div class="pos-card__header">
       <div>
         <h2 class="section-title">Nueva venta</h2>
-        <p class="section-copy">Busca un producto, agrégalo al ticket y cobra al final.</p>
+        <p class="section-copy">Busca un producto, agrÃ©galo al ticket y cobra al final.</p>
       </div>
 
       @if (lastSaleId) {
-        <span class="pill">Última venta: #{{ lastSaleId }}</span>
+        <span class="pill">Ãšltima venta: #{{ lastSaleId }}</span>
       }
     </div>
 
@@ -99,7 +99,7 @@
           @if (!hasSearchTerm) {
             <div class="ticket-empty search-empty">
               <strong>Empieza escribiendo un producto</strong>
-              <p>La búsqueda mostrará coincidencias y también aceptará el lector de código de barras.</p>
+              <p>La bÃºsqueda mostrarÃ¡ coincidencias y tambiÃ©n aceptarÃ¡ el lector de cÃ³digo de barras.</p>
             </div>
           } @else {
             <div class="search-results">
@@ -136,11 +136,11 @@
                 <div class="ticket-item">
                   <div class="ticket-item__main">
                     <strong>{{ item.productName }}</strong>
-                    <p>{{ item.sku }} · Stock {{ item.stock }}</p>
+                    <p>{{ item.sku }} Â· Stock {{ item.stock }}</p>
                   </div>
 
                   <div class="ticket-item__qty">
-                    <button type="button" class="secondary" (click)="decrementQuantity(item.index)">−</button>
+                    <button type="button" class="secondary" (click)="decrementQuantity(item.index)">âˆ’</button>
                     <input
                       type="number"
                       min="1"
@@ -162,7 +162,7 @@
             </div>
           } @else {
             <div class="ticket-empty">
-              <strong>Ticket vacío</strong>
+              <strong>Ticket vacÃ­o</strong>
               <p>Agrega un producto desde el buscador para empezar la venta.</p>
             </div>
           }
@@ -191,7 +191,7 @@
             </div>
 
             <div>
-              <label for="paymentMethod">Método de pago</label>
+              <label for="paymentMethod">MÃ©todo de pago</label>
               <select id="paymentMethod" formControlName="paymentMethod">
                 <option value="Efectivo">Efectivo</option>
                 <option value="Tarjeta">Tarjeta</option>
@@ -229,7 +229,7 @@
 
   <section class="card" id="historial-ventas">
     <h2 class="section-title">Ventas recientes</h2>
-    <p class="section-copy">Aquí puedes verificar las últimas ventas registradas y sus montos.</p>
+    <p class="section-copy">AquÃ­ puedes verificar las Ãºltimas ventas registradas y sus montos.</p>
 
     @if (loadingSalesHistory) {
       <p class="section-copy">Cargando ventas recientes...</p>
@@ -238,7 +238,7 @@
         <table>
           <thead>
             <tr>
-              <th>Código</th>
+              <th>CÃ³digo</th>
               <th>Fecha</th>
               <th>Usuario</th>
               <th>Pago</th>
@@ -265,7 +265,7 @@
         </table>
       </div>
     } @else {
-      <p>No hay ventas registradas aún.</p>
+      <p>No hay ventas registradas aÃºn.</p>
     }
   </section>
 </section>
@@ -341,15 +341,30 @@
 
       <article class="receipt" aria-label="Ticket de venta">
         <header class="receipt__header">
-          <strong>Minimarket</strong>
-          <span>Ticket de venta</span>
+          <strong>{{ receiptProfile.businessName }}</strong>
+          <span class="receipt__tagline">Abarrotes · Bebidas · Limpieza</span>
+          <div class="receipt__divider"></div>
+          <span class="receipt__legal-name">{{ receiptProfile.legalName }}</span>
+          <small>RUC: {{ receiptProfile.taxId }}</small>
+          <small>{{ receiptProfile.addressLine }}</small>
+          <small>Telefono: {{ receiptProfile.phone }}</small>
+          <div class="receipt__divider"></div>
+          <span>{{ receiptProfile.documentTitle | uppercase }}</span>
           <small>#{{ printableSale.id }} · {{ printableSale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</small>
         </header>
 
         <div class="receipt__meta">
           <div>
+            <span>Fecha</span>
+            <strong>{{ printableSale.saleDate | date: 'dd/MM/yyyy HH:mm' }}</strong>
+          </div>
+          <div>
             <span>Cajero</span>
             <strong>{{ printableSale.userName }}</strong>
+          </div>
+          <div>
+            <span>Cliente</span>
+            <strong>{{ receiptProfile.customerLabel }}</strong>
           </div>
           <div>
             <span>Pago</span>
@@ -357,26 +372,39 @@
           </div>
         </div>
 
+        <div class="receipt__divider"></div>
+
         <div class="receipt__items">
+          <div class="receipt__table-head">
+            <span>Cant.</span>
+            <span>Descripcion</span>
+            <span>P. Unit</span>
+            <span>Importe</span>
+          </div>
           @for (detail of printableSale.details; track detail.id) {
             <div class="receipt__item">
-              <div class="receipt__product">
-                <strong>{{ detail.productName }}</strong>
-                <span>{{ detail.quantity }} x {{ detail.unitPrice | solesPrice }}</span>
-              </div>
+              <span class="receipt__qty">{{ detail.quantity }}</span>
+              <strong class="receipt__product">{{ detail.productName }}</strong>
+              <span class="receipt__unit-price">{{ detail.unitPrice | solesPrice }}</span>
               <strong class="receipt__subtotal">{{ detail.subtotal | solesPrice }}</strong>
             </div>
           }
         </div>
 
-        <div class="receipt__totals">
-          <div>
+        <div class="receipt__divider"></div>
+
+        <div class="receipt__summary">
+          <div class="receipt__summary-row">
             <span>Items</span>
             <strong>{{ printableSale.details.length }}</strong>
           </div>
-          <div>
+          <div class="receipt__summary-row">
             <span>Unidades</span>
             <strong>{{ printableSale.details.reduce((sum, detail) => sum + detail.quantity, 0) }}</strong>
+          </div>
+          <div class="receipt__summary-row">
+            <span>Subtotal</span>
+            <strong>{{ printableSale.details.reduce((sum, detail) => sum + detail.subtotal, 0) | solesPrice }}</strong>
           </div>
         </div>
 
@@ -387,10 +415,17 @@
           </div>
         }
 
+        <div class="receipt__divider"></div>
+
         <footer class="receipt__footer">
           <span>Total</span>
           <strong>{{ printableSale.total | solesPrice }}</strong>
         </footer>
+
+        <div class="receipt__thanks">
+          <strong>{{ receiptProfile.footerLine1 }}</strong>
+          <span>{{ receiptProfile.footerLine2 }}</span>
+        </div>
       </article>
     </section>
   </div>
@@ -449,3 +484,4 @@
     <p>No hay trabajos de impresion generados aun.</p>
   }
 </section>
+

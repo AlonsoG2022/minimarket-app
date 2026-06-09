@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,17 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 })
 export class SalesFormComponent implements OnInit {
   private readonly fixedMinimumStock = 5;
+  readonly receiptProfile = {
+    businessName: 'Minimarket',
+    legalName: 'Minimarket Casa',
+    taxId: 'RUC por definir',
+    addressLine: 'Direccion por definir',
+    phone: 'Telefono por definir',
+    documentTitle: 'Ticket de venta',
+    customerLabel: 'Consumidor final',
+    footerLine1: 'Gracias por su compra',
+    footerLine2: 'Vuelva pronto'
+  };
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private lowStockNoticeTimeout?: ReturnType<typeof setTimeout>;
@@ -198,7 +209,7 @@ export class SalesFormComponent implements OnInit {
     if (!currentUser || this.form.get('paymentMethod')?.invalid || !saleDetails.length) {
       this.form.markAllAsTouched();
       if (!currentUser) {
-        this.error = 'Tu sesión no está disponible. Vuelve a ingresar.';
+        this.error = 'Tu sesiÃ³n no estÃ¡ disponible. Vuelve a ingresar.';
         this.message = '';
       }
       if (!saleDetails.length) {
@@ -417,13 +428,13 @@ export class SalesFormComponent implements OnInit {
     }
 
     const sale = this.printableSale;
+    const subtotal = sale.details.reduce((sum, detail) => sum + detail.subtotal, 0);
     const itemsHtml = sale.details.map((detail) => `
-      <div class="item">
-        <div class="product">
-          <strong>${this.escapeHtml(detail.productName)}</strong>
-          <span>${detail.quantity} x ${this.formatCurrency(detail.unitPrice)}</span>
-        </div>
-        <strong>${this.formatCurrency(detail.subtotal)}</strong>
+      <div class="item-row">
+        <div class="item-row__qty">${detail.quantity}</div>
+        <div class="item-row__description">${this.escapeHtml(detail.productName)}</div>
+        <div class="item-row__unit-price">${this.formatCurrency(detail.unitPrice)}</div>
+        <div class="item-row__subtotal">${this.formatCurrency(detail.subtotal)}</div>
       </div>
     `).join('');
 
@@ -437,41 +448,72 @@ export class SalesFormComponent implements OnInit {
           <title>Ticket ${sale.id}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 18px; color: #2d1e15; }
-            .receipt { max-width: 340px; margin: 0 auto; }
-            .header, .footer { text-align: center; }
-            .header strong { display:block; font-size:18px; margin-bottom:4px; }
-            .header small, .meta span, .item span, .notes span, .totals span { color:#6b5a4b; }
-            .meta, .notes, .footer, .totals { display:flex; justify-content:space-between; gap:12px; }
-            .meta { margin: 14px 0; }
-            .meta div { flex: 1 1 0; display:grid; gap: 2px; }
-            .item { display:flex; justify-content:space-between; gap:10px; align-items:start; padding:10px 0; border-bottom:1px dashed #d5c4b4; }
-            .product { display:grid; gap:2px; }
-            .product strong { font-size:14px; line-height:1.35; }
-            .item strong:last-child { text-align:right; white-space:nowrap; }
-            .totals { margin-top: 12px; }
-            .totals div { flex:1 1 0; display:grid; gap:2px; }
-            .notes { margin-top: 12px; }
-            .footer { margin-top: 16px; padding-top: 12px; border-top:1px dashed #d5c4b4; font-size:20px; font-weight:700; }
+            .receipt { max-width: 360px; margin: 0 auto; }
+            .center { text-align: center; }
+            .muted { color:#6b5a4b; }
+            .divider { border-top:1px dashed #cbb6a4; margin:12px 0; }
+            .business-name { font-size:22px; font-weight:800; letter-spacing:0.02em; }
+            .legal-name { font-size:15px; font-weight:700; margin-top:10px; }
+            .doc-title { font-size:18px; font-weight:800; margin-top:8px; }
+            .doc-number { font-size:18px; font-weight:800; margin-top:2px; }
+            .meta { display:grid; gap:4px; font-size:14px; }
+            .meta-row { display:grid; grid-template-columns:78px 1fr; gap:8px; }
+            .items { margin-top:10px; }
+            .item-head, .item-row { display:grid; grid-template-columns:32px minmax(0, 1fr) 72px 78px; gap:8px; align-items:start; }
+            .item-head { font-weight:800; font-size:12px; text-transform:uppercase; margin-bottom:6px; }
+            .item-row { padding:5px 0; font-size:13px; }
+            .item-row__description { overflow-wrap:anywhere; }
+            .item-row__unit-price, .item-row__subtotal { text-align:right; white-space:nowrap; }
+            .summary { display:grid; gap:6px; margin-top:10px; }
+            .summary-row { display:flex; justify-content:space-between; gap:12px; }
+            .summary-row strong { white-space:nowrap; }
+            .summary-row.total { font-size:20px; font-weight:800; padding-top:6px; }
+            .footer-block { margin-top:14px; text-align:center; font-weight:700; }
           </style>
         </head>
         <body>
           <article class="receipt">
-            <header class="header">
-              <strong>Minimarket</strong>
-              <div>Ticket de venta</div>
-              <small>#${sale.id} · ${this.formatDateTime(sale.saleDate)}</small>
+            <header class="center">
+              <div class="business-name">${this.escapeHtml(this.receiptProfile.businessName)}</div>
+              <div class="muted">Abarrotes · Bebidas · Limpieza</div>
+              <div class="divider"></div>
+              <div class="legal-name">${this.escapeHtml(this.receiptProfile.legalName)}</div>
+              <div>RUC: ${this.escapeHtml(this.receiptProfile.taxId)}</div>
+              <div>${this.escapeHtml(this.receiptProfile.addressLine)}</div>
+              <div>Telefono: ${this.escapeHtml(this.receiptProfile.phone)}</div>
+              <div class="divider"></div>
+              <div class="doc-title">${this.escapeHtml(this.receiptProfile.documentTitle.toUpperCase())}</div>
+              <div class="doc-number">#${sale.id}</div>
             </header>
             <section class="meta">
-              <div><span>Cajero</span><strong>${this.escapeHtml(sale.userName)}</strong></div>
-              <div><span>Pago</span><strong>${this.escapeHtml(sale.paymentMethod)}</strong></div>
+              <div class="meta-row"><strong>Fecha:</strong><span>${this.formatDateTime(sale.saleDate)}</span></div>
+              <div class="meta-row"><strong>Cajero:</strong><span>${this.escapeHtml(sale.userName)}</span></div>
+              <div class="meta-row"><strong>Cliente:</strong><span>${this.escapeHtml(this.receiptProfile.customerLabel)}</span></div>
+              <div class="meta-row"><strong>Pago:</strong><span>${this.escapeHtml(sale.paymentMethod)}</span></div>
             </section>
-            <section>${itemsHtml}</section>
-            <section class="totals">
-              <div><span>Items</span><strong>${sale.details.length}</strong></div>
-              <div><span>Unidades</span><strong>${totalUnits}</strong></div>
+            <div class="divider"></div>
+            <section class="items">
+              <div class="item-head">
+                <div>Cant.</div>
+                <div>Descripcion</div>
+                <div>P. Unit</div>
+                <div>Importe</div>
+              </div>
+              ${itemsHtml}
             </section>
-            ${sale.notes ? `<section class="notes"><span>Notas</span><strong>${this.escapeHtml(sale.notes)}</strong></section>` : ''}
-            <footer class="footer"><span>Total</span><strong>${this.formatCurrency(sale.total)}</strong></footer>
+            <div class="divider"></div>
+            <section class="summary">
+              <div class="summary-row"><span>Items</span><strong>${sale.details.length}</strong></div>
+              <div class="summary-row"><span>Unidades</span><strong>${totalUnits}</strong></div>
+              <div class="summary-row"><span>Subtotal</span><strong>${this.formatCurrency(subtotal)}</strong></div>
+              ${sale.notes ? `<div class="summary-row"><span>Notas</span><strong>${this.escapeHtml(sale.notes)}</strong></div>` : ''}
+              <div class="summary-row total"><span>Total</span><strong>${this.formatCurrency(sale.total)}</strong></div>
+            </section>
+            <div class="divider"></div>
+            <footer class="footer-block">
+              <div>${this.escapeHtml(this.receiptProfile.footerLine1)}</div>
+              <div>${this.escapeHtml(this.receiptProfile.footerLine2)}</div>
+            </footer>
           </article>
           <script>
             window.onload = function () {
@@ -552,3 +594,4 @@ export class SalesFormComponent implements OnInit {
     }
   }
 }
+
