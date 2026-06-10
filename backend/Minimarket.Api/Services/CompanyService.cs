@@ -34,6 +34,7 @@ public class CompanyService(ICompanyRepository companyRepository) : ICompanyServ
         company.CustomerLabel = dto.CustomerLabel.Trim();
         company.FooterLine1 = dto.FooterLine1.Trim();
         company.FooterLine2 = dto.FooterLine2.Trim();
+        company.ShowTicketPreview = dto.ShowTicketPreview;
 
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();

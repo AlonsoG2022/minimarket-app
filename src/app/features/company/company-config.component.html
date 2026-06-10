@@ -86,6 +86,21 @@
           </div>
         </fieldset>
 
+        <fieldset class="form-section">
+          <legend>Impresion</legend>
+
+          <div class="form-field form-field--checkbox">
+            <label>
+              <input type="checkbox" formControlName="showTicketPreview">
+              Mostrar la vista previa del ticket despues de cada venta
+            </label>
+            <small class="field-hint">
+              Si lo desactivas, el ticket se imprime automaticamente sin abrir la ventana de vista previa.
+              Igual puedes reimprimir desde "Ventas recientes" o la "Cola de impresion".
+            </small>
+          </div>
+        </fieldset>
+
         @if (message) {
           <p class="message">{{ message }}</p>
         }

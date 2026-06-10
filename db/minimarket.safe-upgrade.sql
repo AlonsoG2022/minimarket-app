@@ -317,7 +317,21 @@ WHERE StockMinimo <> 5;
 GO
 
 
-IF  EXISTS
+-- Se eliminan las unicidades de Productos para poder ajustar las columnas.
+-- Se contemplan ambos casos: si la unicidad existe como UNIQUE CONSTRAINT se
+-- elimina con DROP CONSTRAINT; si existe como indice unico, con DROP INDEX.
+-- Mas abajo se vuelven a crear como indices unicos.
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = 'UQ_Productos_Sku'
+      AND parent_object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    ALTER TABLE dbo.Productos DROP CONSTRAINT UQ_Productos_Sku;
+END;
+ELSE IF EXISTS
 (
     SELECT 1
     FROM sys.indexes
@@ -332,6 +346,16 @@ GO
 IF EXISTS
 (
     SELECT 1
+    FROM sys.key_constraints
+    WHERE name = 'UQ_Productos_CodigoBarras'
+      AND parent_object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    ALTER TABLE dbo.Productos DROP CONSTRAINT UQ_Productos_CodigoBarras;
+END;
+ELSE IF EXISTS
+(
+    SELECT 1
     FROM sys.indexes
     WHERE name = 'UQ_Productos_CodigoBarras'
       AND object_id = OBJECT_ID('dbo.Productos')
@@ -341,7 +365,17 @@ BEGIN
 END;
 GO
 
-IF  EXISTS
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE name = 'UQ_Productos_CodigoBarrasCompra'
+      AND parent_object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    ALTER TABLE dbo.Productos DROP CONSTRAINT UQ_Productos_CodigoBarrasCompra;
+END;
+ELSE IF EXISTS
 (
     SELECT 1
     FROM sys.indexes
@@ -1423,7 +1457,8 @@ BEGIN
         TituloDocumento NVARCHAR(100) NOT NULL CONSTRAINT DF_ConfigEmpresa_TituloDocumento DEFAULT ('Ticket de venta'),
         EtiquetaCliente NVARCHAR(100) NOT NULL CONSTRAINT DF_ConfigEmpresa_EtiquetaCliente DEFAULT ('Consumidor final'),
         PiePagina1      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina1      DEFAULT ('Gracias por su compra'),
-        PiePagina2      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina2      DEFAULT ('Vuelva pronto')
+        PiePagina2      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina2      DEFAULT ('Vuelva pronto'),
+        MostrarVistaPreviaTicket BIT     NOT NULL CONSTRAINT DF_ConfigEmpresa_MostrarVistaPreviaTicket DEFAULT (1)
     );
 END;
 GO
@@ -1498,6 +1533,13 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'MostrarVistaPreviaTicket') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD MostrarVistaPreviaTicket BIT NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_MostrarVistaPreviaTicket DEFAULT (1);
+END;
+GO
+
 /* =========================================================
    DATOS BASE
    ========================================================= */
@@ -1552,10 +1594,10 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.ConfiguracionEmpresa WHERE Id = 1)
 BEGIN
     INSERT INTO dbo.ConfiguracionEmpresa
-        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2)
+        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2, MostrarVistaPreviaTicket)
     VALUES
         (1, 'Minimarket', 'Minimarket Casa', 'RUC por definir', 'Direccion por definir', 'Telefono por definir',
-         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto');
+         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto', 1);
 END;
 GO
 

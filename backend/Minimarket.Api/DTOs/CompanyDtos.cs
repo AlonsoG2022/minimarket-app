@@ -11,7 +11,8 @@ public record CompanyDto(
     string DocumentTitle,
     string CustomerLabel,
     string FooterLine1,
-    string FooterLine2);
+    string FooterLine2,
+    bool ShowTicketPreview);
 
 public record SaveCompanyDto(
     string BusinessName,
@@ -23,4 +24,5 @@ public record SaveCompanyDto(
     string DocumentTitle,
     string CustomerLabel,
     string FooterLine1,
-    string FooterLine2);
+    string FooterLine2,
+    bool ShowTicketPreview);

@@ -11,5 +11,6 @@ public record CompanyDto(
     String documentTitle,
     String customerLabel,
     String footerLine1,
-    String footerLine2
+    String footerLine2,
+    Boolean showTicketPreview
 ) {}

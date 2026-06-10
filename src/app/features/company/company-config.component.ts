@@ -26,7 +26,8 @@ export class CompanyConfigComponent implements OnInit {
     documentTitle: [''],
     customerLabel: [''],
     footerLine1: [''],
-    footerLine2: ['']
+    footerLine2: [''],
+    showTicketPreview: [true]
   });
 
   loading = true;
@@ -70,7 +71,8 @@ export class CompanyConfigComponent implements OnInit {
       documentTitle: value.documentTitle,
       customerLabel: value.customerLabel,
       footerLine1: value.footerLine1,
-      footerLine2: value.footerLine2
+      footerLine2: value.footerLine2,
+      showTicketPreview: value.showTicketPreview
     };
 
     this.companyService.update(payload).subscribe({

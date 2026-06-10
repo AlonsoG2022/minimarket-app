@@ -45,6 +45,7 @@ public class CompanyService {
         company.setCustomerLabel(dto.customerLabel() != null ? dto.customerLabel().trim() : "");
         company.setFooterLine1(dto.footerLine1() != null ? dto.footerLine1().trim() : "");
         company.setFooterLine2(dto.footerLine2() != null ? dto.footerLine2().trim() : "");
+        company.setShowTicketPreview(dto.showTicketPreview() != null ? dto.showTicketPreview() : Boolean.TRUE);
 
         var saved = companyRepository.save(company);
         return ServiceResult.success(DtoMapper.toDto(saved));

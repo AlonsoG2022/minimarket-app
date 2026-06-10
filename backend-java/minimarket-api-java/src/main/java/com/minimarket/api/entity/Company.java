@@ -40,6 +40,9 @@ public class Company {
     @Column(name = "PiePagina2", nullable = false, length = 150)
     private String footerLine2;
 
+    @Column(name = "MostrarVistaPreviaTicket", nullable = false)
+    private Boolean showTicketPreview;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getBusinessName() { return businessName; }
@@ -62,4 +65,6 @@ public class Company {
     public void setFooterLine1(String footerLine1) { this.footerLine1 = footerLine1; }
     public String getFooterLine2() { return footerLine2; }
     public void setFooterLine2(String footerLine2) { this.footerLine2 = footerLine2; }
+    public Boolean getShowTicketPreview() { return showTicketPreview; }
+    public void setShowTicketPreview(Boolean showTicketPreview) { this.showTicketPreview = showTicketPreview; }
 }

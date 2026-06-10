@@ -27,7 +27,8 @@ public final class DtoMapper {
             company.getDocumentTitle(),
             company.getCustomerLabel(),
             company.getFooterLine1(),
-            company.getFooterLine2()
+            company.getFooterLine2(),
+            company.getShowTicketPreview()
         );
     }
 

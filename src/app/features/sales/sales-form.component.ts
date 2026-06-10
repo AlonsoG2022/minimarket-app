@@ -33,6 +33,7 @@ export class SalesFormComponent implements OnInit {
     footerLine1: 'Gracias por su compra',
     footerLine2: 'Vuelva pronto'
   };
+  showTicketPreview = true;
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private lowStockNoticeTimeout?: ReturnType<typeof setTimeout>;
@@ -145,6 +146,7 @@ export class SalesFormComponent implements OnInit {
           footerLine1: company.footerLine1,
           footerLine2: company.footerLine2
         };
+        this.showTicketPreview = company.showTicketPreview;
       },
       error: () => {}
     });
@@ -275,7 +277,9 @@ export class SalesFormComponent implements OnInit {
         this.error = '';
         this.clearLowStockNotice();
         this.lastSaleId = sale.id;
-        this.printableSale = printableSale;
+        if (this.showTicketPreview) {
+          this.printableSale = printableSale;
+        }
         this.productSearch = '';
         this.quickQuantity = 1;
         this.showNotes = false;

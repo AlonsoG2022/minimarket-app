@@ -244,6 +244,7 @@ export interface Company {
   customerLabel: string;
   footerLine1: string;
   footerLine2: string;
+  showTicketPreview: boolean;
 }
 
 export interface SaveCompany {
@@ -257,6 +258,7 @@ export interface SaveCompany {
   customerLabel: string;
   footerLine1: string;
   footerLine2: string;
+  showTicketPreview: boolean;
 }
 
 export interface CashMovement {
