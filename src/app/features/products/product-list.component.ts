@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { read, utils, writeFile } from 'xlsx';
 import { Category, Product, ProductImportError, ProductImportRow, SaveProduct } from '../../core/models/minimarket.models';
 import { CategoriesService } from '../../core/services/categories.service';
+import { CompanyService } from '../../core/services/company.service';
 import { ProductsService } from '../../core/services/products.service';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
@@ -16,12 +17,13 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
   styleUrl: './product-list.component.css'
 })
 export class ProductListComponent implements OnInit {
-  private readonly fixedMinimumStock = 5;
+  minimumStock = 5;
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
   private readonly productsService = inject(ProductsService);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly companyService = inject(CompanyService);
 
   readonly form = this.fb.nonNullable.group({
     id: [0],
@@ -34,7 +36,7 @@ export class ProductListComponent implements OnInit {
     purchaseUnitName: ['unidad', Validators.required],
     unitsPerPurchaseUnit: [1, [Validators.required, Validators.min(1)]],
     stock: [0, [Validators.required, Validators.min(0)]],
-    minimumStock: [this.fixedMinimumStock, [Validators.required, Validators.min(this.fixedMinimumStock)]],
+    minimumStock: [5, [Validators.required, Validators.min(0)]],
     isActive: [true],
     categoryId: [0, [Validators.required, Validators.min(1)]]
   });
@@ -53,7 +55,7 @@ export class ProductListComponent implements OnInit {
 
   get lowStockProducts(): Product[] {
     return this.products
-      .filter((product) => product.stock <= this.fixedMinimumStock)
+      .filter((product) => product.stock <= this.minimumStock)
       .sort((left, right) => left.stock - right.stock || left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
   }
 
@@ -78,7 +80,27 @@ export class ProductListComponent implements OnInit {
       this.cdr.detectChanges();
     });
 
+    this.companyService.get().subscribe({
+      next: (company) => {
+        this.minimumStock = company.minimumStock;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+
     this.loadData();
+  }
+
+  get lowStockSummary(): string {
+    const lowStock = this.lowStockProducts;
+    if (!lowStock.length) {
+      return '';
+    }
+
+    const preview = lowStock.slice(0, 3).map((product) => `${product.name} (${product.stock})`);
+    const remaining = lowStock.length - preview.length;
+    const list = remaining > 0 ? `${preview.join(', ')} y ${remaining} mas` : preview.join(', ');
+    return `${lowStock.length} ${lowStock.length === 1 ? 'producto esta' : 'productos estan'} en el umbral (${this.minimumStock}) o por debajo. Los mas bajos: ${list}.`;
   }
 
   loadData(forceRefreshProducts = false): void {
@@ -131,7 +153,7 @@ export class ProductListComponent implements OnInit {
       purchaseUnitName: value.purchaseUnitName,
       unitsPerPurchaseUnit: Number(value.unitsPerPurchaseUnit),
       stock: this.isEditing ? Number(value.stock) : 0,
-      minimumStock: this.fixedMinimumStock,
+      minimumStock: this.minimumStock,
       isActive: value.isActive,
       categoryId: Number(value.categoryId)
     };
@@ -172,7 +194,7 @@ export class ProductListComponent implements OnInit {
       purchaseUnitName: product.purchaseUnitName,
       unitsPerPurchaseUnit: product.unitsPerPurchaseUnit,
       stock: product.stock,
-      minimumStock: this.fixedMinimumStock,
+      minimumStock: this.minimumStock,
       isActive: product.isActive,
       categoryId: product.categoryId
     });
@@ -211,7 +233,7 @@ export class ProductListComponent implements OnInit {
       purchaseUnitName: 'unidad',
       unitsPerPurchaseUnit: 1,
       stock: 0,
-      minimumStock: this.fixedMinimumStock,
+      minimumStock: this.minimumStock,
       isActive: true,
       categoryId: 0
     });
@@ -237,7 +259,7 @@ export class ProductListComponent implements OnInit {
       purchaseUnitName: 'unidad',
       unitsPerPurchaseUnit: 1,
       stock: 0,
-      minimumStock: this.fixedMinimumStock,
+      minimumStock: this.minimumStock,
       isActive: true,
       categoryId: 0
     });

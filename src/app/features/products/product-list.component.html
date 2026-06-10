@@ -43,11 +43,8 @@
 
     @if (lowStockProducts.length) {
       <div class="stock-alert">
-        <strong>Atencion: productos en stock minimo</strong>
-        <p>
-          El stock minimo fijo es 5 unidades. Revisa:
-          {{ lowStockProducts.map(product => product.name + ' (' + product.stock + ')').join(', ') }}.
-        </p>
+        <strong>Atencion: productos en stock minimo ({{ lowStockProducts.length }})</strong>
+        <p>{{ lowStockSummary }}</p>
       </div>
     }
 

@@ -3,6 +3,7 @@ package com.minimarket.api.repository;
 import com.minimarket.api.entity.Product;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,4 +43,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("select count(pd) > 0 from PurchaseDetail pd where pd.productId = :productId")
     boolean existsPurchaseDetailsByProductId(@Param("productId") Integer productId);
+
+    @Modifying
+    @Query("update Product p set p.minimumStock = :minimumStock where p.minimumStock <> :minimumStock")
+    int updateAllMinimumStock(@Param("minimumStock") Integer minimumStock);
 }

@@ -20,4 +20,5 @@ public interface IProductRepository
     Task<int> SaveChangesAsync();
     Task<int> CountAsync();
     Task<int> CountLowStockAsync();
+    Task<int> UpdateAllMinimumStockAsync(int minimumStock);
 }

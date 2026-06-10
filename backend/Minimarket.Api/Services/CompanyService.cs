@@ -4,7 +4,7 @@ using Minimarket.Api.Repositories;
 
 namespace Minimarket.Api.Services;
 
-public class CompanyService(ICompanyRepository companyRepository) : ICompanyService
+public class CompanyService(ICompanyRepository companyRepository, IProductRepository productRepository) : ICompanyService
 {
     public async Task<CompanyDto?> GetAsync()
     {
@@ -19,6 +19,9 @@ public class CompanyService(ICompanyRepository companyRepository) : ICompanyServ
 
         if (string.IsNullOrWhiteSpace(dto.TaxId))
             return (false, "El RUC es obligatorio.", null);
+
+        if (dto.MinimumStock < 0)
+            return (false, "El stock minimo no puede ser negativo.", null);
 
         var company = await companyRepository.GetAsync();
         if (company is null)
@@ -35,9 +38,13 @@ public class CompanyService(ICompanyRepository companyRepository) : ICompanyServ
         company.FooterLine1 = dto.FooterLine1.Trim();
         company.FooterLine2 = dto.FooterLine2.Trim();
         company.ShowTicketPreview = dto.ShowTicketPreview;
+        company.MinimumStock = dto.MinimumStock;
 
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();
+
+        // El stock minimo es global: sincroniza todos los productos con el nuevo valor.
+        await productRepository.UpdateAllMinimumStockAsync(dto.MinimumStock);
 
         return (true, null, company.ToDto());
     }

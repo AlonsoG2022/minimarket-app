@@ -43,6 +43,9 @@ public class Company {
     @Column(name = "MostrarVistaPreviaTicket", nullable = false)
     private Boolean showTicketPreview;
 
+    @Column(name = "StockMinimoDefault", nullable = false)
+    private Integer minimumStock;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getBusinessName() { return businessName; }
@@ -67,4 +70,6 @@ public class Company {
     public void setFooterLine2(String footerLine2) { this.footerLine2 = footerLine2; }
     public Boolean getShowTicketPreview() { return showTicketPreview; }
     public void setShowTicketPreview(Boolean showTicketPreview) { this.showTicketPreview = showTicketPreview; }
+    public Integer getMinimumStock() { return minimumStock; }
+    public void setMinimumStock(Integer minimumStock) { this.minimumStock = minimumStock; }
 }

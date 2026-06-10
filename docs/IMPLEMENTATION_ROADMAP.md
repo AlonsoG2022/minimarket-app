@@ -33,6 +33,8 @@ Estados sugeridos:
   - barcode unico compra/venta
   - importacion y exportacion Excel
   - fecha de caducidad
+  - stock minimo global configurable desde `Configuracion` (no editable por producto)
+  - aviso de stock minimo compacto (conteo + productos mas bajos)
 
 ### Compras
 - Estado: `Implementado`
@@ -51,6 +53,9 @@ Estados sugeridos:
   - soporte de lector
   - guarda `SubTotal`, `IGV` y `Total` en cabecera
   - regla actual: el precio unitario ya incluye IGV
+  - el ticket muestra `Subtotal`, `IGV (18%)` y `Total` con los montos reales de la venta
+  - vista previa del ticket tras la venta configurable (`MostrarVistaPreviaTicket`)
+  - aviso de stock minimo compacto al cobrar (conteo + productos mas bajos)
 
 ---
 
@@ -247,8 +252,11 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - titulo del documento
   - etiqueta de cliente
   - mensaje de cierre (2 lineas)
+  - mostrar vista previa del ticket tras la venta (`MostrarVistaPreviaTicket`)
+  - stock minimo global de alerta (`StockMinimoDefault`, por defecto `5`)
 - Endpoints: `GET /api/company` y `PUT /api/company`
-- El ticket de ventas carga los datos desde la API al iniciar
+- El ticket de ventas y la pantalla de productos cargan los datos desde la API al iniciar
+- Al cambiar el stock minimo, el backend sincroniza `Productos.StockMinimo` de todo el inventario
 - Preparado para extenderse con series y correlativos en Fase 2
 
 ---
@@ -272,10 +280,17 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - `db/minimarket.safe-upgrade.sql`
 - Incluye:
   - creacion de base si no existe
-  - creacion o actualizacion del login `minimarket_user`
+  - creacion o actualizacion del login `minimarket_user` dentro de un `TRY/CATCH`
+    (tolerante a permisos: si se ejecuta como `minimarket_user` no aborta, solo avisa)
   - creacion del usuario dentro de `MinimarketDb`
   - permisos `db_owner`
-  - esquema idempotente sin `DROP`
+  - esquema idempotente sin `DROP TABLE` / `DELETE` (no borra datos)
+  - manejo de unicidades de `Productos` como `UNIQUE CONSTRAINT` o como indice
+    (detecta cual existe y la elimina/recrea segun corresponda; homogeneo en dev y produccion)
+  - sincronizacion del stock minimo de los productos con `ConfiguracionEmpresa.StockMinimoDefault`
+- Datos base:
+  - categorias y usuarios `admin`/`cajero` solo se insertan si no existen
+  - el script ya no resetea contraseñas existentes ni inserta productos/proveedor de ejemplo
 
 ### Script destructivo de desarrollo
 - Estado: `Implementado`

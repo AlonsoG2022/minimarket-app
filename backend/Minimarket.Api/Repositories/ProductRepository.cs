@@ -61,4 +61,9 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
     public Task<int> CountAsync() => context.Products.CountAsync();
 
     public Task<int> CountLowStockAsync() => context.Products.CountAsync(x => x.Stock <= x.MinimumStock);
+
+    public Task<int> UpdateAllMinimumStockAsync(int minimumStock) =>
+        context.Products
+            .Where(x => x.MinimumStock != minimumStock)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.MinimumStock, minimumStock));
 }

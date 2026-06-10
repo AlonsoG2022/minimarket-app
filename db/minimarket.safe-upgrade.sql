@@ -311,11 +311,9 @@ WHERE
     OR CategoriaId IS NULL;
 GO
 
-UPDATE dbo.Productos
-SET StockMinimo = 5
-WHERE StockMinimo <> 5;
-GO
-
+-- Nota: el stock minimo es un valor global definido en ConfiguracionEmpresa.
+-- La sincronizacion de Productos.StockMinimo con ese valor se realiza al final
+-- del script, cuando la tabla de configuracion ya existe y tiene su fila.
 
 -- Se eliminan las unicidades de Productos para poder ajustar las columnas.
 -- Se contemplan ambos casos: si la unicidad existe como UNIQUE CONSTRAINT se
@@ -1458,7 +1456,8 @@ BEGIN
         EtiquetaCliente NVARCHAR(100) NOT NULL CONSTRAINT DF_ConfigEmpresa_EtiquetaCliente DEFAULT ('Consumidor final'),
         PiePagina1      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina1      DEFAULT ('Gracias por su compra'),
         PiePagina2      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina2      DEFAULT ('Vuelva pronto'),
-        MostrarVistaPreviaTicket BIT     NOT NULL CONSTRAINT DF_ConfigEmpresa_MostrarVistaPreviaTicket DEFAULT (1)
+        MostrarVistaPreviaTicket BIT     NOT NULL CONSTRAINT DF_ConfigEmpresa_MostrarVistaPreviaTicket DEFAULT (1),
+        StockMinimoDefault       INT     NOT NULL CONSTRAINT DF_ConfigEmpresa_StockMinimoDefault       DEFAULT (5)
     );
 END;
 GO
@@ -1540,6 +1539,13 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'StockMinimoDefault') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD StockMinimoDefault INT NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_StockMinimoDefault DEFAULT (5);
+END;
+GO
+
 /* =========================================================
    DATOS BASE
    ========================================================= */
@@ -1594,10 +1600,22 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.ConfiguracionEmpresa WHERE Id = 1)
 BEGIN
     INSERT INTO dbo.ConfiguracionEmpresa
-        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2, MostrarVistaPreviaTicket)
+        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2, MostrarVistaPreviaTicket, StockMinimoDefault)
     VALUES
         (1, 'Minimarket', 'Minimarket Casa', 'RUC por definir', 'Direccion por definir', 'Telefono por definir',
-         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto', 1);
+         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto', 1, 5);
+END;
+GO
+
+-- Sincroniza el stock minimo de todos los productos con el valor global de configuracion.
+-- El stock minimo es global (no se edita por producto), por lo que todos deben reflejar
+-- el mismo umbral definido en ConfiguracionEmpresa.
+DECLARE @StockMinimoGlobal INT = (SELECT TOP 1 StockMinimoDefault FROM dbo.ConfiguracionEmpresa WHERE Id = 1);
+IF @StockMinimoGlobal IS NOT NULL
+BEGIN
+    UPDATE dbo.Productos
+    SET StockMinimo = @StockMinimoGlobal
+    WHERE StockMinimo <> @StockMinimoGlobal;
 END;
 GO
 

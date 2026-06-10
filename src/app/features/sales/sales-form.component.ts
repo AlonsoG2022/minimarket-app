@@ -20,7 +20,7 @@ import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
   styleUrl: './sales-form.component.css'
 })
 export class SalesFormComponent implements OnInit {
-  private readonly fixedMinimumStock = 5;
+  private minimumStock = 5;
   receiptProfile = {
     businessName: 'Minimarket',
     legalName: '',
@@ -147,6 +147,7 @@ export class SalesFormComponent implements OnInit {
           footerLine2: company.footerLine2
         };
         this.showTicketPreview = company.showTicketPreview;
+        this.minimumStock = company.minimumStock;
       },
       error: () => {}
     });
@@ -322,15 +323,16 @@ export class SalesFormComponent implements OnInit {
     const uniqueIds = [...new Set(purchasedProductIds)];
     const lowStockProducts = uniqueIds
       .map((productId) => this.products.find((product) => product.id === productId))
-      .filter((product): product is Product => !!product && product.stock <= this.fixedMinimumStock);
+      .filter((product): product is Product => !!product && product.stock <= this.minimumStock);
 
     if (!lowStockProducts.length) {
       return '';
     }
 
-    const labels = lowStockProducts.map((product) => `${product.name} (${product.stock})`);
-    const productsText = labels.join(', ');
-    return `Aviso: ${productsText} ya ${lowStockProducts.length === 1 ? 'esta' : 'estan'} en stock minimo (${this.fixedMinimumStock}).`;
+    const preview = lowStockProducts.slice(0, 3).map((product) => `${product.name} (${product.stock})`);
+    const remaining = lowStockProducts.length - preview.length;
+    const productsText = remaining > 0 ? `${preview.join(', ')} y ${remaining} mas` : preview.join(', ');
+    return `Aviso: ${productsText} ${lowStockProducts.length === 1 ? 'quedo' : 'quedaron'} en stock minimo (${this.minimumStock}).`;
   }
 
   dismissLowStockNotice(): void {

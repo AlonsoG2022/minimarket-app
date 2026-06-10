@@ -3,6 +3,7 @@ package com.minimarket.api.service;
 import com.minimarket.api.dto.*;
 import com.minimarket.api.entity.Product;
 import com.minimarket.api.repository.CategoryRepository;
+import com.minimarket.api.repository.CompanyRepository;
 import com.minimarket.api.repository.ProductRepository;
 import com.minimarket.api.util.DtoMapper;
 import org.springframework.stereotype.Service;
@@ -17,14 +18,22 @@ import java.util.List;
 
 @Service
 public class ProductService {
-    private static final int FIXED_MINIMUM_STOCK = 5;
+    private static final int DEFAULT_MINIMUM_STOCK = 5;
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final CompanyRepository companyRepository;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, CompanyRepository companyRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.companyRepository = companyRepository;
+    }
+
+    private int getConfiguredMinimumStock() {
+        return companyRepository.findById(1)
+            .map(com.minimarket.api.entity.Company::getMinimumStock)
+            .orElse(DEFAULT_MINIMUM_STOCK);
     }
 
     public List<ProductDto> getAll() {
@@ -75,7 +84,7 @@ public class ProductService {
         product.setPrice(dto.price());
         product.setCost(java.math.BigDecimal.ZERO);
         product.setStock(dto.stock());
-        product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setMinimumStock(getConfiguredMinimumStock());
         product.setExpirationDate(parsedExpirationDate.data());
         product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
         product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
@@ -124,7 +133,7 @@ public class ProductService {
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
         product.setPrice(dto.price());
         product.setStock(dto.stock());
-        product.setMinimumStock(FIXED_MINIMUM_STOCK);
+        product.setMinimumStock(getConfiguredMinimumStock());
         product.setExpirationDate(parsedExpirationDate.data());
         product.setSalesUnitName(normalizeUnitName(dto.salesUnitName()));
         product.setPurchaseUnitName(normalizeUnitName(dto.purchaseUnitName()));
@@ -145,6 +154,7 @@ public class ProductService {
 
         var errors = new ArrayList<ProductImportErrorDto>();
         var createdCount = 0;
+        var minimumStock = getConfiguredMinimumStock();
 
         for (var row : rows) {
             var rowNumber = row.rowNumber() != null ? row.rowNumber() : 0;
@@ -214,7 +224,7 @@ public class ProductService {
             product.setPrice(row.price());
             product.setCost(java.math.BigDecimal.ZERO);
             product.setStock(stock);
-            product.setMinimumStock(FIXED_MINIMUM_STOCK);
+            product.setMinimumStock(minimumStock);
             product.setExpirationDate(parsedExpirationDate.data());
             product.setSalesUnitName(normalizeUnitName(row.salesUnitName()));
             product.setPurchaseUnitName(normalizeUnitName(row.purchaseUnitName()));

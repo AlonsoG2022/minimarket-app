@@ -101,6 +101,24 @@
           </div>
         </fieldset>
 
+        <fieldset class="form-section">
+          <legend>Inventario</legend>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="minimumStock">Stock minimo (alerta) <span class="required">*</span></label>
+              <input id="minimumStock" type="number" min="0" formControlName="minimumStock">
+              @if (form.get('minimumStock')?.invalid && form.get('minimumStock')?.touched) {
+                <small class="field-error">Ingresa un stock minimo valido (0 o mayor).</small>
+              }
+              <small class="field-hint">
+                Umbral global para todos los productos. Cuando un producto llega a este valor o menos,
+                se muestra una alerta en Productos y al cobrar. Al guardar se aplica a todo el inventario.
+              </small>
+            </div>
+          </div>
+        </fieldset>
+
         @if (message) {
           <p class="message">{{ message }}</p>
         }

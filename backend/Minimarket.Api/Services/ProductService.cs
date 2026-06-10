@@ -7,9 +7,15 @@ using System.Text;
 
 namespace Minimarket.Api.Services;
 
-public class ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository) : IProductService
+public class ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository, ICompanyRepository companyRepository) : IProductService
 {
-    private const int FixedMinimumStock = 5;
+    private const int DefaultMinimumStock = 5;
+
+    private async Task<int> GetConfiguredMinimumStockAsync()
+    {
+        var company = await companyRepository.GetAsync();
+        return company?.MinimumStock ?? DefaultMinimumStock;
+    }
 
     public async Task<IReadOnlyCollection<ProductDto>> GetAllAsync() =>
         (await productRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
@@ -56,7 +62,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             Price = dto.Price,
             Cost = 0m,
             Stock = dto.Stock,
-            MinimumStock = FixedMinimumStock,
+            MinimumStock = await GetConfiguredMinimumStockAsync(),
             ExpirationDate = expirationDate,
             SalesUnitName = NormalizeUnitName(dto.SalesUnitName),
             PurchaseUnitName = NormalizeUnitName(dto.PurchaseUnitName),
@@ -112,7 +118,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         product.Description = dto.Description?.Trim();
         product.Price = dto.Price;
         product.Stock = dto.Stock;
-        product.MinimumStock = FixedMinimumStock;
+        product.MinimumStock = await GetConfiguredMinimumStockAsync();
         product.ExpirationDate = expirationDate;
         product.SalesUnitName = NormalizeUnitName(dto.SalesUnitName);
         product.PurchaseUnitName = NormalizeUnitName(dto.PurchaseUnitName);
@@ -136,6 +142,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
 
         var errors = new List<ProductImportErrorDto>();
         var createdCount = 0;
+        var minimumStock = await GetConfiguredMinimumStockAsync();
 
         foreach (var row in rows)
         {
@@ -207,7 +214,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
                 Price = row.Price,
                 Cost = 0m,
                 Stock = row.Stock,
-                MinimumStock = FixedMinimumStock,
+                MinimumStock = minimumStock,
                 ExpirationDate = expirationDate,
                 SalesUnitName = NormalizeUnitName(row.SalesUnitName),
                 PurchaseUnitName = NormalizeUnitName(row.PurchaseUnitName),

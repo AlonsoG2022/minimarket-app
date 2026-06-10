@@ -19,7 +19,8 @@ public static class MappingExtensions
             company.CustomerLabel,
             company.FooterLine1,
             company.FooterLine2,
-            company.ShowTicketPreview);
+            company.ShowTicketPreview,
+            company.MinimumStock);
 
     public static ProductDto ToDto(this Product product) =>
         new(

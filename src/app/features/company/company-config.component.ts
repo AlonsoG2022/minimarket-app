@@ -27,7 +27,8 @@ export class CompanyConfigComponent implements OnInit {
     customerLabel: [''],
     footerLine1: [''],
     footerLine2: [''],
-    showTicketPreview: [true]
+    showTicketPreview: [true],
+    minimumStock: [5, [Validators.required, Validators.min(0)]]
   });
 
   loading = true;
@@ -72,7 +73,8 @@ export class CompanyConfigComponent implements OnInit {
       customerLabel: value.customerLabel,
       footerLine1: value.footerLine1,
       footerLine2: value.footerLine2,
-      showTicketPreview: value.showTicketPreview
+      showTicketPreview: value.showTicketPreview,
+      minimumStock: value.minimumStock
     };
 
     this.companyService.update(payload).subscribe({

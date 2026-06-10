@@ -85,7 +85,8 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Productos
 - creacion y edicion
 - codigo de barras unico para compra y venta
-- stock minimo fijo en `5`
+- stock minimo global configurable desde `Configuracion` (por defecto `5`, no editable por producto)
+- aviso compacto de productos en stock minimo (resumen con conteo + los mas bajos)
 - importacion masiva desde Excel
 - exportacion de productos
 
@@ -109,9 +110,18 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - titulo del ticket
   - etiqueta de cliente
   - mensaje de cierre (linea 1 y 2)
+  - mostrar vista previa del ticket despues de cada venta (`MostrarVistaPreviaTicket`)
+  - stock minimo global de alerta (`StockMinimoDefault`, por defecto `5`)
 - endpoint `GET /api/company` y `PUT /api/company` disponible en .NET y Java
-- el ticket de venta carga estos datos desde la API al iniciar el componente
+- el ticket de venta y la pantalla de productos cargan estos datos desde la API al iniciar
+- al guardar el stock minimo se sincroniza `Productos.StockMinimo` de todos los productos con el valor global
 - preparado para extenderse con series, correlativos y datos SUNAT en Fase 2
+
+### Vista previa del ticket
+- tras registrar la venta, el ticket se encola para impresion automatica en la etiquetera
+- ademas se puede mostrar un modal de vista previa (con boton imprimir) como respaldo visual
+- ese modal es configurable: si se desactiva `MostrarVistaPreviaTicket`, ya no aparece tras la venta
+- el ticket muestra `Subtotal`, `IGV (18%)` y `Total` con los montos reales de la venta
 
 ### Ticket e impresion
 - ticket de navegador en primera fase
@@ -157,8 +167,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - el stock real debe entrar por compras
 
 ### Stock minimo
-- valor fijo global actual: `5`
-- no editable desde la UI
+- valor global configurable desde `Configuracion` (campo `StockMinimoDefault`, por defecto `5`)
+- es unico para todos los productos: no se edita por producto
+- al cambiarlo, el backend sincroniza `Productos.StockMinimo` de todo el inventario con el nuevo valor
+- los avisos de stock minimo (en Productos y al cobrar) y el conteo del dashboard usan este valor
 
 ### Caja
 - cada venta debe estar asociada a una caja abierta
@@ -170,7 +182,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - la cola guarda un snapshot JSON del ticket para no depender del estado futuro del producto
 - si la cola de impresion falla, la venta igual debe registrarse
 - aun no se implementan boleta, factura, serie, correlativo ni estados SUNAT
-- mientras la impresion automatica conviva con la vista previa web, el modal posterior a la venta funciona como respaldo manual y confirmacion visual
+- el modal de vista previa posterior a la venta funciona como respaldo manual y confirmacion visual, y es configurable (`MostrarVistaPreviaTicket`); si se desactiva, el ticket igual se imprime de forma automatica
 
 ---
 
