@@ -5,6 +5,7 @@ import com.minimarket.api.dto.PrintJobDto;
 import com.minimarket.api.dto.TicketPrintItemDto;
 import com.minimarket.api.dto.TicketPrintPayloadDto;
 import com.minimarket.api.entity.PrintJob;
+import com.minimarket.api.repository.CompanyRepository;
 import com.minimarket.api.repository.PrintJobRepository;
 import com.minimarket.api.repository.SaleRepository;
 import com.minimarket.api.util.DtoMapper;
@@ -19,11 +20,13 @@ public class PrintJobService {
 
     private final PrintJobRepository printJobRepository;
     private final SaleRepository saleRepository;
+    private final CompanyRepository companyRepository;
     private final ObjectMapper objectMapper;
 
-    public PrintJobService(PrintJobRepository printJobRepository, SaleRepository saleRepository, ObjectMapper objectMapper) {
+    public PrintJobService(PrintJobRepository printJobRepository, SaleRepository saleRepository, CompanyRepository companyRepository, ObjectMapper objectMapper) {
         this.printJobRepository = printJobRepository;
         this.saleRepository = saleRepository;
+        this.companyRepository = companyRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -41,13 +44,29 @@ public class PrintJobService {
             return ServiceResult.failure("La venta no existe.");
         }
 
+        // Snapshot autocontenido: incluye los datos de empresa tal como estaban al momento de la venta
+        // para que el ticket impreso sea identico a la vista previa.
+        var company = companyRepository.findById(1).orElse(null);
+
         try {
             var payload = new TicketPrintPayloadDto(
                 sale.getId(),
                 sale.getSaleDate(),
+                company != null ? company.getBusinessName() : "",
+                company != null ? company.getLegalName() : "",
+                company != null ? company.getTaxId() : "",
+                company != null ? company.getAddressLine() : "",
+                company != null ? company.getPhone() : "",
+                company != null ? company.getTagline() : "",
+                company != null ? company.getDocumentTitle() : "Ticket de venta",
+                company != null ? company.getCustomerLabel() : "Consumidor final",
                 sale.getUser() != null ? sale.getUser().getFullName() : "",
                 sale.getPaymentMethod(),
+                sale.getSubTotal(),
+                sale.getIgv(),
                 sale.getTotal(),
+                company != null ? company.getFooterLine1() : "",
+                company != null ? company.getFooterLine2() : "",
                 sale.getNotes(),
                 sale.getDetails().stream()
                     .map(detail -> new TicketPrintItemDto(

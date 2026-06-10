@@ -138,6 +138,9 @@ Estados sugeridos:
   - impresion automatica de tickets
   - reencolado manual desde ventas
   - la venta no se bloquea si falla el encolado
+  - el snapshot encolado es autocontenido (datos de empresa + `SubTotal`/`IGV`/`Total`),
+    de modo que el ticket impreso queda identico a la vista previa web; ambos renderers
+    (.NET y Java) pintan ese snapshot con respaldo a su config local para tickets antiguos
   - estados:
     - pendiente
     - imprimiendo

@@ -179,7 +179,11 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Impresion local
 - por ahora solo se procesa `ticket`
 - el worker lee directamente la tabla `TrabajosImpresion`
-- la cola guarda un snapshot JSON del ticket para no depender del estado futuro del producto
+- la cola guarda un snapshot JSON **autocontenido** del ticket: incluye datos de empresa, eslogan,
+  titulo, etiqueta de cliente, mensajes de cierre y el desglose `SubTotal` / `IGV` / `Total`,
+  tal como estaban al momento de la venta
+- el ticket fisico que imprime el worker (.NET y Java) sale **identico a la vista previa web**
+- si un ticket viejo en cola no trae esos datos, el worker usa como respaldo su configuracion local
 - si la cola de impresion falla, la venta igual debe registrarse
 - aun no se implementan boleta, factura, serie, correlativo ni estados SUNAT
 - el modal de vista previa posterior a la venta funciona como respaldo manual y confirmacion visual, y es configurable (`MostrarVistaPreviaTicket`); si se desactiva, el ticket igual se imprime de forma automatica

@@ -10,28 +10,47 @@ public class TicketTextRenderer
     public string Build(TicketPrintPayload payload, PrintingOptions options)
     {
         var width = Math.Max(32, options.LineWidth);
-        var lines = new List<string>
+
+        // Los datos vienen del snapshot (igual que la vista previa). Si un ticket viejo no los trae,
+        // se usan como respaldo las opciones locales del worker.
+        var businessName = Fallback(payload.BusinessName, options.BusinessName);
+        var legalName = Fallback(payload.LegalName, options.LegalName);
+        var taxId = Fallback(payload.TaxId, options.TaxId);
+        var addressLine = Fallback(payload.AddressLine, options.AddressLine);
+        var phone = Fallback(payload.Phone, options.Phone);
+        var tagline = payload.Tagline?.Trim() ?? string.Empty;
+        var documentTitle = Fallback(payload.DocumentTitle, "Ticket de venta");
+        var customerLabel = Fallback(payload.CustomerLabel, options.CustomerLabel);
+        var footerLine1 = Fallback(payload.FooterLine1, options.FooterLine1);
+        var footerLine2 = Fallback(payload.FooterLine2, options.FooterLine2);
+
+        // Totales del snapshot; si un ticket viejo no trae el desglose, se deriva del total (IGV 18% incluido).
+        var total = payload.Total;
+        var subTotal = payload.SubTotal > 0 ? payload.SubTotal : decimal.Round(total / 1.18m, 2, MidpointRounding.AwayFromZero);
+        var igv = payload.Igv > 0 ? payload.Igv : decimal.Round(total - subTotal, 2, MidpointRounding.AwayFromZero);
+
+        var lines = new List<string> { Center(businessName, width) };
+        if (!string.IsNullOrWhiteSpace(tagline))
         {
-            Center(options.BusinessName, width),
-            Center("Abarrotes - Bebidas - Limpieza", width),
-            new string('-', width),
-            Center(options.LegalName, width),
-            Center($"RUC: {options.TaxId}", width),
-            Center(options.AddressLine, width),
-            Center($"Telefono: {options.Phone}", width),
-            new string('-', width),
-            Center("TICKET DE VENTA", width),
-            Center($"#{payload.SaleId}", width),
-            new string('-', width),
-            $"Venta: #{payload.SaleId}",
-            $"Fecha: {payload.SaleDate:dd/MM/yyyy HH:mm}",
-            $"Cajero: {payload.CashierName}",
-            $"Cliente: {options.CustomerLabel}",
-            $"Pago: {payload.PaymentMethod}",
-            new string('-', width),
-            TicketHeader(width),
-            new string('-', width)
-        };
+            lines.Add(Center(tagline, width));
+        }
+
+        lines.Add(new string('-', width));
+        lines.Add(Center(legalName, width));
+        lines.Add(Center($"RUC: {taxId}", width));
+        lines.Add(Center(addressLine, width));
+        lines.Add(Center($"Telefono: {phone}", width));
+        lines.Add(new string('-', width));
+        lines.Add(Center(documentTitle.ToUpperInvariant(), width));
+        lines.Add(Center($"#{payload.SaleId} - {payload.SaleDate:dd/MM/yyyy HH:mm}", width));
+        lines.Add(new string('-', width));
+        lines.Add($"Fecha: {payload.SaleDate:dd/MM/yyyy HH:mm}");
+        lines.Add($"Cajero: {payload.CashierName}");
+        lines.Add($"Cliente: {customerLabel}");
+        lines.Add($"Pago: {payload.PaymentMethod}");
+        lines.Add(new string('-', width));
+        lines.Add(TicketHeader(width));
+        lines.Add(new string('-', width));
 
         foreach (var item in payload.Items)
         {
@@ -45,10 +64,11 @@ public class TicketTextRenderer
         }
 
         lines.Add(new string('-', width));
-        lines.Add(PadRight("Items", Math.Max(0, width - payload.Items.Count.ToString(CultureInfo.InvariantCulture).Length)) + payload.Items.Count.ToString(CultureInfo.InvariantCulture));
+        lines.Add(Row("Items", payload.Items.Count.ToString(CultureInfo.InvariantCulture), width));
         var totalUnits = payload.Items.Sum(item => item.Quantity);
-        lines.Add(PadRight("Unidades", Math.Max(0, width - totalUnits.ToString(CultureInfo.InvariantCulture).Length)) + totalUnits.ToString(CultureInfo.InvariantCulture));
-        lines.Add(PadRight("Subtotal", Math.Max(0, width - FormatMoney(payload.Total).Length)) + FormatMoney(payload.Total));
+        lines.Add(Row("Unidades", totalUnits.ToString(CultureInfo.InvariantCulture), width));
+        lines.Add(Row("Subtotal", FormatMoney(subTotal), width));
+        lines.Add(Row("IGV (18%)", FormatMoney(igv), width));
 
         if (!string.IsNullOrWhiteSpace(payload.Notes))
         {
@@ -58,7 +78,7 @@ public class TicketTextRenderer
         }
 
         lines.Add(new string('-', width));
-        lines.Add(PadRight("TOTAL", Math.Max(0, width - FormatMoney(payload.Total).Length)) + FormatMoney(payload.Total));
+        lines.Add(Row("TOTAL", FormatMoney(total), width));
 
         var builder = new StringBuilder();
         foreach (var line in lines)
@@ -67,12 +87,18 @@ public class TicketTextRenderer
         }
 
         builder.AppendLine();
-        builder.AppendLine(Center(options.FooterLine1, width));
-        builder.AppendLine(Center(options.FooterLine2, width));
+        builder.AppendLine(Center(footerLine1, width));
+        builder.AppendLine(Center(footerLine2, width));
         builder.AppendLine();
         builder.AppendLine();
         return builder.ToString();
     }
+
+    private static string Fallback(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    private static string Row(string label, string value, int width) =>
+        PadRight(label, Math.Max(0, width - value.Length)) + value;
 
     private static string FormatMoney(decimal value) =>
         $"S/ {value:0.00}";
