@@ -287,6 +287,8 @@ export class ProductListComponent implements OnInit {
       return;
     }
 
+    // Las columnas deben coincidir con la plantilla de importacion (downloadImportTemplate)
+    // para poder exportar, editar y volver a importar el mismo archivo.
     const rows = this.products
       .slice()
       .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }))
@@ -295,15 +297,11 @@ export class ProductListComponent implements OnInit {
         Precio: product.price,
         Categoria: product.categoryName,
         CodigoBarras: product.barcode ?? product.purchaseBarcode ?? '',
-        Descripcion: product.description ?? '',
         UnidadVenta: product.salesUnitName,
         UnidadCompra: product.purchaseUnitName,
         UnidadesPorCompra: product.unitsPerPurchaseUnit,
         Stock: product.stock,
-        FechaCaducidad: product.expirationDate ?? '',
-        Activo: product.isActive ? 'Si' : 'No',
-        SKU: product.sku,
-        Costo: product.cost
+        FechaCaducidad: product.expirationDate ?? ''
       }));
 
     const worksheet = utils.json_to_sheet(rows);
