@@ -26,25 +26,32 @@ BEGIN
 END;
 GO
 
-IF NOT EXISTS
-(
-    SELECT 1
-    FROM sys.server_principals
-    WHERE name = 'minimarket_user'
-)
-BEGIN
-    CREATE LOGIN minimarket_user
-    WITH PASSWORD = 'Minimarket123!',
-         CHECK_POLICY = OFF,
-         CHECK_EXPIRATION = OFF;
-END;
-ELSE
-BEGIN
-    ALTER LOGIN minimarket_user
-    WITH PASSWORD = 'Minimarket123!',
-         CHECK_POLICY = OFF,
-         CHECK_EXPIRATION = OFF;
-END;
+BEGIN TRY
+    IF NOT EXISTS
+    (
+        SELECT 1
+        FROM sys.server_principals
+        WHERE name = 'minimarket_user'
+    )
+    BEGIN
+        CREATE LOGIN minimarket_user
+        WITH PASSWORD = 'Minimarket123!',
+             CHECK_POLICY = OFF,
+             CHECK_EXPIRATION = OFF;
+    END;
+    ELSE
+    BEGIN
+        ALTER LOGIN minimarket_user
+        WITH PASSWORD = 'Minimarket123!',
+             CHECK_POLICY = OFF,
+             CHECK_EXPIRATION = OFF;
+    END;
+END TRY
+BEGIN CATCH
+    PRINT 'Aviso: no se pudo crear o actualizar el login minimarket_user (requiere permisos de servidor). '
+        + 'Si el login ya existe, puedes ignorar este aviso de forma segura. '
+        + 'Para gestionarlo, ejecuta el script conectado como sa o un login administrador.';
+END CATCH;
 GO
 
 USE MinimarketDb;
@@ -307,6 +314,43 @@ GO
 UPDATE dbo.Productos
 SET StockMinimo = 5
 WHERE StockMinimo <> 5;
+GO
+
+
+IF  EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'UQ_Productos_Sku'
+      AND object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    DROP INDEX UQ_Productos_Sku ON dbo.Productos;
+END;
+GO
+
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'UQ_Productos_CodigoBarras'
+      AND object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    DROP INDEX UQ_Productos_CodigoBarras ON dbo.Productos;
+END;
+GO
+
+IF  EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = 'UQ_Productos_CodigoBarrasCompra'
+      AND object_id = OBJECT_ID('dbo.Productos')
+)
+BEGIN
+    DROP INDEX UQ_Productos_CodigoBarrasCompra ON dbo.Productos;
+END;
 GO
 
 ALTER TABLE dbo.Productos ALTER COLUMN Nombre NVARCHAR(150) NOT NULL;
@@ -1483,68 +1527,12 @@ BEGIN
     INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)
     VALUES ('Administrador General', 'admin', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'admin', 1);
 END;
-ELSE
-BEGIN
-    UPDATE dbo.Usuarios
-    SET PasswordHash = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
-        Activo = 1
-    WHERE Username = 'admin';
-END;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Username = 'cajero')
 BEGIN
     INSERT INTO dbo.Usuarios (NombreCompleto, Username, PasswordHash, Rol, Activo)
     VALUES ('Caja Principal', 'cajero', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'cajero', 1);
-END;
-ELSE
-BEGIN
-    UPDATE dbo.Usuarios
-    SET PasswordHash = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
-        Activo = 1
-    WHERE Username = 'cajero';
-END;
-GO
-
-DECLARE @CategoriaAbarrotesId INT = (SELECT TOP 1 Id FROM dbo.Categorias WHERE Nombre = 'Abarrotes');
-DECLARE @CategoriaBebidasId INT = (SELECT TOP 1 Id FROM dbo.Categorias WHERE Nombre = 'Bebidas');
-DECLARE @CategoriaLimpiezaId INT = (SELECT TOP 1 Id FROM dbo.Categorias WHERE Nombre = 'Limpieza');
-DECLARE @ProveedorInicialId INT = (SELECT TOP 1 Id FROM dbo.Proveedores WHERE Nombre = 'Distribuidora Central');
-
-IF @ProveedorInicialId IS NULL
-BEGIN
-    INSERT INTO dbo.Proveedores (Nombre, NumeroDocumento, NombreContacto, Telefono, Correo, Direccion, Notas, Activo)
-    VALUES ('Distribuidora Central', '20601234567', 'Rosa Medina', '987654321', 'ventas@distribuidoracentral.pe', 'Av. Principal 123', 'Proveedor inicial de referencia', 1);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-001')
-BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Arroz Superior 1Kg', 'ABR-001', '7750000000011', '7750000000012', 'Bolsa de arroz blanco', 4.50, 3.60, 80, 5, NULL, 'unidad', 'fardo', 12, 1, @CategoriaAbarrotesId);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'ABR-002')
-BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Azucar Rubia 1Kg', 'ABR-002', '7750000000021', '7750000000022', 'Azucar rubia embolsada', 4.20, 3.30, 60, 5, NULL, 'unidad', 'fardo', 10, 1, @CategoriaAbarrotesId);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-001')
-BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Gaseosa Cola 3L', 'BEB-001', '7750000000031', '7750000000032', 'Botella retornable', 9.80, 7.20, 30, 5, NULL, 'botella', 'jaba', 12, 1, @CategoriaBebidasId);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'BEB-002')
-BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Agua Mineral 625ml', 'BEB-002', '7750000000041', '7750000000042', 'Botella personal', 2.50, 1.40, 48, 5, NULL, 'botella', 'jaba', 24, 1, @CategoriaBebidasId);
-END;
-
-IF NOT EXISTS (SELECT 1 FROM dbo.Productos WHERE Sku = 'LIM-001')
-BEGIN
-    INSERT INTO dbo.Productos (Nombre, Sku, CodigoBarras, CodigoBarrasCompra, Descripcion, Precio, Costo, Stock, StockMinimo, FechaCaducidad, UnidadVenta, UnidadCompra, UnidadesPorCompra, Activo, CategoriaId)
-    VALUES ('Detergente Floral 900g', 'LIM-001', '7750000000051', '7750000000052', 'Detergente en polvo', 8.90, 6.80, 22, 5, NULL, 'unidad', 'caja', 12, 1, @CategoriaLimpiezaId);
 END;
 GO
 
