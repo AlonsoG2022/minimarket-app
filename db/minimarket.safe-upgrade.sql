@@ -1457,7 +1457,8 @@ BEGIN
         PiePagina1      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina1      DEFAULT ('Gracias por su compra'),
         PiePagina2      NVARCHAR(150) NOT NULL CONSTRAINT DF_ConfigEmpresa_PiePagina2      DEFAULT ('Vuelva pronto'),
         MostrarVistaPreviaTicket BIT     NOT NULL CONSTRAINT DF_ConfigEmpresa_MostrarVistaPreviaTicket DEFAULT (1),
-        StockMinimoDefault       INT     NOT NULL CONSTRAINT DF_ConfigEmpresa_StockMinimoDefault       DEFAULT (5)
+        StockMinimoDefault       INT     NOT NULL CONSTRAINT DF_ConfigEmpresa_StockMinimoDefault       DEFAULT (5),
+        Tema                     NVARCHAR(20) NOT NULL CONSTRAINT DF_ConfigEmpresa_Tema                DEFAULT ('orange')
     );
 END;
 GO
@@ -1546,6 +1547,13 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'Tema') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD Tema NVARCHAR(20) NOT NULL
+        CONSTRAINT DF_ConfigEmpresa_Tema DEFAULT ('orange');
+END;
+GO
+
 /* =========================================================
    DATOS BASE
    ========================================================= */
@@ -1600,10 +1608,10 @@ GO
 IF NOT EXISTS (SELECT 1 FROM dbo.ConfiguracionEmpresa WHERE Id = 1)
 BEGIN
     INSERT INTO dbo.ConfiguracionEmpresa
-        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2, MostrarVistaPreviaTicket, StockMinimoDefault)
+        (Id, NombreComercial, RazonSocial, Ruc, Direccion, Telefono, Eslogan, TituloDocumento, EtiquetaCliente, PiePagina1, PiePagina2, MostrarVistaPreviaTicket, StockMinimoDefault, Tema)
     VALUES
         (1, 'Minimarket', 'Minimarket Casa', 'RUC por definir', 'Direccion por definir', 'Telefono por definir',
-         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto', 1, 5);
+         'Abarrotes y mas', 'Ticket de venta', 'Consumidor final', 'Gracias por su compra', 'Vuelva pronto', 1, 5, 'orange');
 END;
 GO
 

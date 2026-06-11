@@ -1,7 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { CompanyService } from './core/services/company.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +14,8 @@ import { AuthService } from './core/services/auth.service';
 export class App {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
+  private readonly theme = inject(ThemeService);
+  private readonly companyService = inject(CompanyService);
   productSearch = '';
   readonly storeName = 'Minimarket Casa';
   readonly expandedModules: Record<string, boolean> = {
@@ -31,6 +35,19 @@ export class App {
   readonly canAccessCategories = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessSuppliers = computed(() => this.auth.hasRole(['admin']));
   readonly canAccessCompany = computed(() => this.auth.hasRole(['admin']));
+
+  constructor() {
+    // Aplica el tema cacheado de inmediato (evita parpadeo) y luego lo sincroniza con la configuracion.
+    this.theme.applyStoredTheme();
+    effect(() => {
+      if (this.auth.isAuthenticated()) {
+        this.companyService.get().subscribe({
+          next: (company) => this.theme.applyTheme(company.theme),
+          error: () => {}
+        });
+      }
+    });
+  }
 
   searchProducts(): void {
     if (!this.canAccessProducts()) {

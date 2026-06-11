@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SaveCompany } from '../../core/models/minimarket.models';
 import { CompanyService } from '../../core/services/company.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-company-config',
@@ -15,6 +16,9 @@ export class CompanyConfigComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly companyService = inject(CompanyService);
+  private readonly themeService = inject(ThemeService);
+
+  readonly themes = this.themeService.themes;
 
   readonly form = this.fb.nonNullable.group({
     businessName: ['', Validators.required],
@@ -28,7 +32,8 @@ export class CompanyConfigComponent implements OnInit {
     footerLine1: [''],
     footerLine2: [''],
     showTicketPreview: [true],
-    minimumStock: [5, [Validators.required, Validators.min(0)]]
+    minimumStock: [5, [Validators.required, Validators.min(0)]],
+    theme: ['orange']
   });
 
   loading = true;
@@ -49,6 +54,9 @@ export class CompanyConfigComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+
+    // Vista previa en vivo: aplica el tema apenas se cambia el combo.
+    this.form.controls.theme.valueChanges.subscribe((theme) => this.themeService.applyTheme(theme));
   }
 
   save(): void {
@@ -74,7 +82,8 @@ export class CompanyConfigComponent implements OnInit {
       footerLine1: value.footerLine1,
       footerLine2: value.footerLine2,
       showTicketPreview: value.showTicketPreview,
-      minimumStock: value.minimumStock
+      minimumStock: value.minimumStock,
+      theme: value.theme
     };
 
     this.companyService.update(payload).subscribe({

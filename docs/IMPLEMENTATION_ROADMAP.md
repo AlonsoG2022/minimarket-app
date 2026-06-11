@@ -263,19 +263,19 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 - Preparado para extenderse con series y correlativos en Fase 2
 
 ### Tema de la aplicacion
-- Estado: `Pendiente`
-- Objetivo: permitir cambiar el tema visual de la app desde un combo en la pantalla de Configuracion
-- Temas iniciales:
-  - `orange` (actual, por defecto)
+- Estado: `Implementado`
+- Combo en la pantalla de Configuracion (solo `admin`) para cambiar el tema visual de la app
+- Temas disponibles:
+  - `orange` (por defecto)
   - `dark` (oscuro, predominio de grises)
   - `light` (claro, predominio de azul claro)
-- Enfoque previsto:
-  - variables CSS por tema + atributo `data-theme` en el elemento raiz
-  - `ThemeService` en Angular que aplica y persiste el tema
-  - campo `Tema` en `ConfiguracionEmpresa` (configuracion global) + cache local para evitar parpadeo al iniciar
-- Pendiente de definir: si el tema es global (BD, una sola apariencia para toda la tienda)
-  o local por dispositivo (cada caja elige el suyo)
-- Nota: requiere migrar a variables CSS algunos colores que hoy estan fijos en los estilos
+- Como funciona:
+  - variables CSS por tema en `styles.css` + atributo `data-theme` en el elemento raiz
+  - `ThemeService` aplica el tema y lo cachea en `localStorage` (se aplica al instante al iniciar para evitar parpadeo)
+  - es configuracion **global**: se guarda en `ConfiguracionEmpresa.Tema` y la app la sincroniza al cargar
+  - el combo muestra la vista previa en vivo; al guardar queda como tema de la tienda
+  - el backend valida el tema (solo `orange`/`dark`/`light`, por defecto `orange`)
+- Nota: el ticket de la vista previa mantiene colores fijos de papel (no cambia con el tema)
 
 ---
 

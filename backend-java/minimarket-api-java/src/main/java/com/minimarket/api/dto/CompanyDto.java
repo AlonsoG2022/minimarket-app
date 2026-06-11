@@ -13,5 +13,6 @@ public record CompanyDto(
     String footerLine1,
     String footerLine2,
     Boolean showTicketPreview,
-    Integer minimumStock
+    Integer minimumStock,
+    String theme
 ) {}

@@ -243,6 +243,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.Property(x => x.FooterLine2).HasColumnName("PiePagina2").HasMaxLength(150).IsRequired();
             entity.Property(x => x.ShowTicketPreview).HasColumnName("MostrarVistaPreviaTicket").IsRequired();
             entity.Property(x => x.MinimumStock).HasColumnName("StockMinimoDefault").IsRequired();
+            entity.Property(x => x.Theme).HasColumnName("Tema").HasMaxLength(20).IsRequired();
         });
 
         modelBuilder.Entity<Category>().HasData(

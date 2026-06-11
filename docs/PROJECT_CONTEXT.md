@@ -112,6 +112,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - mensaje de cierre (linea 1 y 2)
   - mostrar vista previa del ticket despues de cada venta (`MostrarVistaPreviaTicket`)
   - stock minimo global de alerta (`StockMinimoDefault`, por defecto `5`)
+  - tema visual de la app (`Tema`: `orange` / `dark` / `light`, por defecto `orange`)
 - endpoint `GET /api/company` y `PUT /api/company` disponible en .NET y Java
 - el ticket de venta y la pantalla de productos cargan estos datos desde la API al iniciar
 - al guardar el stock minimo se sincroniza `Productos.StockMinimo` de todos los productos con el valor global
@@ -198,7 +199,6 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 4. Mejoras visuales y operativas de ticketera
 5. Series y correlativos (tabla `SeriesDocumentos`) para Fase 2 del ticket
 6. Evolucionar de calculo tributario fijo (IGV 18% incluido) a reglas tributarias configurables por documento/producto
-7. Tema de la aplicacion configurable (`orange` / `dark` / `light`) desde la pantalla de Configuracion (ver roadmap)
 
 ---
 

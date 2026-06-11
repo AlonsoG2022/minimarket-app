@@ -13,7 +13,8 @@ public record CompanyDto(
     string FooterLine1,
     string FooterLine2,
     bool ShowTicketPreview,
-    int MinimumStock);
+    int MinimumStock,
+    string Theme);
 
 public record SaveCompanyDto(
     string BusinessName,
@@ -27,4 +28,5 @@ public record SaveCompanyDto(
     string FooterLine1,
     string FooterLine2,
     bool ShowTicketPreview,
-    int MinimumStock);
+    int MinimumStock,
+    string Theme);

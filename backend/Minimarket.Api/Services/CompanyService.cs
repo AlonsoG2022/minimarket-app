@@ -6,6 +6,7 @@ namespace Minimarket.Api.Services;
 
 public class CompanyService(ICompanyRepository companyRepository, IProductRepository productRepository) : ICompanyService
 {
+    private static readonly string[] AllowedThemes = ["orange", "dark", "light"];
     public async Task<CompanyDto?> GetAsync()
     {
         var company = await companyRepository.GetAsync();
@@ -39,6 +40,9 @@ public class CompanyService(ICompanyRepository companyRepository, IProductReposi
         company.FooterLine2 = dto.FooterLine2.Trim();
         company.ShowTicketPreview = dto.ShowTicketPreview;
         company.MinimumStock = dto.MinimumStock;
+
+        var theme = (dto.Theme ?? string.Empty).Trim().ToLowerInvariant();
+        company.Theme = AllowedThemes.Contains(theme) ? theme : "orange";
 
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();

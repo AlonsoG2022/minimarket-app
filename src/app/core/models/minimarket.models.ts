@@ -246,6 +246,7 @@ export interface Company {
   footerLine2: string;
   showTicketPreview: boolean;
   minimumStock: number;
+  theme: string;
 }
 
 export interface SaveCompany {
@@ -261,6 +262,7 @@ export interface SaveCompany {
   footerLine2: string;
   showTicketPreview: boolean;
   minimumStock: number;
+  theme: string;
 }
 
 export interface CashMovement {

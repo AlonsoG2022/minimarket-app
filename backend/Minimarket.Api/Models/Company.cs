@@ -15,4 +15,5 @@ public class Company
     public string FooterLine2 { get; set; } = string.Empty;
     public bool ShowTicketPreview { get; set; } = true;
     public int MinimumStock { get; set; } = 5;
+    public string Theme { get; set; } = "orange";
 }

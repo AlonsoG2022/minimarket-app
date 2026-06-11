@@ -23,7 +23,7 @@
 .ticket-card,
 .checkout-card,
 .cash-status-card {
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .pos-search-card h3,
@@ -59,8 +59,8 @@
 .cash-status-box {
   padding: 0.95rem 1rem;
   border-radius: 16px;
-  background: rgba(255, 248, 241, 0.82);
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .cash-status-box span {
@@ -108,8 +108,8 @@
   width: 100%;
   padding: 0.95rem 1rem;
   border-radius: 16px;
-  border: 1px solid rgba(45, 30, 21, 0.08);
-  background: rgba(255, 250, 246, 0.84);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
   color: var(--color-heading);
   text-align: left;
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
@@ -121,8 +121,8 @@
 
 .search-result:hover {
   transform: translateY(-1px);
-  background: rgba(255, 245, 236, 0.95);
-  box-shadow: 0 12px 22px rgba(110, 68, 40, 0.08);
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .search-result strong,
@@ -151,7 +151,7 @@
 .search-result__price {
   margin-left: 1rem;
   font-size: 1rem;
-  color: var(--color-primary-dark);
+  color: var(--color-accent-dark);
 }
 
 .ticket-list {
@@ -166,8 +166,8 @@
   align-items: center;
   padding: 0.95rem 1rem;
   border-radius: 18px;
-  background: rgba(255, 248, 241, 0.84);
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .ticket-item__qty {
@@ -200,8 +200,8 @@
 .ticket-empty {
   padding: 1.2rem;
   border-radius: 18px;
-  background: rgba(255, 250, 246, 0.7);
-  border: 1px dashed rgba(45, 30, 21, 0.12);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
 }
 
 .sale-total {
@@ -211,7 +211,7 @@
   margin-top: 1rem;
   padding: 1rem 1.2rem;
   border-radius: 18px;
-  background: linear-gradient(135deg, rgba(216, 111, 49, 0.1), rgba(255, 245, 236, 0.8));
+  background: var(--color-accent-soft);
 }
 
 .sale-total strong {
@@ -231,8 +231,8 @@
   gap: 0.15rem;
   padding: 0.75rem 0.9rem;
   border-radius: 16px;
-  border: 1px solid rgba(45, 30, 21, 0.08);
-  background: rgba(255, 250, 246, 0.82);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .checkout-user strong {
@@ -282,9 +282,9 @@
   width: min(360px, calc(100vw - 2rem));
   padding: 1rem 1.1rem;
   border-radius: 18px;
-  border: 1px solid rgba(184, 61, 12, 0.46);
-  background: linear-gradient(135deg, rgba(255, 214, 191, 0.99), rgba(255, 234, 219, 0.98));
-  box-shadow: 0 22px 42px rgba(134, 55, 16, 0.24);
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .stock-toast__content {
@@ -294,14 +294,14 @@
 .stock-toast__content strong {
   display: block;
   margin-bottom: 0.2rem;
-  color: #7a2f09;
+  color: var(--color-danger);
   font-size: 1rem;
   letter-spacing: 0.01em;
 }
 
 .stock-toast__content p {
   margin: 0;
-  color: #5a2410;
+  color: var(--color-text);
   font-weight: 600;
   line-height: 1.45;
   font-size: 0.95rem;
@@ -309,9 +309,9 @@
 
 .stock-toast__close {
   flex-shrink: 0;
-  border-color: rgba(184, 61, 12, 0.28);
-  background: rgba(255, 250, 246, 0.92);
-  color: #7a2f09;
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-danger);
   padding-inline: 0.9rem;
 }
 
@@ -326,12 +326,16 @@
 }
 
 .receipt {
+  /* El ticket representa papel real: mantiene colores fijos en todos los temas. */
+  --color-muted: #6e5747;
+  --color-heading: #2d1e15;
   width: min(380px, 100%);
   margin: 0 auto;
   padding: 1.2rem 1rem;
   border-radius: 18px;
   border: 1px dashed rgba(45, 30, 21, 0.24);
   background: #fffdfb;
+  color: #2d1e15;
 }
 
 .receipt__header {
@@ -471,7 +475,7 @@
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background: rgba(45, 30, 21, 0.34);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
   z-index: 30;
 }
@@ -483,7 +487,7 @@
 }
 
 .sale-detail-card {
-  border: 1px solid rgba(216, 111, 49, 0.24);
+  border: 1px solid var(--color-border);
 }
 
 .sale-detail-header {

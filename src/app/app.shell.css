@@ -7,9 +7,7 @@
   display: grid;
   min-height: 100dvh;
   grid-template-columns: minmax(248px, 276px) minmax(0, 1fr);
-  background:
-    radial-gradient(circle at top right, rgba(220, 140, 90, 0.12), transparent 28%),
-    linear-gradient(180deg, #fffaf5 0%, #fff7ee 48%, #fffaf6 100%);
+  background: var(--app-background);
 }
 
 .eyebrow {
@@ -39,10 +37,8 @@ h1 {
   flex-direction: column;
   gap: 1.2rem;
   padding: 1.25rem 1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 250, 245, 0.92), rgba(245, 230, 215, 0.84)),
-    var(--color-surface-strong);
-  border-right: 1px solid rgba(45, 30, 21, 0.08);
+  background: var(--color-surface-strong);
+  border-right: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   height: 100dvh;
@@ -63,7 +59,7 @@ h1 {
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #d86f31, #f0a56d);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
   color: #fff;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -91,10 +87,10 @@ h1 {
   width: 100%;
   padding: 0.85rem 0.9rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   color: var(--color-text);
   font-weight: 700;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-border);
   text-align: left;
   cursor: pointer;
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
@@ -123,7 +119,8 @@ h1 {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: rgba(216, 111, 49, 0.45);
+  background: var(--color-accent);
+  opacity: 0.45;
   flex: 0 0 auto;
 }
 
@@ -141,7 +138,7 @@ h1 {
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(216, 111, 49, 0.12);
+  background: var(--color-accent-soft);
   color: var(--color-accent);
   font-size: 0.72rem;
   font-weight: 800;
@@ -166,7 +163,7 @@ h1 {
   background: var(--color-accent);
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(156, 63, 16, 0.16);
+  box-shadow: 0 10px 22px var(--color-accent-soft);
 }
 
 .nav-module__trigger:hover small,
@@ -187,7 +184,7 @@ h1 {
 
 .nav-module__items a:hover,
 .nav-module__items a.active {
-  background: rgba(216, 111, 49, 0.12);
+  background: var(--color-accent-soft);
   color: var(--color-accent);
   transform: translateX(2px);
 }
@@ -201,7 +198,7 @@ h1 {
   margin-top: auto;
   padding: 0.9rem;
   border-radius: 16px;
-  background: rgba(216, 111, 49, 0.09);
+  background: var(--color-accent-soft);
   color: var(--color-text);
 }
 
@@ -226,11 +223,11 @@ h1 {
   gap: 1rem;
   align-items: end;
   padding: 1rem 1.1rem;
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  border: 1px solid var(--color-border);
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface);
   backdrop-filter: blur(12px);
-  box-shadow: 0 16px 40px rgba(90, 54, 30, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .topbar__meta {
@@ -251,8 +248,8 @@ h1 {
   gap: 0.45rem;
   padding: 0.55rem 0.8rem;
   border-radius: 999px;
-  background: rgba(95, 155, 82, 0.12);
-  color: #295b34;
+  background: var(--color-success-soft);
+  color: var(--color-success);
   font-weight: 700;
   font-size: 0.9rem;
 }
@@ -261,8 +258,8 @@ h1 {
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: #3d8b4d;
-  box-shadow: 0 0 0 4px rgba(61, 139, 77, 0.12);
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px var(--color-success-soft);
 }
 
 .topbar__actions {
@@ -307,8 +304,8 @@ h1 {
   min-height: 52px;
   padding: 0.75rem 0.9rem;
   border-radius: 18px;
-  border: 1px solid rgba(45, 30, 21, 0.08);
-  background: rgba(255, 248, 241, 0.92);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .topbar-user strong {
@@ -354,8 +351,8 @@ h1 {
   min-width: min(100%, 290px);
   padding: 1rem 1.1rem;
   border-radius: 20px;
-  border: 1px solid rgba(45, 30, 21, 0.08);
-  background: linear-gradient(135deg, rgba(255, 243, 233, 0.9), rgba(255, 255, 255, 0.78));
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .hero-card strong {
@@ -376,7 +373,7 @@ h1 {
     position: static;
     height: auto;
     border-right: 0;
-    border-bottom: 1px solid rgba(45, 30, 21, 0.08);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .shell__topbar {

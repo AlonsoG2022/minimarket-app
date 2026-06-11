@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CompanyService {
 
+    private static final java.util.Set<String> ALLOWED_THEMES = java.util.Set.of("orange", "dark", "light");
+
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
 
@@ -54,6 +56,9 @@ public class CompanyService {
         company.setFooterLine2(dto.footerLine2() != null ? dto.footerLine2().trim() : "");
         company.setShowTicketPreview(dto.showTicketPreview() != null ? dto.showTicketPreview() : Boolean.TRUE);
         company.setMinimumStock(dto.minimumStock());
+
+        var theme = dto.theme() != null ? dto.theme().trim().toLowerCase() : "";
+        company.setTheme(ALLOWED_THEMES.contains(theme) ? theme : "orange");
 
         var saved = companyRepository.save(company);
 

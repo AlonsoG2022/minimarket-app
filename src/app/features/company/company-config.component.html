@@ -119,6 +119,25 @@
           </div>
         </fieldset>
 
+        <fieldset class="form-section">
+          <legend>Apariencia</legend>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="theme">Tema de la aplicacion</label>
+              <select id="theme" formControlName="theme">
+                <option value="orange">Naranja (actual)</option>
+                <option value="dark">Oscuro</option>
+                <option value="light">Claro</option>
+              </select>
+              <small class="field-hint">
+                Cambia los colores de toda la app. La vista previa se aplica al instante;
+                al guardar queda como tema de la tienda. Es una configuracion global.
+              </small>
+            </div>
+          </div>
+        </fieldset>
+
         @if (message) {
           <p class="message">{{ message }}</p>
         }

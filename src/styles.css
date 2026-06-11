@@ -1,15 +1,106 @@
-:root {
+/* ============================================================
+   Temas de la aplicacion
+   - :root          -> tema "orange" (por defecto)
+   - [data-theme=*] -> sobrescribe la paleta por tema
+   Todos los colores de la app deben usar estas variables para
+   que los temas se vean completos.
+   ============================================================ */
+:root,
+:root[data-theme='orange'] {
   --color-bg: #f7f0e8;
   --color-surface: rgba(255, 252, 248, 0.82);
   --color-surface-strong: #fffaf5;
   --color-border: rgba(139, 92, 46, 0.16);
   --color-accent: #d86f31;
   --color-accent-dark: #9c3f10;
+  --color-accent-soft: rgba(216, 111, 49, 0.12);
   --color-success: #1f7a4d;
+  --color-success-soft: rgba(31, 122, 77, 0.12);
+  --color-info: #3c78b2;
+  --color-info-soft: rgba(60, 120, 178, 0.16);
+  --color-warning: #c9821f;
   --color-danger: #b42318;
+  --color-danger-soft: rgba(180, 35, 24, 0.12);
   --color-text: #2d1e15;
+  --color-heading: #2d1e15;
   --color-muted: #6e5747;
+  --color-secondary-bg: #efe1d3;
+  --color-input-bg: rgba(255, 255, 255, 0.86);
+  --color-input-border: rgba(45, 30, 21, 0.14);
+  --color-table-border: rgba(45, 30, 21, 0.08);
   --shadow-soft: 0 18px 45px rgba(94, 52, 22, 0.12);
+  --app-background:
+    radial-gradient(circle at top left, rgba(255, 205, 148, 0.55), transparent 32%),
+    radial-gradient(circle at right, rgba(207, 232, 213, 0.7), transparent 24%),
+    linear-gradient(180deg, #fef8f2 0%, var(--color-bg) 100%);
+
+  /* Alias usados por algunos componentes */
+  --text-secondary: var(--color-muted);
+  --border: var(--color-border);
+  --danger: var(--color-danger);
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #1f2125;
+  --color-surface: #2a2d32;
+  --color-surface-strong: #32363c;
+  --color-border: rgba(255, 255, 255, 0.10);
+  --color-accent: #e08a52;
+  --color-accent-dark: #f0a877;
+  --color-accent-soft: rgba(224, 138, 82, 0.18);
+  --color-success: #56c98c;
+  --color-success-soft: rgba(86, 201, 140, 0.16);
+  --color-info: #6ba8e0;
+  --color-info-soft: rgba(107, 168, 224, 0.18);
+  --color-warning: #e0a94f;
+  --color-danger: #e8736b;
+  --color-danger-soft: rgba(232, 115, 107, 0.16);
+  --color-text: #e8e9ec;
+  --color-heading: #f5f6f8;
+  --color-muted: #a8acb3;
+  --color-secondary-bg: #3a3e44;
+  --color-input-bg: rgba(255, 255, 255, 0.06);
+  --color-input-border: rgba(255, 255, 255, 0.14);
+  --color-table-border: rgba(255, 255, 255, 0.08);
+  --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+  --app-background: linear-gradient(180deg, #25282d 0%, #1f2125 100%);
+
+  --text-secondary: var(--color-muted);
+  --border: var(--color-border);
+  --danger: var(--color-danger);
+}
+
+:root[data-theme='light'] {
+  --color-bg: #eef4fb;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-surface-strong: #ffffff;
+  --color-border: rgba(37, 99, 165, 0.16);
+  --color-accent: #2f80ed;
+  --color-accent-dark: #1b4fb0;
+  --color-accent-soft: rgba(47, 128, 237, 0.12);
+  --color-success: #1f7a4d;
+  --color-success-soft: rgba(31, 122, 77, 0.12);
+  --color-info: #2f6fed;
+  --color-info-soft: rgba(47, 111, 237, 0.14);
+  --color-warning: #c9821f;
+  --color-danger: #b42318;
+  --color-danger-soft: rgba(180, 35, 24, 0.12);
+  --color-text: #16263b;
+  --color-heading: #16263b;
+  --color-muted: #5a6b80;
+  --color-secondary-bg: #dde9f7;
+  --color-input-bg: rgba(255, 255, 255, 0.92);
+  --color-input-border: rgba(37, 99, 165, 0.18);
+  --color-table-border: rgba(37, 99, 165, 0.10);
+  --shadow-soft: 0 18px 45px rgba(37, 99, 165, 0.14);
+  --app-background:
+    radial-gradient(circle at top left, rgba(173, 209, 255, 0.45), transparent 32%),
+    radial-gradient(circle at right, rgba(207, 226, 247, 0.6), transparent 24%),
+    linear-gradient(180deg, #f5f9ff 0%, var(--color-bg) 100%);
+
+  --text-secondary: var(--color-muted);
+  --border: var(--color-border);
+  --danger: var(--color-danger);
 }
 
 * {
@@ -22,10 +113,7 @@ body {
   min-height: 100%;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: var(--color-text);
-  background:
-    radial-gradient(circle at top left, rgba(255, 205, 148, 0.55), transparent 32%),
-    radial-gradient(circle at right, rgba(207, 232, 213, 0.7), transparent 24%),
-    linear-gradient(180deg, #fef8f2 0%, var(--color-bg) 100%);
+  background: var(--app-background);
 }
 
 body {
@@ -44,6 +132,7 @@ body {
 .section-title {
   margin: 0 0 0.5rem;
   font-size: 1.35rem;
+  color: var(--color-heading);
 }
 
 .section-copy {
@@ -75,7 +164,7 @@ button {
 }
 
 button.secondary {
-  background: #efe1d3;
+  background: var(--color-secondary-bg);
   color: var(--color-text);
 }
 
@@ -92,10 +181,11 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid rgba(45, 30, 21, 0.14);
+  border: 1px solid var(--color-input-border);
   border-radius: 14px;
   padding: 0.85rem 0.95rem;
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--color-input-bg);
+  color: var(--color-text);
 }
 
 label {
@@ -123,7 +213,7 @@ table {
 th,
 td {
   padding: 0.9rem 0.75rem;
-  border-bottom: 1px solid rgba(45, 30, 21, 0.08);
+  border-bottom: 1px solid var(--color-table-border);
   text-align: left;
 }
 
@@ -141,12 +231,12 @@ th {
   padding: 0.35rem 0.7rem;
   font-size: 0.85rem;
   font-weight: 700;
-  background: rgba(216, 111, 49, 0.12);
+  background: var(--color-accent-soft);
   color: var(--color-accent-dark);
 }
 
 .pill.low {
-  background: rgba(180, 35, 24, 0.1);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
 }
 
@@ -154,12 +244,12 @@ th {
   margin-top: 1rem;
   padding: 0.9rem 1rem;
   border-radius: 16px;
-  background: rgba(31, 122, 77, 0.12);
+  background: var(--color-success-soft);
   color: var(--color-success);
 }
 
 .message.error {
-  background: rgba(180, 35, 24, 0.12);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
 }
 

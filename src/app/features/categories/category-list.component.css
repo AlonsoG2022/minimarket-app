@@ -44,7 +44,7 @@
 }
 
 .message.error {
-  color: #a63b16;
+  color: var(--color-danger);
 }
 
 .category-table td strong {

@@ -22,8 +22,8 @@
 .stat-card {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(45, 30, 21, 0.08);
-  box-shadow: 0 18px 34px rgba(86, 52, 31, 0.08);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
 }
 
 .stat-card::after {
@@ -33,7 +33,7 @@
   width: 110px;
   height: 110px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
   filter: blur(1px);
 }
 
@@ -55,7 +55,7 @@
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--color-surface-strong);
 }
 
 .stat-card p {
@@ -85,39 +85,39 @@
 }
 
 .stat-card--sales {
-  background: linear-gradient(135deg, rgba(225, 248, 232, 0.92), rgba(255, 255, 255, 0.88));
+  background: var(--color-success-soft);
 }
 
 .stat-card--sales .stat-card__icon {
-  color: #256f3a;
-  background: rgba(65, 142, 84, 0.16);
+  color: var(--color-success);
+  background: var(--color-success-soft);
 }
 
 .stat-card--transactions {
-  background: linear-gradient(135deg, rgba(233, 242, 251, 0.92), rgba(255, 255, 255, 0.88));
+  background: var(--color-info-soft);
 }
 
 .stat-card--transactions .stat-card__icon {
-  color: #235a89;
-  background: rgba(60, 120, 178, 0.16);
+  color: var(--color-info);
+  background: var(--color-info-soft);
 }
 
 .stat-card--products {
-  background: linear-gradient(135deg, rgba(255, 244, 228, 0.96), rgba(255, 255, 255, 0.9));
+  background: var(--color-accent-soft);
 }
 
 .stat-card--products .stat-card__icon {
-  color: #a35f1a;
-  background: rgba(216, 111, 49, 0.16);
+  color: var(--color-accent-dark);
+  background: var(--color-accent-soft);
 }
 
 .stat-card--alert {
-  background: linear-gradient(135deg, rgba(252, 233, 229, 0.94), rgba(255, 255, 255, 0.88));
+  background: var(--color-danger-soft);
 }
 
 .stat-card--alert .stat-card__icon {
-  color: #a3472d;
-  background: rgba(186, 78, 48, 0.16);
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .activity-grid {
@@ -127,7 +127,7 @@
 }
 
 .activity-card {
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .activity-card__title {
@@ -148,8 +148,8 @@
   align-items: center;
   padding: 0.95rem 1rem;
   border-radius: 16px;
-  background: rgba(255, 248, 240, 0.78);
-  border: 1px solid rgba(45, 30, 21, 0.06);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .activity-item strong,
@@ -183,7 +183,7 @@
 }
 
 .activity-card--trend {
-  background: linear-gradient(135deg, rgba(255, 248, 240, 0.96), rgba(255, 255, 255, 0.94));
+  background: var(--color-surface);
 }
 
 .trend-stack {
@@ -200,7 +200,7 @@
   padding: 0.9rem 1rem;
   border-radius: 16px;
   font-weight: 700;
-  border: 1px solid rgba(45, 30, 21, 0.06);
+  border: 1px solid var(--color-border);
 }
 
 .trend-bar span {
@@ -213,23 +213,23 @@
 }
 
 .trend-bar--sales {
-  background: rgba(225, 248, 232, 0.86);
+  background: var(--color-success-soft);
 }
 
 .trend-bar--transactions {
-  background: rgba(233, 242, 251, 0.9);
+  background: var(--color-info-soft);
 }
 
 .trend-bar--inventory {
-  background: rgba(255, 244, 228, 0.92);
+  background: var(--color-accent-soft);
 }
 
 .inventory-card {
-  border: 1px solid rgba(45, 30, 21, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .inventory-card--ok {
-  background: linear-gradient(135deg, rgba(236, 248, 238, 0.94), rgba(255, 255, 255, 0.96));
+  background: var(--color-success-soft);
 }
 
 .inventory-list {
@@ -244,21 +244,21 @@
   align-items: center;
   padding: 0.95rem 1rem;
   border-radius: 18px;
-  background: rgba(255, 249, 243, 0.84);
-  border: 1px solid rgba(45, 30, 21, 0.06);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .inventory-item__signal {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: #f0b54b;
-  box-shadow: 0 0 0 6px rgba(240, 181, 75, 0.14);
+  background: var(--color-warning);
+  box-shadow: 0 0 0 6px var(--color-accent-soft);
 }
 
 .inventory-item--critical .inventory-item__signal {
-  background: #d65a47;
-  box-shadow: 0 0 0 6px rgba(214, 90, 71, 0.14);
+  background: var(--color-danger);
+  box-shadow: 0 0 0 6px var(--color-danger-soft);
 }
 
 .inventory-item__stats {
@@ -284,8 +284,8 @@
   align-items: center;
   padding: 1.25rem;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(45, 30, 21, 0.06);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .inventory-empty__badge {
@@ -294,8 +294,8 @@
   width: 54px;
   height: 54px;
   border-radius: 18px;
-  background: rgba(77, 149, 90, 0.16);
-  color: #2c6d3b;
+  background: var(--color-success-soft);
+  color: var(--color-success);
   font-weight: 900;
   letter-spacing: 0.08em;
 }

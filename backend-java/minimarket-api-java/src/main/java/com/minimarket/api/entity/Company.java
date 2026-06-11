@@ -46,6 +46,9 @@ public class Company {
     @Column(name = "StockMinimoDefault", nullable = false)
     private Integer minimumStock;
 
+    @Column(name = "Tema", nullable = false, length = 20)
+    private String theme;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getBusinessName() { return businessName; }
@@ -72,4 +75,6 @@ public class Company {
     public void setShowTicketPreview(Boolean showTicketPreview) { this.showTicketPreview = showTicketPreview; }
     public Integer getMinimumStock() { return minimumStock; }
     public void setMinimumStock(Integer minimumStock) { this.minimumStock = minimumStock; }
+    public String getTheme() { return theme; }
+    public void setTheme(String theme) { this.theme = theme; }
 }

@@ -51,7 +51,7 @@
 }
 
 .message.error {
-  color: #a63b16;
+  color: var(--color-danger);
 }
 
 @media (max-width: 720px) {

@@ -29,7 +29,8 @@ public final class DtoMapper {
             company.getFooterLine1(),
             company.getFooterLine2(),
             company.getShowTicketPreview(),
-            company.getMinimumStock()
+            company.getMinimumStock(),
+            company.getTheme()
         );
     }
 
