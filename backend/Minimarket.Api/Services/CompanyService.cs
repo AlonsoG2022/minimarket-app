@@ -6,7 +6,7 @@ namespace Minimarket.Api.Services;
 
 public class CompanyService(ICompanyRepository companyRepository, IProductRepository productRepository) : ICompanyService
 {
-    private static readonly string[] AllowedThemes = ["orange", "dark", "light"];
+    private static readonly string[] AllowedThemes = ["orange", "dark", "light", "el11"];
     public async Task<CompanyDto?> GetAsync()
     {
         var company = await companyRepository.GetAsync();

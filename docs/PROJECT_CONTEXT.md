@@ -112,7 +112,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - mensaje de cierre (linea 1 y 2)
   - mostrar vista previa del ticket despues de cada venta (`MostrarVistaPreviaTicket`)
   - stock minimo global de alerta (`StockMinimoDefault`, por defecto `5`)
-  - tema visual de la app (`Tema`: `orange` / `dark` / `light`, por defecto `orange`)
+  - tema visual de la app (`Tema`: `orange` / `dark` / `light` / `el11`, por defecto `orange`)
 - endpoint `GET /api/company` y `PUT /api/company` disponible en .NET y Java
 - el ticket de venta y la pantalla de productos cargan estos datos desde la API al iniciar
 - al guardar el stock minimo se sincroniza `Productos.StockMinimo` de todos los productos con el valor global

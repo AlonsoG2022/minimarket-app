@@ -269,6 +269,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - `orange` (por defecto)
   - `dark` (oscuro, predominio de grises)
   - `light` (claro, predominio de azul claro)
+  - `el11` (verde neon sobre negro, inspirado en el letrero del local; en prueba)
 - Como funciona:
   - variables CSS por tema en `styles.css` + atributo `data-theme` en el elemento raiz
   - `ThemeService` aplica el tema y lo cachea en `localStorage` (se aplica al instante al iniciar para evitar parpadeo)

@@ -103,6 +103,40 @@
   --danger: var(--color-danger);
 }
 
+/* Tema "El 11": claro con verde sobrio de la marca del local */
+:root[data-theme='el11'] {
+  --color-bg: #eef5f0;
+  --color-surface: rgba(255, 255, 255, 0.92);
+  --color-surface-strong: #ffffff;
+  --color-border: rgba(22, 120, 70, 0.16);
+  --color-accent: #16a34a;
+  --color-accent-dark: #15803d;
+  --color-accent-soft: rgba(22, 163, 74, 0.12);
+  --color-success: #16a34a;
+  --color-success-soft: rgba(22, 163, 74, 0.12);
+  --color-info: #2f80ed;
+  --color-info-soft: rgba(47, 128, 237, 0.14);
+  --color-warning: #c9821f;
+  --color-danger: #b42318;
+  --color-danger-soft: rgba(180, 35, 24, 0.12);
+  --color-text: #18241d;
+  --color-heading: #18241d;
+  --color-muted: #5f7268;
+  --color-secondary-bg: #d8ebdf;
+  --color-input-bg: rgba(255, 255, 255, 0.92);
+  --color-input-border: rgba(22, 120, 70, 0.18);
+  --color-table-border: rgba(22, 120, 70, 0.10);
+  --shadow-soft: 0 18px 45px rgba(22, 120, 70, 0.12);
+  --app-background:
+    radial-gradient(circle at top left, rgba(134, 222, 170, 0.4), transparent 32%),
+    radial-gradient(circle at right, rgba(200, 235, 214, 0.55), transparent 24%),
+    linear-gradient(180deg, #f6fbf8 0%, var(--color-bg) 100%);
+
+  --text-secondary: var(--color-muted);
+  --border: var(--color-border);
+  --danger: var(--color-danger);
+}
+
 * {
   box-sizing: border-box;
 }

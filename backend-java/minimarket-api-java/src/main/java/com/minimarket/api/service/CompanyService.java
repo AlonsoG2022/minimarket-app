@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CompanyService {
 
-    private static final java.util.Set<String> ALLOWED_THEMES = java.util.Set.of("orange", "dark", "light");
+    private static final java.util.Set<String> ALLOWED_THEMES = java.util.Set.of("orange", "dark", "light", "el11");
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;

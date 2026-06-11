@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
-export type AppTheme = 'orange' | 'dark' | 'light';
+export type AppTheme = 'orange' | 'dark' | 'light' | 'el11';
 
 const STORAGE_KEY = 'minimarket.theme';
 const DEFAULT_THEME: AppTheme = 'orange';
-const AVAILABLE: AppTheme[] = ['orange', 'dark', 'light'];
+const AVAILABLE: AppTheme[] = ['orange', 'dark', 'light', 'el11'];
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
