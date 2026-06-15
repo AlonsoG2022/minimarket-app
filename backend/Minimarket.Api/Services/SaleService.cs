@@ -82,6 +82,9 @@ public class SaleService(
             sale.Details.Add(new SaleDetail
             {
                 ProductId = product.Id,
+                // Se asocia la entidad del producto (ademas del id) para que el nombre quede
+                // disponible al generar el snapshot del ticket.
+                Product = product,
                 Quantity = item.Quantity,
                 UnitPrice = product.Price,
                 Subtotal = product.Price * item.Quantity

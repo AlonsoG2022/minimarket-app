@@ -106,6 +106,9 @@ public class SaleService {
             var detail = new SaleDetail();
             detail.setSale(sale);
             detail.setProductId(product.getId());
+            // Se asocia la entidad del producto (ademas del id) para que el nombre quede
+            // disponible al generar el snapshot del ticket en la misma transaccion.
+            detail.setProduct(product);
             detail.setQuantity(item.quantity());
             detail.setUnitPrice(product.getPrice());
             detail.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(item.quantity())));

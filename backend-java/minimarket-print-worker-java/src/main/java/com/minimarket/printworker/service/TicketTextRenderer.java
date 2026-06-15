@@ -144,7 +144,6 @@ public class TicketTextRenderer {
     }
 
     private static String ticketHeader(int width) {
-        var header = "CANT DESCRIPCION P.UNIT IMPORTE";
-        return header.length() <= width ? header : header.substring(0, width);
+        return row("PRODUCTO", "IMPORTE", width);
     }
 }

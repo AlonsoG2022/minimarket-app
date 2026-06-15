@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Minimarket.PrintWorker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1c29ae0dc64ca8b0ce8f90d9980c1de7f69dc065")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bf134abba8d6a0317fe316b42cd660989f8d17b3")]
 [assembly: System.Reflection.AssemblyProductAttribute("Minimarket.PrintWorker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Minimarket.PrintWorker")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
