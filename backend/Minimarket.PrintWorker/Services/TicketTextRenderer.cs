@@ -54,12 +54,12 @@ public class TicketTextRenderer
 
         foreach (var item in payload.Items)
         {
-            foreach (var wrapped in Wrap(item.ProductName, width))
+            foreach (var wrapped in Wrap(item.ProductName, width - 2))
             {
                 lines.Add(wrapped);
             }
 
-            var detail = $"  {item.Quantity} x {FormatMoney(item.UnitPrice)}";
+            var detail = $"{item.Quantity} x {FormatMoney(item.UnitPrice)}";
             lines.Add(PadRight(detail, Math.Max(0, width - FormatMoney(item.Subtotal).Length)) + FormatMoney(item.Subtotal));
         }
 
@@ -155,6 +155,7 @@ public class TicketTextRenderer
 
     private static string TicketHeader(int width)
     {
-        return Row("PRODUCTO", "IMPORTE", width);
+        const string header = "CANT PRODUCTO P.UNIT IMPORTE";
+        return header.Length <= width ? header : header[..width];
     }
 }

@@ -378,16 +378,17 @@
 
         <div class="receipt__items">
           <div class="receipt__table-head">
+            <span>Cant.</span>
             <span>Producto</span>
-            <span>Importe</span>
+            <span class="receipt__unit-price">P. Unit</span>
+            <span class="receipt__subtotal">Importe</span>
           </div>
           @for (detail of printableSale.details; track detail.id) {
             <div class="receipt__item">
+              <span class="receipt__qty">{{ detail.quantity }}</span>
               <strong class="receipt__product">{{ detail.productName }}</strong>
-              <div class="receipt__item-line">
-                <span>{{ detail.quantity }} x {{ detail.unitPrice | solesPrice }}</span>
-                <strong>{{ detail.subtotal | solesPrice }}</strong>
-              </div>
+              <span class="receipt__unit-price">{{ detail.unitPrice | solesPrice }}</span>
+              <strong class="receipt__subtotal">{{ detail.subtotal | solesPrice }}</strong>
             </div>
           }
         </div>

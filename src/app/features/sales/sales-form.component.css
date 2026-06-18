@@ -393,10 +393,15 @@
   margin-top: 0.9rem;
 }
 
-.receipt__table-head {
-  display: flex;
-  justify-content: space-between;
+.receipt__table-head,
+.receipt__item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 78px 86px;
   gap: 0.6rem;
+  align-items: start;
+}
+
+.receipt__table-head {
   font-size: 0.76rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -409,21 +414,22 @@
   border-bottom: 1px dashed rgba(45, 30, 21, 0.12);
 }
 
+.receipt__qty,
+.receipt__unit-price,
+.receipt__subtotal {
+  white-space: nowrap;
+}
+
 .receipt__product {
-  display: block;
   color: var(--color-heading);
   font-size: 0.96rem;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
-.receipt__item-line {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.6rem;
-  margin-top: 0.15rem;
-  padding-left: 0.6rem;
-  white-space: nowrap;
+.receipt__unit-price,
+.receipt__subtotal {
+  text-align: right;
 }
 
 .receipt__summary {
