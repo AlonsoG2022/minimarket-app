@@ -32,6 +32,8 @@ Estados sugeridos:
 - Notas:
   - barcode unico compra/venta
   - importacion y exportacion Excel (con columna `NombreCorto`)
+  - al importar, las categorias que no existen se crean automaticamente
+  - el Excel exportado trae dos hojas: `Productos` y `Categorias`
   - fecha de caducidad
   - stock minimo global configurable desde `Configuracion` (no editable por producto)
   - aviso de stock minimo compacto (conteo + productos mas bajos)

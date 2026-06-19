@@ -91,7 +91,9 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - editable en el formulario de producto; si se deja vacio, el backend lo genera del nombre largo
   - en el formulario hay sugerencia en vivo mientras se escribe el nombre (se puede editar)
 - importacion masiva desde Excel (incluye columna `NombreCorto`)
-- exportacion de productos
+  - si una fila trae una categoria que no existe, el backend la crea automaticamente
+- exportacion de productos en Excel con dos hojas: `Productos` y `Categorias`
+  (la hoja de categorias lista las existentes al momento de exportar)
 
 ### Compras
 - compras por proveedor
