@@ -331,6 +331,17 @@ export class ProductListComponent implements OnInit {
     const worksheet = utils.json_to_sheet(rows);
     const workbook = utils.book_new();
     utils.book_append_sheet(workbook, worksheet, 'Productos');
+
+    // Segunda hoja con las categorias actuales (se actualiza con las que existan al exportar).
+    const categoriesWorksheet = utils.aoa_to_sheet([
+      ['Categoria'],
+      ...this.categories
+        .slice()
+        .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }))
+        .map((category) => [category.name])
+    ]);
+    utils.book_append_sheet(workbook, categoriesWorksheet, 'Categorias');
+
     writeFile(workbook, 'productos-minimarket.xlsx');
   }
 

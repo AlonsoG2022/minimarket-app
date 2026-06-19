@@ -184,8 +184,10 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             var category = await categoryRepository.GetByNameAsync(categoryName);
             if (category is null)
             {
-                errors.Add(new ProductImportErrorDto(row.RowNumber, $"La categoria '{categoryName}' no existe."));
-                continue;
+                // Auto-crear la categoria si no existe (util para la carga masiva por Excel).
+                category = new Category { Name = categoryName, IsActive = true };
+                await categoryRepository.AddAsync(category);
+                await categoryRepository.SaveChangesAsync();
             }
 
             if (!TryResolveBarcode(row.Barcode, row.Barcode, out var unifiedBarcode, out var barcodeError))

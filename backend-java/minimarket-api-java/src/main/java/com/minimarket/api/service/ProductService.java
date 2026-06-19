@@ -193,8 +193,11 @@ public class ProductService {
 
             var category = categoryRepository.findByNameIgnoreCase(categoryName).orElse(null);
             if (category == null) {
-                errors.add(new ProductImportErrorDto(rowNumber, "La categoria '%s' no existe.".formatted(categoryName)));
-                continue;
+                // Auto-crear la categoria si no existe (util para la carga masiva por Excel).
+                var nuevaCategoria = new com.minimarket.api.entity.Category();
+                nuevaCategoria.setName(categoryName);
+                nuevaCategoria.setIsActive(true);
+                category = categoryRepository.save(nuevaCategoria);
             }
 
             var resolvedBarcode = resolveUnifiedBarcode(row.barcode(), row.barcode());
