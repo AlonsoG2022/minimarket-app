@@ -47,6 +47,7 @@ public final class DtoMapper {
         return new ProductDto(
             product.getId(),
             product.getName(),
+            product.getShortName(),
             product.getSku(),
             product.getBarcode(),
             product.getPurchaseBarcode(),
@@ -92,14 +93,21 @@ public final class DtoMapper {
     public static SaleDto toDto(Sale sale) {
         var details = sale.getDetails()
             .stream()
-            .map(detail -> new SaleDetailDto(
-                detail.getId(),
-                detail.getProductId(),
-                detail.getProduct() != null ? detail.getProduct().getName() : "",
-                detail.getQuantity(),
-                detail.getUnitPrice(),
-                detail.getSubtotal()
-            ))
+            .map(detail -> {
+                var prod = detail.getProduct();
+                var prodName = prod != null ? prod.getName() : "";
+                var prodShort = prod != null && prod.getShortName() != null && !prod.getShortName().isBlank()
+                    ? prod.getShortName() : prodName;
+                return new SaleDetailDto(
+                    detail.getId(),
+                    detail.getProductId(),
+                    prodName,
+                    prodShort,
+                    detail.getQuantity(),
+                    detail.getUnitPrice(),
+                    detail.getSubtotal()
+                );
+            })
             .toList();
 
         return new SaleDto(

@@ -3,6 +3,7 @@ namespace Minimarket.Api.DTOs;
 public record ProductDto(
     int Id,
     string Name,
+    string ShortName,
     string Sku,
     string? Barcode,
     string? PurchaseBarcode,
@@ -21,6 +22,7 @@ public record ProductDto(
 
 public record SaveProductDto(
     string Name,
+    string? ShortName,
     string? Barcode,
     string? PurchaseBarcode,
     string? Description,
@@ -37,6 +39,7 @@ public record SaveProductDto(
 public record ProductImportRowDto(
     int RowNumber,
     string Name,
+    string? ShortName,
     decimal Price,
     string CategoryName,
     string? Barcode,

@@ -8,6 +8,7 @@ public record SaleDetailDto(
     int Id,
     int ProductId,
     string ProductName,
+    string ProductShortName,
     int Quantity,
     decimal UnitPrice,
     decimal Subtotal);

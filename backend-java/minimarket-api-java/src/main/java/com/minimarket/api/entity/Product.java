@@ -19,6 +19,9 @@ public class Product {
     @Column(name = "Nombre", nullable = false, length = 150)
     private String name;
 
+    @Column(name = "NombreCorto", length = 60)
+    private String shortName;
+
     @Column(name = "Sku", nullable = false, length = 30)
     private String sku;
 
@@ -75,6 +78,8 @@ public class Product {
     public void setId(Integer id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getShortName() { return shortName; }
+    public void setShortName(String shortName) { this.shortName = shortName; }
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
     public String getBarcode() { return barcode; }

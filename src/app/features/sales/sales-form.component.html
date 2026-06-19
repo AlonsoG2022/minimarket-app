@@ -386,7 +386,7 @@
           @for (detail of printableSale.details; track detail.id) {
             <div class="receipt__item">
               <span class="receipt__qty">{{ detail.quantity }}</span>
-              <strong class="receipt__product">{{ detail.productName }}</strong>
+              <strong class="receipt__product">{{ detail.productShortName || detail.productName }}</strong>
               <span class="receipt__unit-price">{{ detail.unitPrice | solesPrice }}</span>
               <strong class="receipt__subtotal">{{ detail.subtotal | solesPrice }}</strong>
             </div>

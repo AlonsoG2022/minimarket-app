@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record ProductImportRowDto(
     Integer rowNumber,
     String name,
+    String shortName,
     BigDecimal price,
     String categoryName,
     String barcode,

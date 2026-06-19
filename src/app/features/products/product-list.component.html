@@ -120,6 +120,12 @@
         </div>
 
         <div>
+          <label for="shortName">Nombre corto (ticket)</label>
+          <input id="shortName" formControlName="shortName" maxlength="60" autocomplete="off" (input)="onShortNameInput()">
+          <small class="field-hint">Es el nombre que sale en el ticket. Si lo dejas vacio, se genera automaticamente del nombre.</small>
+        </div>
+
+        <div>
           <label for="price">Precio</label>
           <input id="price" type="number" min="0" step="0.01" formControlName="price" autocomplete="off">
         </div>

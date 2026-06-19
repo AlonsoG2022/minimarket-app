@@ -27,6 +27,7 @@ public static class MappingExtensions
         new(
             product.Id,
             product.Name,
+            product.ShortName,
             product.Sku,
             product.Barcode,
             product.PurchaseBarcode,
@@ -86,6 +87,7 @@ public static class MappingExtensions
                     detail.Id,
                     detail.ProductId,
                     detail.Product?.Name ?? string.Empty,
+                    string.IsNullOrWhiteSpace(detail.Product?.ShortName) ? (detail.Product?.Name ?? string.Empty) : detail.Product!.ShortName,
                     detail.Quantity,
                     detail.UnitPrice,
                     detail.Subtotal))

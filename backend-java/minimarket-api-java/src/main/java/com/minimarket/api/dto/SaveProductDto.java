@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record SaveProductDto(
     String name,
+    String shortName,
     String barcode,
     String purchaseBarcode,
     String description,

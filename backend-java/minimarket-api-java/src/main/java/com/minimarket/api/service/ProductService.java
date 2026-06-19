@@ -6,6 +6,7 @@ import com.minimarket.api.repository.CategoryRepository;
 import com.minimarket.api.repository.CompanyRepository;
 import com.minimarket.api.repository.ProductRepository;
 import com.minimarket.api.util.DtoMapper;
+import com.minimarket.api.util.ShortNameGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +78,7 @@ public class ProductService {
 
         var product = new Product();
         product.setName(dto.name().trim());
+        product.setShortName(ShortNameGenerator.resolve(dto.shortName(), dto.name()));
         product.setSku(generateSku(category.getName()));
         product.setBarcode(resolvedBarcode.data());
         product.setPurchaseBarcode(resolvedBarcode.data());
@@ -128,6 +130,7 @@ public class ProductService {
         }
 
         product.setName(dto.name().trim());
+        product.setShortName(ShortNameGenerator.resolve(dto.shortName(), dto.name()));
         product.setBarcode(resolvedBarcode.data());
         product.setPurchaseBarcode(resolvedBarcode.data());
         product.setDescription(dto.description() != null ? dto.description().trim() : null);
@@ -217,6 +220,7 @@ public class ProductService {
 
             var product = new Product();
             product.setName(name);
+            product.setShortName(ShortNameGenerator.resolve(row.shortName(), name));
             product.setSku(generateSku(category.getName()));
             product.setBarcode(resolvedBarcode.data());
             product.setPurchaseBarcode(resolvedBarcode.data());

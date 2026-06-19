@@ -8,6 +8,7 @@ import { CategoriesService } from '../../core/services/categories.service';
 import { CompanyService } from '../../core/services/company.service';
 import { ProductsService } from '../../core/services/products.service';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
+import { generateShortName } from '../../shared/short-name';
 
 @Component({
   selector: 'app-product-list',
@@ -25,9 +26,12 @@ export class ProductListComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly companyService = inject(CompanyService);
 
+  shortNameTouched = false;
+
   readonly form = this.fb.nonNullable.group({
     id: [0],
     name: ['', Validators.required],
+    shortName: [''],
     barcode: [''],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.1)]],
@@ -88,7 +92,19 @@ export class ProductListComponent implements OnInit {
       error: () => {}
     });
 
+    // Sugerencia en vivo: mientras se escribe el nombre, propone un nombre corto
+    // (a menos que el usuario ya lo haya editado a mano).
+    this.form.controls.name.valueChanges.subscribe((name) => {
+      if (!this.shortNameTouched) {
+        this.form.controls.shortName.setValue(generateShortName(name || ''), { emitEvent: false });
+      }
+    });
+
     this.loadData();
+  }
+
+  onShortNameInput(): void {
+    this.shortNameTouched = true;
   }
 
   get lowStockSummary(): string {
@@ -144,6 +160,7 @@ export class ProductListComponent implements OnInit {
     const normalizedBarcode = value.barcode.trim() || null;
     const payload: SaveProduct = {
       name: value.name,
+      shortName: value.shortName?.trim() || null,
       barcode: normalizedBarcode,
       purchaseBarcode: normalizedBarcode,
       description: value.description,
@@ -181,11 +198,13 @@ export class ProductListComponent implements OnInit {
   edit(product: Product): void {
     this.formVisible = true;
     this.isEditing = true;
+    this.shortNameTouched = true;
     this.message = '';
     this.error = '';
     this.form.patchValue({
       id: product.id,
       name: product.name,
+      shortName: product.shortName ?? '',
       barcode: product.barcode ?? product.purchaseBarcode ?? '',
       description: product.description ?? '',
       price: product.price,
@@ -222,9 +241,11 @@ export class ProductListComponent implements OnInit {
   resetForm(): void {
     this.formVisible = false;
     this.isEditing = false;
+    this.shortNameTouched = false;
     this.form.reset({
       id: 0,
       name: '',
+      shortName: '',
       barcode: '',
       description: '',
       price: 0,
@@ -248,9 +269,11 @@ export class ProductListComponent implements OnInit {
     this.error = '';
     this.formVisible = true;
     this.isEditing = false;
+    this.shortNameTouched = false;
     this.form.reset({
       id: 0,
       name: '',
+      shortName: '',
       barcode: '',
       description: '',
       price: 0,
@@ -267,7 +290,7 @@ export class ProductListComponent implements OnInit {
 
   downloadImportTemplate(): void {
     const productsWorksheet = utils.aoa_to_sheet([
-      ['NombreProducto', 'Precio', 'Categoria', 'CodigoBarras', 'UnidadVenta', 'UnidadCompra', 'UnidadesPorCompra', 'Stock', 'FechaCaducidad']
+      ['NombreProducto', 'NombreCorto', 'Precio', 'Categoria', 'CodigoBarras', 'UnidadVenta', 'UnidadCompra', 'UnidadesPorCompra', 'Stock', 'FechaCaducidad']
     ]);
     const categoriesWorksheet = utils.aoa_to_sheet([
       ['Categoria'],
@@ -294,6 +317,7 @@ export class ProductListComponent implements OnInit {
       .sort((left, right) => left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }))
       .map((product) => ({
         NombreProducto: product.name,
+        NombreCorto: product.shortName ?? '',
         Precio: product.price,
         Categoria: product.categoryName,
         CodigoBarras: product.barcode ?? product.purchaseBarcode ?? '',
@@ -385,6 +409,7 @@ export class ProductListComponent implements OnInit {
     return rawRows
       .map((row, index) => {
         const name = this.readCell(row, ['NombreProducto', 'Nombre Producto', 'nombreproducto']);
+        const shortName = this.readCell(row, ['NombreCorto', 'Nombre Corto', 'nombrecorto']);
         const categoryName = this.readCell(row, ['Categoria', 'Categoría', 'categoria']);
         const priceText = this.readCell(row, ['Precio', 'precio']);
         const barcode = this.readCell(row, ['CodigoBarras', 'Codigo Barras', 'codigoBarras', 'codigobarras']);
@@ -400,6 +425,7 @@ export class ProductListComponent implements OnInit {
         return {
           rowNumber: index + 2,
           name: name.trim(),
+          shortName: shortName.trim() || null,
           categoryName: categoryName.trim(),
           barcode: barcode.trim() || null,
           description: null,

@@ -46,7 +46,7 @@ public class PrintJobService(
             company?.FooterLine2 ?? string.Empty,
             sale.Notes,
             sale.Details.Select(detail => new TicketPrintItemDto(
-                detail.Product?.Name ?? string.Empty,
+                string.IsNullOrWhiteSpace(detail.Product?.ShortName) ? (detail.Product?.Name ?? string.Empty) : detail.Product!.ShortName,
                 detail.Quantity,
                 detail.UnitPrice,
                 detail.Subtotal)).ToList());

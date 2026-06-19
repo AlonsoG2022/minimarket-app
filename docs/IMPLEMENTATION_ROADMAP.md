@@ -31,10 +31,12 @@ Estados sugeridos:
 - Estado: `Implementado`
 - Notas:
   - barcode unico compra/venta
-  - importacion y exportacion Excel
+  - importacion y exportacion Excel (con columna `NombreCorto`)
   - fecha de caducidad
   - stock minimo global configurable desde `Configuracion` (no editable por producto)
   - aviso de stock minimo compacto (conteo + productos mas bajos)
+  - nombre corto por producto (`NombreCorto`) para el ticket; editable en el formulario,
+    con sugerencia en vivo y autogeneracion en el backend si llega vacio (formulario e import)
 
 ### Compras
 - Estado: `Implementado`

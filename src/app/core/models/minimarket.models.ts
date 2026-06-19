@@ -8,6 +8,7 @@ export interface Category {
 export interface Product {
   id: number;
   name: string;
+  shortName: string;
   sku: string;
   barcode?: string | null;
   purchaseBarcode?: string | null;
@@ -27,6 +28,7 @@ export interface Product {
 
 export interface SaveProduct {
   name: string;
+  shortName?: string | null;
   barcode?: string | null;
   purchaseBarcode?: string | null;
   description?: string | null;
@@ -44,6 +46,7 @@ export interface SaveProduct {
 export interface ProductImportRow {
   rowNumber: number;
   name: string;
+  shortName?: string | null;
   price: number;
   categoryName: string;
   barcode?: string | null;
@@ -124,6 +127,7 @@ export interface SaleDetail {
   id: number;
   productId: number;
   productName: string;
+  productShortName: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;

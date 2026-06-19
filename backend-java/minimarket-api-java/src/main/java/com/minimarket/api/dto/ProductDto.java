@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record ProductDto(
     Integer id,
     String name,
+    String shortName,
     String sku,
     String barcode,
     String purchaseBarcode,

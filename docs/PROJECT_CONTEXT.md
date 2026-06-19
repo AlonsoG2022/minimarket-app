@@ -87,7 +87,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - codigo de barras unico para compra y venta
 - stock minimo global configurable desde `Configuracion` (por defecto `5`, no editable por producto)
 - aviso compacto de productos en stock minimo (resumen con conteo + los mas bajos)
-- importacion masiva desde Excel
+- nombre corto por producto (`NombreCorto`) que se muestra en el ticket en vez del nombre largo
+  - editable en el formulario de producto; si se deja vacio, el backend lo genera del nombre largo
+  - en el formulario hay sugerencia en vivo mientras se escribe el nombre (se puede editar)
+- importacion masiva desde Excel (incluye columna `NombreCorto`)
 - exportacion de productos
 
 ### Compras
@@ -188,6 +191,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - si la cola de impresion falla, la venta igual debe registrarse
 - aun no se implementan boleta, factura, serie, correlativo ni estados SUNAT
 - el modal de vista previa posterior a la venta funciona como respaldo manual y confirmacion visual, y es configurable (`MostrarVistaPreviaTicket`); si se desactiva, el ticket igual se imprime de forma automatica
+- el ticket (fisico y vista previa) muestra el `NombreCorto` del producto si existe; si no, el nombre largo
 
 ---
 

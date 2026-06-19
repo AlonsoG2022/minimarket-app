@@ -34,6 +34,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.ToTable("Productos");
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasColumnName("Nombre").HasMaxLength(150).IsRequired();
+            entity.Property(x => x.ShortName).HasColumnName("NombreCorto").HasMaxLength(60);
             entity.Property(x => x.Sku).HasMaxLength(30).IsRequired();
             entity.Property(x => x.Barcode).HasColumnName("CodigoBarras").HasMaxLength(50);
             entity.Property(x => x.PurchaseBarcode).HasColumnName("CodigoBarrasCompra").HasMaxLength(50);

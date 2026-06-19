@@ -55,6 +55,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         var product = new Product
         {
             Name = dto.Name.Trim(),
+            ShortName = ShortNameGenerator.Resolve(dto.ShortName, dto.Name),
             Sku = await GenerateSkuAsync(category.Name),
             Barcode = unifiedBarcode,
             PurchaseBarcode = unifiedBarcode,
@@ -113,6 +114,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
         }
 
         product.Name = dto.Name.Trim();
+        product.ShortName = ShortNameGenerator.Resolve(dto.ShortName, dto.Name);
         product.Barcode = unifiedBarcode;
         product.PurchaseBarcode = unifiedBarcode;
         product.Description = dto.Description?.Trim();
@@ -207,6 +209,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
             var product = new Product
             {
                 Name = name,
+                ShortName = ShortNameGenerator.Resolve(row.ShortName, name),
                 Sku = await GenerateSkuAsync(category.Name),
                 Barcode = unifiedBarcode,
                 PurchaseBarcode = unifiedBarcode,

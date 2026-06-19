@@ -69,12 +69,18 @@ public class PrintJobService {
                 company != null ? company.getFooterLine2() : "",
                 sale.getNotes(),
                 sale.getDetails().stream()
-                    .map(detail -> new TicketPrintItemDto(
-                        detail.getProduct() != null ? detail.getProduct().getName() : "",
-                        detail.getQuantity(),
-                        detail.getUnitPrice(),
-                        detail.getSubtotal()
-                    ))
+                    .map(detail -> {
+                        var prod = detail.getProduct();
+                        var nombre = prod != null ? prod.getName() : "";
+                        var corto = prod != null && prod.getShortName() != null && !prod.getShortName().isBlank()
+                            ? prod.getShortName() : nombre;
+                        return new TicketPrintItemDto(
+                            corto,
+                            detail.getQuantity(),
+                            detail.getUnitPrice(),
+                            detail.getSubtotal()
+                        );
+                    })
                     .toList()
             );
 

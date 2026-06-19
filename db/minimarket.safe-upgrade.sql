@@ -181,6 +181,7 @@ BEGIN
         CodigoBarras NVARCHAR(50) NULL,
         CodigoBarrasCompra NVARCHAR(50) NULL,
         Descripcion NVARCHAR(250) NULL,
+        NombreCorto NVARCHAR(60) NULL,
         Precio DECIMAL(10,2) NOT NULL,
         Costo DECIMAL(10,2) NOT NULL CONSTRAINT DF_Productos_Costo DEFAULT (0),
         Stock INT NOT NULL,
@@ -221,6 +222,12 @@ GO
 IF COL_LENGTH('dbo.Productos', 'Descripcion') IS NULL
 BEGIN
     ALTER TABLE dbo.Productos ADD Descripcion NVARCHAR(250) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.Productos', 'NombreCorto') IS NULL
+BEGIN
+    ALTER TABLE dbo.Productos ADD NombreCorto NVARCHAR(60) NULL;
 END;
 GO
 
