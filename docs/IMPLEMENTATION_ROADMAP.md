@@ -364,7 +364,16 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   | `UnidadCompra` | `"Unidad"` |
   | `UnidadesPorCompra` | `1` |
   | `Activo` | `1` |
-  | `CategoriaId` | propiedad `categoryId` de la respuesta del proveedor |
+  | `CategoriaId` | `Id` de la categoria LOCAL equivalente (NO el `categoryId` del proveedor). Ver nota de categorias debajo |
+
+- Nota sobre categorias (`CategoriaId`):
+  - el `categoryId` que devuelve el proveedor NO es el `Id` de nuestra tabla `Categorias`
+  - se conservan nuestras categorias actuales (hoy 12); el proveedor no las reemplaza
+  - por cada producto se resuelve la categoria LOCAL **por nombre**: el nombre de la categoria sale de la API de
+    categorias del proveedor (`GetHomePageCategories` devuelve `id` + nombre)
+  - si esa categoria ya existe en `Categorias`, se usa su `Id` local
+  - si NO existe, se crea como categoria nueva (tomaria el siguiente `Id`, ej. 13) y se usa ese `Id`
+  - es la misma logica de "crear categoria si no existe" que ya se usa al importar desde Excel
 
 - Nueva tabla `ProveedorProducto` (historico de costo por proveedor):
 
@@ -372,7 +381,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   |-------|------------------|
   | `ProveedorId` | `Id` de `Proveedores` donde `NumeroDocumento` = numero de documento del proveedor seleccionado en la pantalla de sincronizacion |
   | `ProductoId` | `Id` del producto insertado/actualizado en `Productos` |
-  | `UltimoCosto` | el ultimo valor insertado en el campo `Precio` del producto (sirve como historico) |
+  | `UltimoCosto` | el `Costo` del producto (`customerPrice / units`), es decir lo que el proveedor nos cobra. Sirve como historico para ver variaciones del costo de compra en el tiempo (dias mas baratos, subidas de precio) |
   | `Fecha` | fecha actual |
 
 - Pantalla de configuracion de la sincronizacion (Angular admin):
@@ -387,13 +396,23 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - manejo de paginacion/`Offset` si una categoria supera `Limit=500` productos
   - manejo de errores si cambia la estructura de las APIs del proveedor (al ser internas pueden cambiar sin aviso)
 
-- Sugerencias / puntos a confirmar antes de implementar (ver detalle en `docs/PROJECT_CONTEXT.md`):
-  - `CategoriaId`: la propiedad `categoryId` del proveedor NO coincide con los `Id` de la tabla local `Categorias`; hay que mapearla o crear/buscar la categoria local antes de guardar, o el FK quedara invalido
-  - `UltimoCosto` guarda el `Precio` (no el `Costo`); confirmar si es intencional o si deberia guardar `Costo`
-  - el redondeo se aplica solo a `Precio`; confirmar si `Costo` tambien debe redondearse
-  - proteger la division contra `units = 0` (evitar division por cero)
-  - `shortDescription` puede exceder los 60 caracteres de `NombreCorto`; truncar si hace falta
-  - validar que `longDescription` no exceda el largo de `Nombre`
-  - el `Stock` no lo entrega el proveedor: los productos sincronizados quedan en `0` y el stock entra por compras (regla actual del sistema)
-  - `ProveedorProducto` deberia tener una PK propia (`Id` identity) y FKs a `Proveedores` y `Productos`; al ser historico, se conservan multiples filas por producto/proveedor en el tiempo
+- Decisiones tomadas (reglas finales de la sincronizacion):
+  - `Costo` NO se redondea: es lo que pagamos al proveedor (`customerPrice / units` tal cual)
+  - solo el `Precio` de venta se redondea a la decima mas cercana (regla del negocio)
+  - `UltimoCosto` de `ProveedorProducto` guarda el `Costo`, para tener historico del costo de compra del proveedor
+  - categorias: se resuelven por nombre contra `Categorias`; si no existen se crean (no se pisan las 12 actuales)
+  - `units = 0` o ausente: se trata como `1` para evitar division por cero, y el producto se marca en el
+    reporte de la sincronizacion para revision manual
+  - `shortDescription` se trunca a 60 caracteres (largo de `NombreCorto`)
+  - `longDescription` se trunca a 150 caracteres (largo de `Nombre`)
+  - el `Stock` no lo entrega el proveedor: los productos sincronizados quedan en `0`; el stock entra por compras
+    (regla actual del sistema) y `StockMinimo` toma el valor global configurado
+  - `ProveedorProducto` lleva PK propia (`Id` identity) y FKs a `Proveedores` y `Productos`; al ser historico,
+    se conservan multiples filas por producto/proveedor en el tiempo
+- Recomendaciones tecnicas (a respetar al implementar):
+  - el proceso corre en el backend (no desde Angular): por CORS hacia `arcacontal.com` y para no exponer el token
+  - el token y el proveedor seleccionado se envian del Angular al backend, que es quien llama a las APIs del proveedor
+  - conviene un modo "vista previa" que muestre cuantos productos se crearan / actualizaran antes de escribir en la BD
+  - antes de codificar, capturar 2-3 respuestas JSON reales de ambas APIs para validar nombres exactos de las
+    propiedades (`sku`, `longDescription`, `shortDescription`, `salePrice`, `customerPrice`, `units`, `categoryId`)
 - Nota: contexto de negocio completo en `docs/PROJECT_CONTEXT.md`

@@ -238,14 +238,24 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - `UnidadCompra`: `"Unidad"`
 - `UnidadesPorCompra`: `1`
 - `Activo`: `1`
-- `CategoriaId`: propiedad `categoryId` de la respuesta del proveedor
+- `CategoriaId`: `Id` de la categoria LOCAL equivalente (NO el `categoryId` del proveedor; ver regla de categorias abajo)
+
+### Regla de categorias en la sincronizacion
+- el `categoryId` del proveedor no corresponde a los `Id` de nuestra tabla `Categorias`
+- se conservan nuestras categorias actuales (hoy 12); la sincronizacion no las reemplaza
+- por cada producto se resuelve la categoria LOCAL **por nombre** (el nombre viene de la API de categorias del
+  proveedor, `GetHomePageCategories`, que devuelve `id` + nombre)
+- si la categoria ya existe en `Categorias`, se usa su `Id` local
+- si no existe, se crea como categoria nueva (toma el siguiente `Id`, ej. la 13) y se usa ese `Id`
+- es la misma logica de "crear categoria si no existe" que ya se usa al importar productos desde Excel
 
 ### Nueva tabla `ProveedorProducto` (historico de costo por proveedor)
 - campos:
   - `ProveedorId`: `Id` de la tabla `Proveedores` cuyo `NumeroDocumento` coincide con el numero de documento
     del proveedor seleccionado en la pantalla de sincronizacion
   - `ProductoId`: `Id` del producto insertado/actualizado en `Productos`
-  - `UltimoCosto`: el ultimo valor insertado en el campo `Precio` del producto (sirve como historico)
+  - `UltimoCosto`: el `Costo` del producto (`customerPrice / units`), es decir lo que el proveedor nos cobra;
+    sirve como historico para seguir la variacion del costo de compra en el tiempo (dias mas baratos, subidas de precio)
   - `Fecha`: fecha actual
 - la tabla guarda el historico, por eso se conservan multiples filas por producto/proveedor a lo largo del tiempo
 
@@ -255,24 +265,28 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - ambos datos (token + proveedor) son obligatorios para poder ejecutar la sincronizacion del catalogo Coca-Cola / AIC Digital
 - boton "Sincronizar con AIC Digital" que dispara el proceso con el token pegado y el proveedor elegido
 
-### Sugerencias / puntos a confirmar antes de implementar
-- `CategoriaId`: el `categoryId` que devuelve el proveedor NO coincide con los `Id` de la tabla local `Categorias`.
-  Si se inserta tal cual, el FK quedara invalido. Hay que mapear cada categoria del proveedor a una categoria local
-  (o crear/buscar la local por nombre, como ya se hace al importar desde Excel) antes de guardar
-- `UltimoCosto` esta definido para guardar el `Precio` del producto, no el `Costo`. Confirmar si es intencional;
-  si lo que se quiere es historico de costo del proveedor, quiza deberia guardar el `Costo` (`customerPrice / units`)
-- el redondeo a decima se aplica solo a `Precio`. Confirmar si `Costo` tambien debe redondearse o se guarda completo
-- proteger la division contra `units = 0` para evitar division por cero
-- `shortDescription` puede exceder los 60 caracteres de `NombreCorto`: truncar si hace falta
-- validar que `longDescription` no exceda el largo permitido de `Nombre`
-- el `Stock` no lo entrega el proveedor: los productos sincronizados quedan en `0` y el stock real entra por compras
-  (regla actual del sistema); el `StockMinimo` toma el valor global configurado
-- `ProveedorProducto` deberia tener una PK propia (`Id` identity) y claves foraneas a `Proveedores` y `Productos`
-- al ser APIs internas del proveedor, conviene un modo "vista previa" (mostrar cuantos se crearan/actualizaran)
-  antes de escribir en la BD, y correr el proceso en el backend (no desde el navegador) por CORS y por seguridad del token
+### Decisiones tomadas (reglas finales)
+- `Costo`: NO se redondea, es lo que pagamos al proveedor (`customerPrice / units` tal cual)
+- `Precio`: solo el precio de venta se redondea a la decima mas cercana (ver ejemplos arriba)
+- `UltimoCosto` (`ProveedorProducto`): guarda el `Costo`, para tener historico del costo de compra del proveedor
+- categorias: se resuelven por nombre contra `Categorias`; si no existen se crean, sin pisar las 12 actuales
+- `units = 0` o ausente: se trata como `1` para evitar division por cero, y el producto se marca en el reporte
+  de la sincronizacion para revision manual
+- `shortDescription`: se trunca a 60 caracteres (largo de `NombreCorto`)
+- `longDescription`: se trunca a 150 caracteres (largo de `Nombre`)
+- `Stock`: no lo entrega el proveedor; los productos sincronizados quedan en `0` y el stock entra por compras
+  (regla actual del sistema); `StockMinimo` toma el valor global configurado
+- `ProveedorProducto`: lleva PK propia (`Id` identity) y claves foraneas a `Proveedores` y `Productos`
+
+### Recomendaciones tecnicas (a respetar al implementar)
+- el proceso corre en el backend, no desde Angular: por CORS hacia `arcacontal.com` y para no exponer el token
+- el token y el proveedor elegido se envian del Angular al backend, que es quien llama a las APIs del proveedor
+- conviene un modo "vista previa" que muestre cuantos productos se crearan / actualizaran antes de escribir en la BD
+- antes de codificar, capturar 2-3 respuestas JSON reales de ambas APIs para validar los nombres exactos de las
+  propiedades (`sku`, `longDescription`, `shortDescription`, `salePrice`, `customerPrice`, `units`, `categoryId`)
 
 ### Notas
-- esto ya esta listo para implementar (mapeo, tabla, pantalla y estrategia de token definidos), todavia no se ha desarrollado nada
+- esto ya esta listo para implementar (mapeo, tabla, pantalla, reglas y estrategia de token definidos), todavia no se ha desarrollado nada
 - al implementarse, definir si el proceso corre en `.NET`, `Java` o ambos (paridad de backends)
 - ver seguimiento detallado en `docs/IMPLEMENTATION_ROADMAP.md`
 
