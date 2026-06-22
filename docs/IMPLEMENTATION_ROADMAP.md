@@ -292,6 +292,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 4. Reintentos automaticos con limite
 5. Seleccion/configuracion de impresora desde UI o archivo
 6. Preparacion SUNAT
+7. Sincronizacion de catalogo de proveedores (ver seccion 10)
 
 ---
 
@@ -321,3 +322,43 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - `db/minimarket.sql`
 - Nota:
   - usarlo solo cuando quieras recrear toda la base desde cero en desarrollo
+
+---
+
+## 10. Sincronizacion de catalogo de proveedores
+
+### Sincronizacion con proveedor Coca-Cola (AIC Digital / Arca Continental)
+- Estado: `Pendiente`
+- Contexto:
+  - ~40% del catalogo actual se compra a este proveedor y la proporcion seguira creciendo
+  - el proveedor confirmo que no tiene API publica ni catalogo en Excel; los datos solo estan en su portal web
+  - hoy se completa costo y precio sugerido a mano, producto por producto, desde la web del proveedor
+- Investigacion ya realizada (idea registrada, sin desarrollar todavia):
+  - portal: `https://acdigitalweb.azurewebsites.net/catalog-v2/all`
+  - API de categorias: `GET https://briolightapimgmt.arcacontal.com/product/api/v1/Category/GetHomePageCategories?customerId=2898397`
+  - API de productos por categoria: `GET https://briolightapimgmt.arcacontal.com/product/api/v1/Portfolio?businessUnitId=4&CategoryId={id}&Phrase=&Type=4&Limit=500&Offset=1&CustomerId=2898397&order=0&searchCriteria=`
+    - `CategoryId` sale del `id` de cada categoria devuelta por la API anterior
+    - fijos para esta cuenta: `businessUnitId=4`, `Type=4`, `Limit=500`, `CustomerId=2898397`
+  - ambas APIs son internas (no oficiales/no documentadas) y requieren token Bearer de la sesion activa del navegador; no hay credenciales de API oficiales
+- Estrategia de token (decidida): manual
+  - el usuario copia el token Bearer desde el DevTools de su sesion activa en el portal del proveedor
+  - lo pega en un campo de configuracion del sistema (pantalla a definir, ej. extension de `/configuracion` o pantalla propia)
+  - un boton "Sincronizar con AIC Digital" dispara el proceso usando ese token pegado
+  - no se automatiza el login ni se guarda la contrasena del proveedor
+  - si el token esta vencido o la API responde 401, el sistema debe avisar claramente que hay que volver a pegar un token nuevo (no reintentar solo ni fallar en silencio)
+  - no es un job programado: la sincronizacion es una accion manual que el usuario dispara cuando la necesita
+- Mapeo de campos propuesto (API del proveedor -> `Productos`):
+  - `sku` -> `SKU` (clave para relacionar/actualizar en corridas futuras)
+  - nombre del producto -> `Nombre`
+  - descripcion corta -> `NombreCorto`
+  - `salePrice / units` -> precio de venta sugerido
+  - `customerPrice / units` -> costo
+  - unidad de compra y venta -> siempre `"Unidad"`
+  - codigo de barras: no lo entrega el proveedor, sigue llenandose manualmente via escaneo en compras
+- Pendiente de definir en diseno tecnico (antes de implementar):
+  - donde corre el proceso: `.NET`, `Java` o ambos (paridad de backends)
+  - donde vive exactamente el campo de token y el boton de sincronizacion en el Angular admin
+  - logica de alta vs. actualizacion cuando el SKU ya existe en `Productos`
+  - manejo de paginacion/`Offset` si una categoria supera `Limit=500` productos
+  - manejo de errores si cambia la estructura de las APIs del proveedor (al ser internas pueden cambiar sin aviso)
+- Nota: contexto de negocio completo en `docs/PROJECT_CONTEXT.md`
