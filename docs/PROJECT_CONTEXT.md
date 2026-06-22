@@ -197,6 +197,48 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 
 ---
 
+## Sincronizacion de catalogo de proveedor (idea registrada, pendiente de implementar)
+
+### Necesidad
+- se esta armando en Excel el catalogo de productos con codigo de barras, costo y precio sugerido
+- aproximadamente el 40% de los productos se compran al proveedor Coca-Cola (plataforma Arca Continental, portal AIC Digital) y esa proporcion seguira creciendo
+- cargar manualmente costo y precio sugerido producto por producto desde la web del proveedor consume mucho tiempo
+- se consulto al proveedor por una API publica o un Excel de catalogo: no existen, el unico origen de estos datos es su portal web
+
+### Fuente de datos identificada
+- portal del proveedor: `https://acdigitalweb.azurewebsites.net/catalog-v2/all` (AIC Digital)
+- revisando el DevTools del navegador se identificaron 2 APIs internas que usa ese portal (no oficiales, no documentadas por el proveedor):
+  1. Categorias: `GET https://briolightapimgmt.arcacontal.com/product/api/v1/Category/GetHomePageCategories?customerId=2898397`
+     - devuelve la lista de categorias; cada categoria trae un `id`
+  2. Productos por categoria: `GET https://briolightapimgmt.arcacontal.com/product/api/v1/Portfolio?businessUnitId=4&CategoryId={id}&Phrase=&Type=4&Limit=500&Offset=1&CustomerId=2898397&order=0&searchCriteria=`
+     - `CategoryId` es el `id` devuelto por la API de categorias
+     - valores fijos para esta cuenta: `businessUnitId=4`, `Type=4`, `Limit=500`, `CustomerId=2898397`
+- ambas APIs requieren token de autenticacion (Bearer) que se obtiene de la sesion activa del navegador en el portal; no hay credenciales oficiales de API
+
+### Estrategia de token (decidida)
+- manual, sin automatizar el login ni guardar la contrasena del proveedor:
+  1. el usuario copia el token Bearer desde el DevTools de su sesion activa en el portal del proveedor
+  2. lo pega en un campo de configuracion del sistema (pantalla a definir, ej. extension de `/configuracion` o pantalla propia)
+  3. un boton "Sincronizar con AIC Digital" dispara la sincronizacion usando ese token pegado
+- la sincronizacion no es un job programado, es una accion manual que el usuario dispara cuando la necesita
+- si el token esta vencido o la API responde 401, el sistema debe avisar claramente que hay que pegar un token nuevo (no reintentar solo ni fallar en silencio)
+
+### Mapeo de campos propuesto (API del proveedor -> tabla `Productos`)
+- `sku` del proveedor -> `SKU` (sirve para relacionar y actualizar productos ya sincronizados en corridas futuras)
+- nombre del producto del proveedor -> `Nombre`
+- descripcion corta del proveedor -> `NombreCorto`
+- precio de venta sugerido = `salePrice / units` -> precio de venta del producto
+- precio de costo = `customerPrice / units` -> costo del producto
+- unidad de compra y unidad de venta -> siempre `"Unidad"` para los productos sincronizados de este proveedor
+- codigo de barras: el proveedor no lo expone; se sigue completando manualmente (escaneo durante las compras), igual que hoy
+
+### Notas
+- esto ya esta listo para implementar (idea + estrategia de token decididas), todavia no se ha desarrollado nada
+- al implementarse, definir si el proceso corre en `.NET`, `Java` o ambos, y donde vive exactamente el campo de token y el boton de sincronizacion en el Angular admin
+- ver seguimiento detallado en `docs/IMPLEMENTATION_ROADMAP.md`
+
+---
+
 ## Pendientes mayores
 
 1. Validacion fisica con impresora ZKTeco
@@ -205,6 +247,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 4. Mejoras visuales y operativas de ticketera
 5. Series y correlativos (tabla `SeriesDocumentos`) para Fase 2 del ticket
 6. Evolucionar de calculo tributario fijo (IGV 18% incluido) a reglas tributarias configurables por documento/producto
+7. Sincronizacion de catalogo del proveedor Coca-Cola / AIC Digital (costo y precio sugerido por SKU) - ver seccion dedicada arriba
 
 ---
 
