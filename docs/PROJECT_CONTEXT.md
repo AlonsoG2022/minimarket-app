@@ -223,18 +223,57 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - la sincronizacion no es un job programado, es una accion manual que el usuario dispara cuando la necesita
 - si el token esta vencido o la API responde 401, el sistema debe avisar claramente que hay que pegar un token nuevo (no reintentar solo ni fallar en silencio)
 
-### Mapeo de campos propuesto (API del proveedor -> tabla `Productos`)
-- `sku` del proveedor -> `SKU` (sirve para relacionar y actualizar productos ya sincronizados en corridas futuras)
-- nombre del producto del proveedor -> `Nombre`
-- descripcion corta del proveedor -> `NombreCorto`
-- precio de venta sugerido = `salePrice / units` -> precio de venta del producto
-- precio de costo = `customerPrice / units` -> costo del producto
-- unidad de compra y unidad de venta -> siempre `"Unidad"` para los productos sincronizados de este proveedor
-- codigo de barras: el proveedor no lo expone; se sigue completando manualmente (escaneo durante las compras), igual que hoy
+### Mapeo de campos definido (API del proveedor -> tabla `Productos`)
+- `Sku`: propiedad `sku` de la respuesta del proveedor; si no viene, se autogenera como ya lo hace hoy el sistema
+- `Nombre`: propiedad `longDescription`
+- `NombreCorto`: propiedad `shortDescription`
+- `Costo`: `customerPrice / units`
+- `Precio`: `salePrice / units`, redondeado a la decima mas cercana (1 decimal, medio hacia arriba).
+  Ejemplos: si la division da `5.51` el precio es `5.50`; si da `5.55` el precio es `5.60`
+- `CodigoBarras`: vacio (se completa luego, escaneo manual en compras)
+- `CodigoBarrasCompra`: vacio (se completa luego, escaneo manual en compras)
+- `Descripcion`: vacio (se completa luego)
+- `FechaCaducidad`: fecha actual + 2 anios
+- `UnidadVenta`: `"Unidad"`
+- `UnidadCompra`: `"Unidad"`
+- `UnidadesPorCompra`: `1`
+- `Activo`: `1`
+- `CategoriaId`: propiedad `categoryId` de la respuesta del proveedor
+
+### Nueva tabla `ProveedorProducto` (historico de costo por proveedor)
+- campos:
+  - `ProveedorId`: `Id` de la tabla `Proveedores` cuyo `NumeroDocumento` coincide con el numero de documento
+    del proveedor seleccionado en la pantalla de sincronizacion
+  - `ProductoId`: `Id` del producto insertado/actualizado en `Productos`
+  - `UltimoCosto`: el ultimo valor insertado en el campo `Precio` del producto (sirve como historico)
+  - `Fecha`: fecha actual
+- la tabla guarda el historico, por eso se conservan multiples filas por producto/proveedor a lo largo del tiempo
+
+### Pantalla de configuracion de la sincronizacion (Angular admin)
+- una caja de texto para pegar el token Bearer (obligatoria)
+- un combo para seleccionar el proveedor; internamente se usa su `NumeroDocumento` (obligatorio)
+- ambos datos (token + proveedor) son obligatorios para poder ejecutar la sincronizacion del catalogo Coca-Cola / AIC Digital
+- boton "Sincronizar con AIC Digital" que dispara el proceso con el token pegado y el proveedor elegido
+
+### Sugerencias / puntos a confirmar antes de implementar
+- `CategoriaId`: el `categoryId` que devuelve el proveedor NO coincide con los `Id` de la tabla local `Categorias`.
+  Si se inserta tal cual, el FK quedara invalido. Hay que mapear cada categoria del proveedor a una categoria local
+  (o crear/buscar la local por nombre, como ya se hace al importar desde Excel) antes de guardar
+- `UltimoCosto` esta definido para guardar el `Precio` del producto, no el `Costo`. Confirmar si es intencional;
+  si lo que se quiere es historico de costo del proveedor, quiza deberia guardar el `Costo` (`customerPrice / units`)
+- el redondeo a decima se aplica solo a `Precio`. Confirmar si `Costo` tambien debe redondearse o se guarda completo
+- proteger la division contra `units = 0` para evitar division por cero
+- `shortDescription` puede exceder los 60 caracteres de `NombreCorto`: truncar si hace falta
+- validar que `longDescription` no exceda el largo permitido de `Nombre`
+- el `Stock` no lo entrega el proveedor: los productos sincronizados quedan en `0` y el stock real entra por compras
+  (regla actual del sistema); el `StockMinimo` toma el valor global configurado
+- `ProveedorProducto` deberia tener una PK propia (`Id` identity) y claves foraneas a `Proveedores` y `Productos`
+- al ser APIs internas del proveedor, conviene un modo "vista previa" (mostrar cuantos se crearan/actualizaran)
+  antes de escribir en la BD, y correr el proceso en el backend (no desde el navegador) por CORS y por seguridad del token
 
 ### Notas
-- esto ya esta listo para implementar (idea + estrategia de token decididas), todavia no se ha desarrollado nada
-- al implementarse, definir si el proceso corre en `.NET`, `Java` o ambos, y donde vive exactamente el campo de token y el boton de sincronizacion en el Angular admin
+- esto ya esta listo para implementar (mapeo, tabla, pantalla y estrategia de token definidos), todavia no se ha desarrollado nada
+- al implementarse, definir si el proceso corre en `.NET`, `Java` o ambos (paridad de backends)
 - ver seguimiento detallado en `docs/IMPLEMENTATION_ROADMAP.md`
 
 ---

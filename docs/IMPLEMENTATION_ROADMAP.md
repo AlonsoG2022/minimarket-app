@@ -347,18 +347,53 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - no se automatiza el login ni se guarda la contrasena del proveedor
   - si el token esta vencido o la API responde 401, el sistema debe avisar claramente que hay que volver a pegar un token nuevo (no reintentar solo ni fallar en silencio)
   - no es un job programado: la sincronizacion es una accion manual que el usuario dispara cuando la necesita
-- Mapeo de campos propuesto (API del proveedor -> `Productos`):
-  - `sku` -> `SKU` (clave para relacionar/actualizar en corridas futuras)
-  - nombre del producto -> `Nombre`
-  - descripcion corta -> `NombreCorto`
-  - `salePrice / units` -> precio de venta sugerido
-  - `customerPrice / units` -> costo
-  - unidad de compra y venta -> siempre `"Unidad"`
-  - codigo de barras: no lo entrega el proveedor, sigue llenandose manualmente via escaneo en compras
+- Mapeo de campos definido (API del proveedor -> tabla `Productos`):
+
+  | Campo en `Productos` | Valor a insertar |
+  |----------------------|------------------|
+  | `Sku` | propiedad `sku` de la respuesta; si no viene, autogenerarlo como ya lo hace hoy el sistema |
+  | `Nombre` | propiedad `longDescription` |
+  | `NombreCorto` | propiedad `shortDescription` |
+  | `Costo` | `customerPrice / units` |
+  | `Precio` | `salePrice / units`, redondeado a la decima mas cercana (1 decimal, medio hacia arriba). Ej.: `5.51` -> `5.50`, `5.55` -> `5.60` |
+  | `CodigoBarras` | vacio (se completa luego, escaneo manual) |
+  | `CodigoBarrasCompra` | vacio (se completa luego, escaneo manual) |
+  | `Descripcion` | vacio (se completa luego) |
+  | `FechaCaducidad` | fecha actual + 2 anios |
+  | `UnidadVenta` | `"Unidad"` |
+  | `UnidadCompra` | `"Unidad"` |
+  | `UnidadesPorCompra` | `1` |
+  | `Activo` | `1` |
+  | `CategoriaId` | propiedad `categoryId` de la respuesta del proveedor |
+
+- Nueva tabla `ProveedorProducto` (historico de costo por proveedor):
+
+  | Campo | Valor a insertar |
+  |-------|------------------|
+  | `ProveedorId` | `Id` de `Proveedores` donde `NumeroDocumento` = numero de documento del proveedor seleccionado en la pantalla de sincronizacion |
+  | `ProductoId` | `Id` del producto insertado/actualizado en `Productos` |
+  | `UltimoCosto` | el ultimo valor insertado en el campo `Precio` del producto (sirve como historico) |
+  | `Fecha` | fecha actual |
+
+- Pantalla de configuracion de la sincronizacion (Angular admin):
+  - una caja de texto para pegar el token Bearer (obligatoria)
+  - un combo para seleccionar el proveedor; internamente se usa su `NumeroDocumento` (obligatorio)
+  - ambos datos son obligatorios para poder ejecutar la sincronizacion del catalogo Coca-Cola / AIC Digital
+  - boton "Sincronizar con AIC Digital" que dispara el proceso con el token pegado y el proveedor elegido
+
 - Pendiente de definir en diseno tecnico (antes de implementar):
   - donde corre el proceso: `.NET`, `Java` o ambos (paridad de backends)
-  - donde vive exactamente el campo de token y el boton de sincronizacion en el Angular admin
-  - logica de alta vs. actualizacion cuando el SKU ya existe en `Productos`
+  - logica de alta vs. actualizacion cuando el `Sku` ya existe en `Productos`
   - manejo de paginacion/`Offset` si una categoria supera `Limit=500` productos
   - manejo de errores si cambia la estructura de las APIs del proveedor (al ser internas pueden cambiar sin aviso)
+
+- Sugerencias / puntos a confirmar antes de implementar (ver detalle en `docs/PROJECT_CONTEXT.md`):
+  - `CategoriaId`: la propiedad `categoryId` del proveedor NO coincide con los `Id` de la tabla local `Categorias`; hay que mapearla o crear/buscar la categoria local antes de guardar, o el FK quedara invalido
+  - `UltimoCosto` guarda el `Precio` (no el `Costo`); confirmar si es intencional o si deberia guardar `Costo`
+  - el redondeo se aplica solo a `Precio`; confirmar si `Costo` tambien debe redondearse
+  - proteger la division contra `units = 0` (evitar division por cero)
+  - `shortDescription` puede exceder los 60 caracteres de `NombreCorto`; truncar si hace falta
+  - validar que `longDescription` no exceda el largo de `Nombre`
+  - el `Stock` no lo entrega el proveedor: los productos sincronizados quedan en `0` y el stock entra por compras (regla actual del sistema)
+  - `ProveedorProducto` deberia tener una PK propia (`Id` identity) y FKs a `Proveedores` y `Productos`; al ser historico, se conservan multiples filas por producto/proveedor en el tiempo
 - Nota: contexto de negocio completo en `docs/PROJECT_CONTEXT.md`
