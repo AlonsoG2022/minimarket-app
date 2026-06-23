@@ -1080,6 +1080,92 @@ END;
 GO
 
 /* =========================================================
+   PROVEEDOR PRODUCTO (historico de costo de compra por proveedor)
+   - se alimenta desde la sincronizacion del catalogo del proveedor
+   - guarda en UltimoCosto el costo (lo que el proveedor nos cobra) en cada corrida
+   ========================================================= */
+IF OBJECT_ID('dbo.ProveedorProducto', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ProveedorProducto
+    (
+        Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_ProveedorProducto PRIMARY KEY,
+        ProveedorId INT NOT NULL,
+        ProductoId INT NOT NULL,
+        UltimoCosto DECIMAL(10,2) NOT NULL CONSTRAINT DF_ProveedorProducto_UltimoCosto DEFAULT (0),
+        Fecha DATETIME2 NOT NULL CONSTRAINT DF_ProveedorProducto_Fecha DEFAULT (SYSDATETIME())
+    );
+END;
+GO
+
+IF COL_LENGTH('dbo.ProveedorProducto', 'ProveedorId') IS NULL
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto ADD ProveedorId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.ProveedorProducto', 'ProductoId') IS NULL
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto ADD ProductoId INT NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.ProveedorProducto', 'UltimoCosto') IS NULL
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto ADD UltimoCosto DECIMAL(10,2) NULL;
+END;
+GO
+
+IF COL_LENGTH('dbo.ProveedorProducto', 'Fecha') IS NULL
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto ADD Fecha DATETIME2 NULL;
+END;
+GO
+
+UPDATE dbo.ProveedorProducto
+SET
+    UltimoCosto = ISNULL(UltimoCosto, 0),
+    Fecha = ISNULL(Fecha, SYSDATETIME())
+WHERE UltimoCosto IS NULL OR Fecha IS NULL;
+GO
+
+ALTER TABLE dbo.ProveedorProducto ALTER COLUMN ProveedorId INT NOT NULL;
+ALTER TABLE dbo.ProveedorProducto ALTER COLUMN ProductoId INT NOT NULL;
+ALTER TABLE dbo.ProveedorProducto ALTER COLUMN UltimoCosto DECIMAL(10,2) NOT NULL;
+ALTER TABLE dbo.ProveedorProducto ALTER COLUMN Fecha DATETIME2 NOT NULL;
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'ProveedorProducto', 'UltimoCosto', 'DF_ProveedorProducto_UltimoCosto', '(0)';
+GO
+
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'ProveedorProducto', 'Fecha', 'DF_ProveedorProducto_Fecha', '(SYSDATETIME())';
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ProveedorProducto_Proveedores')
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto
+    ADD CONSTRAINT FK_ProveedorProducto_Proveedores FOREIGN KEY (ProveedorId) REFERENCES dbo.Proveedores(Id);
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_ProveedorProducto_Productos')
+BEGIN
+    ALTER TABLE dbo.ProveedorProducto
+    ADD CONSTRAINT FK_ProveedorProducto_Productos FOREIGN KEY (ProductoId) REFERENCES dbo.Productos(Id);
+END;
+GO
+
+IF NOT EXISTS
+(
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_ProveedorProducto_Proveedor_Producto'
+      AND object_id = OBJECT_ID('dbo.ProveedorProducto')
+)
+BEGIN
+    CREATE INDEX IX_ProveedorProducto_Proveedor_Producto ON dbo.ProveedorProducto(ProveedorId, ProductoId);
+END;
+GO
+
+/* =========================================================
    VENTAS
    ========================================================= */
 IF OBJECT_ID('dbo.Ventas', 'U') IS NULL

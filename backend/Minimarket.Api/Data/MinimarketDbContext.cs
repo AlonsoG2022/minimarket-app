@@ -17,6 +17,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<PurchaseDetail> PurchaseDetails => Set<PurchaseDetail>();
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<SupplierProduct> SupplierProducts => Set<SupplierProduct>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -223,6 +224,24 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(x => x.Product)
                 .WithMany(x => x.PurchaseDetails)
+                .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<SupplierProduct>(entity =>
+        {
+            entity.ToTable("ProveedorProducto");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.SupplierId).HasColumnName("ProveedorId");
+            entity.Property(x => x.ProductId).HasColumnName("ProductoId");
+            entity.Property(x => x.LastCost).HasColumnName("UltimoCosto").HasColumnType("decimal(10,2)");
+            entity.Property(x => x.Date).HasColumnName("Fecha");
+            entity.HasOne(x => x.Supplier)
+                .WithMany()
+                .HasForeignKey(x => x.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(x => x.Product)
+                .WithMany()
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

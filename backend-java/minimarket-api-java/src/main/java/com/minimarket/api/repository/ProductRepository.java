@@ -24,6 +24,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("select p from Product p left join fetch p.category where p.purchaseBarcode = :barcode")
     Optional<Product> findWithCategoryByPurchaseBarcode(@Param("barcode") String barcode);
 
+    @Query("select p from Product p left join fetch p.category where p.sku = :sku")
+    Optional<Product> findWithCategoryBySku(@Param("sku") String sku);
+
     List<Product> findBySkuStartingWith(String prefix);
 
     boolean existsBySkuIgnoreCase(String sku);

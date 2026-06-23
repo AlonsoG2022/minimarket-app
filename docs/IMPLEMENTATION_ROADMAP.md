@@ -328,7 +328,15 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 ## 10. Sincronizacion de catalogo de proveedores
 
 ### Sincronizacion con proveedor Coca-Cola (AIC Digital / Arca Continental)
-- Estado: `Pendiente`
+- Estado: `Implementado (primera version, pendiente de validar con token/JSON reales)`
+- Implementacion:
+  - tabla `ProveedorProducto` en `db/minimarket.safe-upgrade.sql`
+  - backend `.NET`: `SupplierSyncService` + `SupplierSyncController` (POST `api/supplier-sync`)
+  - backend `Java`: `SupplierSyncService` + `SupplierSyncController` (POST `/api/supplier-sync`), en paridad
+  - Angular: seccion "Sincronizar catalogo del proveedor" en `/configuracion` (token + combo proveedor + vista previa)
+  - el parseo del JSON del proveedor es tolerante (busca el array de datos y los campos por nombre,
+    ignorando mayusculas); si la respuesta real difiere, ajustar las listas de candidatos en el servicio
+  - pendiente de validar con un token y respuestas JSON reales del proveedor
 - Contexto:
   - ~40% del catalogo actual se compra a este proveedor y la proporcion seguira creciendo
   - el proveedor confirmo que no tiene API publica ni catalogo en Excel; los datos solo estan en su portal web

@@ -269,6 +269,23 @@ export interface SaveCompany {
   theme: string;
 }
 
+export interface SupplierSyncRequest {
+  token: string;
+  supplierDocumentNumber: string;
+  previewOnly: boolean;
+}
+
+export interface SupplierSyncResult {
+  previewOnly: boolean;
+  supplierName: string;
+  categoriesProcessed: number;
+  categoriesCreated: number;
+  productsProcessed: number;
+  productsCreated: number;
+  productsUpdated: number;
+  warnings: string[];
+}
+
 export interface CashMovement {
   id: number;
   movementDate: string;

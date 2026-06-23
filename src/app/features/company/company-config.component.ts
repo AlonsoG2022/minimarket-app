@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SaveCompany } from '../../core/models/minimarket.models';
+import { SaveCompany, Supplier, SupplierSyncResult } from '../../core/models/minimarket.models';
 import { CompanyService } from '../../core/services/company.service';
+import { SuppliersService } from '../../core/services/suppliers.service';
+import { SupplierSyncService } from '../../core/services/supplier-sync.service';
 import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
@@ -16,6 +18,8 @@ export class CompanyConfigComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly companyService = inject(CompanyService);
+  private readonly suppliersService = inject(SuppliersService);
+  private readonly supplierSyncService = inject(SupplierSyncService);
   private readonly themeService = inject(ThemeService);
 
   readonly themes = this.themeService.themes;
@@ -41,6 +45,18 @@ export class CompanyConfigComponent implements OnInit {
   message = '';
   error = '';
 
+  // Sincronizacion del catalogo del proveedor (Coca-Cola / AIC Digital).
+  readonly syncForm = this.fb.nonNullable.group({
+    supplierDocumentNumber: ['', Validators.required],
+    token: ['', Validators.required]
+  });
+
+  suppliers: Supplier[] = [];
+  syncRunning = false;
+  syncMessage = '';
+  syncError = '';
+  syncResult: SupplierSyncResult | null = null;
+
   ngOnInit(): void {
     this.companyService.get().subscribe({
       next: (company) => {
@@ -55,8 +71,59 @@ export class CompanyConfigComponent implements OnInit {
       }
     });
 
+    // Solo se pueden sincronizar proveedores con numero de documento registrado.
+    this.suppliersService.getAll().subscribe({
+      next: (suppliers) => {
+        this.suppliers = suppliers.filter((s) => !!s.documentNumber && s.isActive);
+        this.cdr.detectChanges();
+      }
+    });
+
     // Vista previa en vivo: aplica el tema apenas se cambia el combo.
     this.form.controls.theme.valueChanges.subscribe((theme) => this.themeService.applyTheme(theme));
+  }
+
+  previewSync(): void {
+    this.runSync(true);
+  }
+
+  runSyncNow(): void {
+    this.runSync(false);
+  }
+
+  private runSync(previewOnly: boolean): void {
+    if (this.syncForm.invalid) {
+      this.syncForm.markAllAsTouched();
+      return;
+    }
+
+    this.syncRunning = true;
+    this.syncMessage = '';
+    this.syncError = '';
+    this.syncResult = null;
+
+    const value = this.syncForm.getRawValue();
+    this.supplierSyncService
+      .sync({
+        supplierDocumentNumber: value.supplierDocumentNumber,
+        token: value.token.trim(),
+        previewOnly
+      })
+      .subscribe({
+        next: (result) => {
+          this.syncRunning = false;
+          this.syncResult = result;
+          this.syncMessage = previewOnly
+            ? 'Vista previa lista. Revisa el resumen y, si esta bien, ejecuta la sincronizacion.'
+            : 'Sincronizacion completada.';
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.syncRunning = false;
+          this.syncError = err?.error?.message ?? 'No se pudo completar la sincronizacion.';
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   save(): void {

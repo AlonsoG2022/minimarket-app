@@ -6,6 +6,7 @@ public interface ISupplierRepository
 {
     Task<List<Supplier>> GetAllAsync();
     Task<Supplier?> GetByIdAsync(int id);
+    Task<Supplier?> GetByDocumentNumberAsync(string documentNumber);
     Task AddAsync(Supplier supplier);
     void Update(Supplier supplier);
     void Remove(Supplier supplier);

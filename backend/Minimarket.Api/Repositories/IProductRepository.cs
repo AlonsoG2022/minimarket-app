@@ -8,6 +8,7 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(int id);
     Task<Product?> GetByBarcodeAsync(string barcode);
     Task<Product?> GetByPurchaseBarcodeAsync(string barcode);
+    Task<Product?> GetBySkuAsync(string sku);
     Task<bool> ExistsBySkuAsync(string sku, int? excludingId = null);
     Task<bool> ExistsByBarcodeAsync(string barcode, int? excludingId = null);
     Task<bool> ExistsByPurchaseBarcodeAsync(string barcode, int? excludingId = null);

@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<MinimarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MinimarketConnection")));
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<ICashSessionRepository, CashSessionRepository>();
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 builder.Services.AddScoped<IPrintJobRepository, PrintJobRepository>();
 builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+builder.Services.AddScoped<ISupplierProductRepository, SupplierProductRepository>();
 
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -43,6 +45,7 @@ builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<IPrintJobService, PrintJobService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ISupplierSyncService, SupplierSyncService>();
 builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();
 
 var app = builder.Build();

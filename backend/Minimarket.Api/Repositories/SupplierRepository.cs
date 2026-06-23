@@ -15,6 +15,11 @@ public class SupplierRepository(MinimarketDbContext context) : ISupplierReposito
     public Task<Supplier?> GetByIdAsync(int id) =>
         context.Suppliers.FirstOrDefaultAsync(x => x.Id == id);
 
+    public Task<Supplier?> GetByDocumentNumberAsync(string documentNumber) =>
+        context.Suppliers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.DocumentNumber == documentNumber);
+
     public Task AddAsync(Supplier supplier) => context.Suppliers.AddAsync(supplier).AsTask();
 
     public void Update(Supplier supplier) => context.Suppliers.Update(supplier);

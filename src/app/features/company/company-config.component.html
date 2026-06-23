@@ -156,4 +156,91 @@
       </form>
     }
   </section>
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Sincronizar catalogo del proveedor</h2>
+        <p class="section-copy">
+          Trae costo y precio sugerido del portal del proveedor (Coca-Cola / AIC Digital).
+          Pega el token de tu sesion del portal y elige el proveedor. Usa primero "Vista previa".
+        </p>
+      </div>
+    </div>
+
+    <form [formGroup]="syncForm" (ngSubmit)="runSyncNow()" autocomplete="off">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="syncSupplier">Proveedor <span class="required">*</span></label>
+          <select id="syncSupplier" formControlName="supplierDocumentNumber">
+            <option value="">Selecciona un proveedor...</option>
+            @for (supplier of suppliers; track supplier.id) {
+              <option [value]="supplier.documentNumber">{{ supplier.name }} ({{ supplier.documentNumber }})</option>
+            }
+          </select>
+          @if (syncForm.get('supplierDocumentNumber')?.invalid && syncForm.get('supplierDocumentNumber')?.touched) {
+            <small class="field-error">Selecciona el proveedor a sincronizar.</small>
+          }
+          @if (suppliers.length === 0) {
+            <small class="field-hint">No hay proveedores con numero de documento registrado.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="syncToken">Token del proveedor <span class="required">*</span></label>
+          <textarea id="syncToken" rows="3" formControlName="token"
+            placeholder="Pega aqui el token Bearer copiado del portal del proveedor"></textarea>
+          @if (syncForm.get('token')?.invalid && syncForm.get('token')?.touched) {
+            <small class="field-error">El token es obligatorio.</small>
+          }
+          <small class="field-hint">
+            El token se obtiene del DevTools de tu sesion activa en el portal del proveedor. Si esta vencido,
+            el sistema te avisara para que pegues uno nuevo.
+          </small>
+        </div>
+      </div>
+
+      @if (syncMessage) {
+        <p class="message">{{ syncMessage }}</p>
+      }
+
+      @if (syncError) {
+        <p class="message error">{{ syncError }}</p>
+      }
+
+      @if (syncResult) {
+        <div class="sync-summary">
+          <p class="section-copy">
+            <strong>{{ syncResult.previewOnly ? 'Vista previa' : 'Resultado' }}</strong>
+            — Proveedor: {{ syncResult.supplierName }}
+          </p>
+          <ul>
+            <li>Categorias procesadas: {{ syncResult.categoriesProcessed }} ({{ syncResult.categoriesCreated }} nuevas)</li>
+            <li>Productos procesados: {{ syncResult.productsProcessed }}</li>
+            <li>Se {{ syncResult.previewOnly ? 'crearian' : 'crearon' }}: {{ syncResult.productsCreated }}</li>
+            <li>Se {{ syncResult.previewOnly ? 'actualizarian' : 'actualizaron' }}: {{ syncResult.productsUpdated }}</li>
+          </ul>
+          @if (syncResult.warnings.length > 0) {
+            <details>
+              <summary>Avisos ({{ syncResult.warnings.length }})</summary>
+              <ul>
+                @for (warning of syncResult.warnings; track warning) {
+                  <li>{{ warning }}</li>
+                }
+              </ul>
+            </details>
+          }
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="button" [disabled]="syncRunning" (click)="previewSync()">
+          {{ syncRunning ? 'Procesando...' : 'Vista previa' }}
+        </button>
+        <button type="submit" [disabled]="syncRunning">
+          {{ syncRunning ? 'Procesando...' : 'Sincronizar productos' }}
+        </button>
+      </div>
+    </form>
+  </section>
 </section>

@@ -197,7 +197,13 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 
 ---
 
-## Sincronizacion de catalogo de proveedor (idea registrada, pendiente de implementar)
+## Sincronizacion de catalogo de proveedor (implementado, primera version)
+
+> Estado: implementado en las 4 capas (SQL, .NET, Java, Angular). Endpoint `POST /api/supplier-sync`
+> (token + numero de documento del proveedor + previewOnly). Pantalla en `/configuracion`.
+> Falta validar con un token y respuestas JSON reales del proveedor; el parseo del JSON es tolerante
+> a los nombres de las propiedades por si la estructura real difiere de lo investigado.
+
 
 ### Necesidad
 - se esta armando en Excel el catalogo de productos con codigo de barras, costo y precio sugerido

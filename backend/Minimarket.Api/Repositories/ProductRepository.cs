@@ -28,6 +28,12 @@ public class ProductRepository(MinimarketDbContext context) : IProductRepository
             .Include(x => x.Category)
             .FirstOrDefaultAsync(x => x.PurchaseBarcode == barcode);
 
+    // Devuelve el producto rastreado (sin AsNoTracking) para poder actualizarlo en la sincronizacion.
+    public Task<Product?> GetBySkuAsync(string sku) =>
+        context.Products
+            .Include(x => x.Category)
+            .FirstOrDefaultAsync(x => x.Sku == sku);
+
     public Task<bool> ExistsBySkuAsync(string sku, int? excludingId = null) =>
         context.Products.AnyAsync(x => x.Sku == sku && (!excludingId.HasValue || x.Id != excludingId.Value));
 
