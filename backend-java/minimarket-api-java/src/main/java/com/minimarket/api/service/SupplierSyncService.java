@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 // Sincroniza el catalogo del proveedor (Coca-Cola / AIC Digital - Arca Continental) hacia Productos.
 // Reglas definidas en docs/PROJECT_CONTEXT.md (seccion de sincronizacion de catalogo de proveedor).
@@ -166,7 +167,9 @@ public class SupplierSyncService {
                     continue;
                 }
 
-                var shortName = truncate(providerProduct.shortDescription(), 60);
+                // El shortDescription del proveedor viene largo; armamos un nombre corto a partir del
+                // formato del proveedor ("Nombre, empaque volumen, N Unidades").
+                var shortName = buildShortName(name);
                 var sku = providerProduct.sku() == null || providerProduct.sku().isBlank()
                     ? null
                     : truncate(providerProduct.sku(), 30);
@@ -358,6 +361,29 @@ public class SupplierSyncService {
     private static String truncate(String value, int maxLength) {
         var trimmed = value == null ? "" : value.trim();
         return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
+    private static final Pattern VOLUME = Pattern.compile("\\d+([.,]\\d+)?\\s*(ml|lt|l|kg|g)\\b", Pattern.CASE_INSENSITIVE);
+
+    // Nombre corto a partir del formato del proveedor: toma el texto antes de la primera coma
+    // (el nombre del producto) y le agrega el volumen (ml/L/g/kg) si no estaba ya incluido.
+    // Asi se descartan el empaque ("PET", "Lata", "Vidrio...") y la cola "N Unidades".
+    private static String buildShortName(String name) {
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+
+        var firstSegment = name.split(",")[0].trim().replaceAll("\\s+", " ");
+        var matcher = VOLUME.matcher(name);
+        var volume = matcher.find() ? matcher.group().replaceAll("\\s+", "") : "";
+
+        var result = firstSegment;
+        if (!volume.isEmpty() && !firstSegment.replace(" ", "").toLowerCase().contains(volume.toLowerCase())) {
+            result = firstSegment + " " + volume;
+        }
+
+        result = result.replaceAll("\\s+", " ").trim();
+        return result.length() > 60 ? result.substring(0, 60) : result;
     }
 
     private static String orEmpty(String value) {

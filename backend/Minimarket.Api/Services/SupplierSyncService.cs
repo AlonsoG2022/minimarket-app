@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Minimarket.Api.DTOs;
 using Minimarket.Api.Models;
 using Minimarket.Api.Repositories;
@@ -144,7 +145,9 @@ public class SupplierSyncService(
                     continue;
                 }
 
-                var shortName = Truncate(providerProduct.ShortDescription, 60);
+                // El shortDescription del proveedor viene largo; armamos un nombre corto a partir del
+                // formato del proveedor ("Nombre, empaque volumen, N Unidades").
+                var shortName = BuildShortName(name);
                 var sku = string.IsNullOrWhiteSpace(providerProduct.Sku) ? null : Truncate(providerProduct.Sku, 30);
 
                 var existing = sku is null ? null : await productRepository.GetBySkuAsync(sku);
@@ -364,6 +367,34 @@ public class SupplierSyncService(
     {
         var trimmed = value?.Trim() ?? string.Empty;
         return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
+    }
+
+    private static readonly Regex VolumeRegex =
+        new(@"\d+([.,]\d+)?\s*(ml|lt|l|kg|g)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    // Nombre corto a partir del formato del proveedor: toma el texto antes de la primera coma
+    // (el nombre del producto) y le agrega el volumen (ml/L/g/kg) si no estaba ya incluido.
+    // Asi se descartan el empaque ("PET", "Lata", "Vidrio...") y la cola "N Unidades".
+    private static string BuildShortName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return string.Empty;
+        }
+
+        var firstSegment = Regex.Replace(name.Split(',')[0].Trim(), @"\s+", " ");
+        var match = VolumeRegex.Match(name);
+        var volume = match.Success ? Regex.Replace(match.Value, @"\s+", string.Empty) : string.Empty;
+
+        var result = firstSegment;
+        if (volume.Length > 0 &&
+            !firstSegment.Replace(" ", string.Empty).Contains(volume, StringComparison.OrdinalIgnoreCase))
+        {
+            result = $"{firstSegment} {volume}";
+        }
+
+        result = Regex.Replace(result, @"\s+", " ").Trim();
+        return result.Length > 60 ? result[..60] : result;
     }
 
     private static string Describe(ProviderProduct product) =>
