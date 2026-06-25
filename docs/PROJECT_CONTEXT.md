@@ -94,6 +94,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - si una fila trae una categoria que no existe, el backend la crea automaticamente
 - exportacion de productos en Excel con dos hojas: `Productos` y `Categorias`
   (la hoja de categorias lista las existentes al momento de exportar)
+- la lista de productos muestra solo los **activos cuya categoria tambien este activa**;
+  un checkbox "Ver ocultos (inactivos)" permite mostrarlos todos
+- las categorias se pueden **activar/desactivar** desde la pantalla de Categorias; al desactivar una,
+  sus productos (actuales y futuros) dejan de mostrarse en la lista sin borrarse
 
 ### Compras
 - compras por proveedor

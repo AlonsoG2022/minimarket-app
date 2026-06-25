@@ -47,6 +47,7 @@
               <th>Nombre</th>
               <th>Descripcion</th>
               <th>Estado</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -58,6 +59,11 @@
                 <td data-label="Descripcion">{{ category.description || 'Sin descripcion' }}</td>
                 <td data-label="Estado">
                   <span class="pill">{{ category.isActive ? 'Activa' : 'Inactiva' }}</span>
+                </td>
+                <td data-label="Acciones" class="actions-cell">
+                  <button type="button" class="secondary" (click)="toggleActive(category)">
+                    {{ category.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
                 </td>
               </tr>
             }

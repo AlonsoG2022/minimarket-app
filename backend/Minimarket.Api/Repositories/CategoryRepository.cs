@@ -6,10 +6,10 @@ namespace Minimarket.Api.Repositories;
 
 public class CategoryRepository(MinimarketDbContext context) : ICategoryRepository
 {
-    public Task<List<Category>> GetAllAsync() =>
+    public Task<List<Category>> GetAllAsync(bool includeInactive) =>
         context.Categories
             .AsNoTracking()
-            .Where(x => x.IsActive)
+            .Where(x => includeInactive || x.IsActive)
             .OrderBy(x => x.Name)
             .ToListAsync();
 
@@ -23,6 +23,8 @@ public class CategoryRepository(MinimarketDbContext context) : ICategoryReposito
             .FirstOrDefaultAsync(x => x.Name.ToUpper() == name.ToUpper());
 
     public Task AddAsync(Category category) => context.Categories.AddAsync(category).AsTask();
+
+    public void Update(Category category) => context.Categories.Update(category);
 
     public Task<int> SaveChangesAsync() => context.SaveChangesAsync();
 }

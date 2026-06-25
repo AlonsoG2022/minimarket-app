@@ -9,8 +9,8 @@ namespace Minimarket.Api.Controllers;
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<CategoryDto>>> GetAll()
-        => Ok(await categoryService.GetAllAsync());
+    public async Task<ActionResult<IReadOnlyCollection<CategoryDto>>> GetAll([FromQuery] bool includeInactive = false)
+        => Ok(await categoryService.GetAllAsync(includeInactive));
 
     [HttpPost]
     public async Task<ActionResult<CategoryDto>> Create([FromBody] SaveCategoryDto dto)
@@ -22,5 +22,19 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         }
 
         return CreatedAtAction(nameof(GetAll), new { id = result.Category!.Id }, result.Category);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<CategoryDto>> Update(int id, [FromBody] SaveCategoryDto dto)
+    {
+        var result = await categoryService.UpdateAsync(id, dto);
+        if (!result.Success)
+        {
+            return result.Error == "Categoria no encontrada."
+                ? NotFound(new { message = result.Error })
+                : BadRequest(new { message = result.Error });
+        }
+
+        return Ok(result.Category);
     }
 }

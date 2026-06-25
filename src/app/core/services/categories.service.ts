@@ -19,8 +19,19 @@ export class CategoriesService {
     return this.categories$;
   }
 
+  // Incluye categorias inactivas (para la pantalla de gestion de categorias). No se cachea.
+  getAllIncludingInactive(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${API_BASE_URL}/categories?includeInactive=true`);
+  }
+
   create(payload: SaveCategory): Observable<Category> {
     return this.http.post<Category>(`${API_BASE_URL}/categories`, payload).pipe(
+      tap(() => this.invalidateCache())
+    );
+  }
+
+  update(id: number, payload: SaveCategory): Observable<Category> {
+    return this.http.put<Category>(`${API_BASE_URL}/categories/${id}`, payload).pipe(
       tap(() => this.invalidateCache())
     );
   }

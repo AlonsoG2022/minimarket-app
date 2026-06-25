@@ -48,6 +48,7 @@ export class ProductListComponent implements OnInit {
   products: Product[] = [];
   categories: Category[] = [];
   searchTerm = '';
+  showInactive = false;
   formVisible = false;
   isEditing = false;
   loadingProducts = true;
@@ -57,8 +58,19 @@ export class ProductListComponent implements OnInit {
   error = '';
   importErrors: ProductImportError[] = [];
 
+  // Visibles = activos cuya categoria tambien esta activa. Con "ver ocultos" se muestran todos.
+  // Las categorias cargadas aqui son solo las activas, por eso una categoria inactiva oculta sus productos.
+  get visibleProducts(): Product[] {
+    if (this.showInactive) {
+      return this.products;
+    }
+
+    const activeCategoryIds = new Set(this.categories.map((category) => category.id));
+    return this.products.filter((product) => product.isActive && activeCategoryIds.has(product.categoryId));
+  }
+
   get lowStockProducts(): Product[] {
-    return this.products
+    return this.visibleProducts
       .filter((product) => product.stock <= this.minimumStock)
       .sort((left, right) => left.stock - right.stock || left.name.localeCompare(right.name, 'es', { sensitivity: 'base' }));
   }
@@ -66,10 +78,10 @@ export class ProductListComponent implements OnInit {
   get filteredProducts(): Product[] {
     const term = this.searchTerm.trim().toLowerCase();
     if (!term) {
-      return this.products;
+      return this.visibleProducts;
     }
 
-    return this.products.filter((product) =>
+    return this.visibleProducts.filter((product) =>
       product.name.toLowerCase().includes(term) ||
       product.sku.toLowerCase().includes(term) ||
       product.categoryName.toLowerCase().includes(term) ||

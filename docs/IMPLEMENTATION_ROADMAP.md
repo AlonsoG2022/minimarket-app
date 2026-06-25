@@ -39,6 +39,8 @@ Estados sugeridos:
   - aviso de stock minimo compacto (conteo + productos mas bajos)
   - nombre corto por producto (`NombreCorto`) para el ticket; editable en el formulario,
     con sugerencia en vivo y autogeneracion en el backend si llega vacio (formulario e import)
+  - categorias activables/desactivables (`PUT /api/categories/{id}`, `GET ?includeInactive=true`);
+    la lista de productos oculta los inactivos y los de categorias inactivas, con checkbox "Ver ocultos"
 
 ### Compras
 - Estado: `Implementado`

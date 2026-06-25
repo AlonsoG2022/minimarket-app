@@ -5,11 +5,15 @@
 
     <div class="toolbar">
       <div class="toolbar-actions">
-        <span class="pill">Mostrando {{ filteredProducts.length }} de {{ products.length }}</span>
+        <span class="pill">Mostrando {{ filteredProducts.length }} de {{ visibleProducts.length }}</span>
         @if (searchTerm) {
           <span class="pill">Filtro: {{ searchTerm }}</span>
           <button type="button" class="secondary" (click)="clearSearch()">Quitar filtro</button>
         }
+        <label class="show-inactive">
+          <input type="checkbox" [(ngModel)]="showInactive" [ngModelOptions]="{ standalone: true }">
+          Ver ocultos (inactivos)
+        </label>
         <input #importInput type="file" accept=".xlsx,.xls" hidden (change)="importFromFile($event)">
         <button type="button" class="secondary" (click)="downloadImportTemplate()">Descargar plantilla</button>
         <button type="button" class="secondary" (click)="exportProducts()" [disabled]="loadingProducts || !products.length">

@@ -31,9 +31,9 @@ export class CategoryListComponent implements OnInit {
     this.loadCategories();
   }
 
-  loadCategories(forceRefresh = false): void {
+  loadCategories(): void {
     this.loading = true;
-    this.categoriesService.getAll(forceRefresh).subscribe({
+    this.categoriesService.getAllIncludingInactive().subscribe({
       next: (categories) => {
         this.categories = categories;
         this.loading = false;
@@ -46,6 +46,30 @@ export class CategoryListComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  toggleActive(category: Category): void {
+    this.categoriesService
+      .update(category.id, {
+        name: category.name,
+        description: category.description,
+        isActive: !category.isActive
+      })
+      .subscribe({
+        next: () => {
+          this.message = category.isActive
+            ? `Categoria "${category.name}" desactivada. Sus productos ya no se muestran.`
+            : `Categoria "${category.name}" activada.`;
+          this.error = '';
+          this.loadCategories();
+          this.cdr.detectChanges();
+        },
+        error: (response) => {
+          this.message = '';
+          this.error = response.error?.message ?? 'No se pudo cambiar el estado de la categoria.';
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   save(): void {
@@ -70,7 +94,7 @@ export class CategoryListComponent implements OnInit {
           description: '',
           isActive: true
         });
-        this.loadCategories(true);
+        this.loadCategories();
         this.cdr.detectChanges();
       },
       error: (response) => {
