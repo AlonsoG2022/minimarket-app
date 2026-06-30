@@ -41,6 +41,7 @@ public record ProductImportRowDto(
     string Name,
     string? ShortName,
     decimal Price,
+    decimal? Cost,
     string CategoryName,
     string? Barcode,
     string? Description,

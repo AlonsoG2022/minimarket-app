@@ -48,6 +48,7 @@ export interface ProductImportRow {
   name: string;
   shortName?: string | null;
   price: number;
+  cost?: number | null;
   categoryName: string;
   barcode?: string | null;
   description?: string | null;

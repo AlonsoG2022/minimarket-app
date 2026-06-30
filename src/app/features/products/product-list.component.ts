@@ -147,8 +147,10 @@ export class ProductListComponent implements OnInit {
       }
     });
 
+    // Se refresca tambien la lista de categorias: al importar/crear se pueden auto-crear categorias,
+    // y la visibilidad de productos depende de las categorias activas conocidas por el front.
     this.loadingCategories = true;
-    this.categoriesService.getAll().subscribe({
+    this.categoriesService.getAll(forceRefreshProducts).subscribe({
       next: (categories) => {
         this.categories = categories;
         this.loadingCategories = false;
@@ -302,7 +304,7 @@ export class ProductListComponent implements OnInit {
 
   downloadImportTemplate(): void {
     const productsWorksheet = utils.aoa_to_sheet([
-      ['NombreProducto', 'NombreCorto', 'Precio', 'Categoria', 'CodigoBarras', 'UnidadVenta', 'UnidadCompra', 'UnidadesPorCompra', 'Stock', 'FechaCaducidad']
+      ['NombreProducto', 'NombreCorto', 'Precio', 'Costo', 'Categoria', 'CodigoBarras', 'UnidadVenta', 'UnidadCompra', 'UnidadesPorCompra', 'Stock', 'FechaCaducidad']
     ]);
     const categoriesWorksheet = utils.aoa_to_sheet([
       ['Categoria'],
@@ -331,6 +333,7 @@ export class ProductListComponent implements OnInit {
         NombreProducto: product.name,
         NombreCorto: product.shortName ?? '',
         Precio: product.price,
+        Costo: product.cost,
         Categoria: product.categoryName,
         CodigoBarras: product.barcode ?? product.purchaseBarcode ?? '',
         UnidadVenta: product.salesUnitName,
@@ -435,6 +438,7 @@ export class ProductListComponent implements OnInit {
         const shortName = this.readCell(row, ['NombreCorto', 'Nombre Corto', 'nombrecorto']);
         const categoryName = this.readCell(row, ['Categoria', 'Categoría', 'categoria']);
         const priceText = this.readCell(row, ['Precio', 'precio']);
+        const costText = this.readCell(row, ['Costo', 'costo']);
         const barcode = this.readCell(row, ['CodigoBarras', 'Codigo Barras', 'codigoBarras', 'codigobarras']);
         const salesUnitName = this.readCell(row, ['UnidadVenta', 'Unidad Venta', 'unidadventa']);
         const purchaseUnitName = this.readCell(row, ['UnidadCompra', 'Unidad Compra', 'unidadcompra']);
@@ -442,6 +446,7 @@ export class ProductListComponent implements OnInit {
         const stockText = this.readCell(row, ['Stock', 'stock']);
         const expirationDateText = this.readCell(row, ['FechaCaducidad', 'Fecha Caducidad', 'fechacaducidad', 'Caducidad']);
         const normalizedPrice = priceText.replace(',', '.').trim();
+        const normalizedCost = costText.replace(',', '.').trim();
         const normalizedUnitsPerPurchase = unitsPerPurchaseText.replace(',', '.').trim();
         const normalizedStock = stockText.replace(',', '.').trim();
 
@@ -453,6 +458,7 @@ export class ProductListComponent implements OnInit {
           barcode: barcode.trim() || null,
           description: null,
           price: Number(normalizedPrice),
+          cost: normalizedCost && Number.isFinite(Number(normalizedCost)) ? Number(normalizedCost) : null,
           salesUnitName: salesUnitName.trim() || 'unidad',
           purchaseUnitName: purchaseUnitName.trim() || 'unidad',
           unitsPerPurchaseUnit: normalizedUnitsPerPurchase ? Number(normalizedUnitsPerPurchase) : 1,

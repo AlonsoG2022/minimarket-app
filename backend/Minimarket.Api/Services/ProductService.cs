@@ -217,7 +217,7 @@ public class ProductService(IProductRepository productRepository, ICategoryRepos
                 PurchaseBarcode = unifiedBarcode,
                 Description = NormalizeOptional(row.Description),
                 Price = row.Price,
-                Cost = 0m,
+                Cost = row.Cost is { } cost && cost >= 0 ? cost : 0m,
                 Stock = row.Stock,
                 MinimumStock = minimumStock,
                 ExpirationDate = expirationDate,

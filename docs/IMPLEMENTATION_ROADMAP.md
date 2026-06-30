@@ -31,7 +31,7 @@ Estados sugeridos:
 - Estado: `Implementado`
 - Notas:
   - barcode unico compra/venta
-  - importacion y exportacion Excel (con columna `NombreCorto`)
+  - importacion y exportacion Excel (con columnas `NombreCorto` y `Costo`)
   - al importar, las categorias que no existen se crean automaticamente
   - el Excel exportado trae dos hojas: `Productos` y `Categorias`
   - fecha de caducidad

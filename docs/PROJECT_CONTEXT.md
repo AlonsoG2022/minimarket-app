@@ -90,9 +90,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - nombre corto por producto (`NombreCorto`) que se muestra en el ticket en vez del nombre largo
   - editable en el formulario de producto; si se deja vacio, el backend lo genera del nombre largo
   - en el formulario hay sugerencia en vivo mientras se escribe el nombre (se puede editar)
-- importacion masiva desde Excel (incluye columna `NombreCorto`)
+- importacion masiva desde Excel (incluye columnas `NombreCorto` y `Costo`)
   - si una fila trae una categoria que no existe, el backend la crea automaticamente
-- exportacion de productos en Excel con dos hojas: `Productos` y `Categorias`
+  - el `Costo` del Excel se guarda en el producto (si viene vacio queda en 0)
+- exportacion de productos en Excel con dos hojas: `Productos` y `Categorias` (incluye columna `Costo`)
   (la hoja de categorias lista las existentes al momento de exportar)
 - la lista de productos muestra solo los **activos cuya categoria tambien este activa**;
   un checkbox "Ver ocultos (inactivos)" permite mostrarlos todos

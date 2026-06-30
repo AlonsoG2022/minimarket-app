@@ -7,6 +7,7 @@ public record ProductImportRowDto(
     String name,
     String shortName,
     BigDecimal price,
+    BigDecimal cost,
     String categoryName,
     String barcode,
     String description,

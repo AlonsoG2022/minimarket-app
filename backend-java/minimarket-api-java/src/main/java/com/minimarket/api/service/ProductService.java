@@ -229,7 +229,7 @@ public class ProductService {
             product.setPurchaseBarcode(resolvedBarcode.data());
             product.setDescription(normalizeOptional(row.description()));
             product.setPrice(row.price());
-            product.setCost(java.math.BigDecimal.ZERO);
+            product.setCost(row.cost() != null && row.cost().signum() >= 0 ? row.cost() : java.math.BigDecimal.ZERO);
             product.setStock(stock);
             product.setMinimumStock(minimumStock);
             product.setExpirationDate(parsedExpirationDate.data());
