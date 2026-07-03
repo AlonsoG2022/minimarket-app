@@ -12,6 +12,7 @@ import { ReportsComponent } from './features/reports/reports.component';
 import { SalesFormComponent } from './features/sales/sales-form.component';
 import { CompanyConfigComponent } from './features/company/company-config.component';
 import { SupplierListComponent } from './features/suppliers/supplier-list.component';
+import { ReceiptUploadComponent } from './features/receipts/receipt-upload.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
@@ -67,6 +68,12 @@ export const routes: Routes = [
   {
     path: 'configuracion',
     component: CompanyConfigComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'boletas',
+    component: ReceiptUploadComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['admin'] }
   },

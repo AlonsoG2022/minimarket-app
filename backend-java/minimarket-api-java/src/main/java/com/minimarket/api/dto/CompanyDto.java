@@ -14,5 +14,6 @@ public record CompanyDto(
     String footerLine2,
     Boolean showTicketPreview,
     Integer minimumStock,
-    String theme
+    String theme,
+    Boolean hasAiReceiptKey
 ) {}

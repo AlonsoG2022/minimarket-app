@@ -252,6 +252,7 @@ export interface Company {
   showTicketPreview: boolean;
   minimumStock: number;
   theme: string;
+  hasAiReceiptKey: boolean;
 }
 
 export interface SaveCompany {
@@ -268,6 +269,8 @@ export interface SaveCompany {
   showTicketPreview: boolean;
   minimumStock: number;
   theme: string;
+  // null/vacio = no cambiar; con valor = guardar/reemplazar la clave de la IA.
+  aiReceiptKey?: string | null;
 }
 
 export interface SupplierSyncRequest {
@@ -284,6 +287,55 @@ export interface SupplierSyncResult {
   productsProcessed: number;
   productsCreated: number;
   productsUpdated: number;
+  warnings: string[];
+}
+
+export interface ReceiptScanRequest {
+  imageBase64: string;
+  mediaType?: string | null;
+}
+
+export interface ReceiptScanLine {
+  description: string;
+  quantity: number;
+  packUnits: number;
+  unitCost: number;
+  suggestedName: string;
+  suggestedShortName: string;
+  suggestedCategory: string;
+  suggestedPrice: number;
+  matchProductId?: number | null;
+  matchProductName?: string | null;
+  matchScore: number;
+}
+
+export interface ReceiptScanResult {
+  supplierName: string;
+  supplierRuc?: string | null;
+  supplierId?: number | null;
+  lines: ReceiptScanLine[];
+  warnings: string[];
+}
+
+export interface ReceiptConfirmItem {
+  action: string;
+  productId?: number | null;
+  name: string;
+  shortName: string;
+  categoryName: string;
+  price: number;
+  cost: number;
+}
+
+export interface ReceiptConfirmRequest {
+  supplierId: number;
+  items: ReceiptConfirmItem[];
+}
+
+export interface ReceiptConfirmResult {
+  created: number;
+  updated: number;
+  costsRecorded: number;
   warnings: string[];
 }
 

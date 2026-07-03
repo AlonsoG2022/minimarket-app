@@ -1647,6 +1647,13 @@ BEGIN
 END;
 GO
 
+-- Clave de la IA (para leer boletas), guardada cifrada. Nullable.
+IF COL_LENGTH('dbo.ConfiguracionEmpresa', 'ClaveIaBoletas') IS NULL
+BEGIN
+    ALTER TABLE dbo.ConfiguracionEmpresa ADD ClaveIaBoletas NVARCHAR(500) NULL;
+END;
+GO
+
 /* =========================================================
    DATOS BASE
    ========================================================= */

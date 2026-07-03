@@ -49,6 +49,10 @@ public class Company {
     @Column(name = "Tema", nullable = false, length = 20)
     private String theme;
 
+    // Clave de la IA (para leer boletas) guardada cifrada. Nunca se devuelve al frontend.
+    @Column(name = "ClaveIaBoletas", length = 500)
+    private String aiReceiptKey;
+
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getBusinessName() { return businessName; }
@@ -77,4 +81,6 @@ public class Company {
     public void setMinimumStock(Integer minimumStock) { this.minimumStock = minimumStock; }
     public String getTheme() { return theme; }
     public void setTheme(String theme) { this.theme = theme; }
+    public String getAiReceiptKey() { return aiReceiptKey; }
+    public void setAiReceiptKey(String aiReceiptKey) { this.aiReceiptKey = aiReceiptKey; }
 }

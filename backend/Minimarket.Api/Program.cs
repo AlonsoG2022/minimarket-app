@@ -46,6 +46,7 @@ builder.Services.AddScoped<IPrintJobService, PrintJobService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ISupplierSyncService, SupplierSyncService>();
+builder.Services.AddScoped<IReceiptService, ReceiptService>();
 builder.Services.AddScoped<IPasswordHasher, Sha256PasswordHasher>();
 
 var app = builder.Build();

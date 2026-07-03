@@ -16,4 +16,6 @@ public class Company
     public bool ShowTicketPreview { get; set; } = true;
     public int MinimumStock { get; set; } = 5;
     public string Theme { get; set; } = "orange";
+    // Clave de la IA (para leer boletas) guardada cifrada. Nunca se devuelve al frontend.
+    public string? AiReceiptKey { get; set; }
 }

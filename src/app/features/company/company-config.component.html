@@ -139,6 +139,25 @@
           </div>
         </fieldset>
 
+        <fieldset class="form-section">
+          <legend>Lectura de boletas con IA</legend>
+
+          <div class="form-field">
+            <label for="aiReceiptKey">
+              Clave de IA (Claude)
+              @if (aiKeyConfigured) {
+                <span class="pill">Configurada ✓</span>
+              }
+            </label>
+            <input id="aiReceiptKey" type="password" formControlName="aiReceiptKey" autocomplete="off"
+              [placeholder]="aiKeyConfigured ? 'Ya hay una clave guardada. Pega una nueva solo si quieres reemplazarla.' : 'Pega aqui tu clave de Anthropic (sk-ant-...)'">
+            <small class="field-hint">
+              Se usa para leer las fotos de boletas de compra. Se guarda cifrada y nunca se muestra.
+              Si dejas el campo vacio, se conserva la clave actual. Obtenla en platform.claude.com.
+            </small>
+          </div>
+        </fieldset>
+
         @if (message) {
           <p class="message">{{ message }}</p>
         }

@@ -37,13 +37,15 @@ export class CompanyConfigComponent implements OnInit {
     footerLine2: [''],
     showTicketPreview: [true],
     minimumStock: [5, [Validators.required, Validators.min(0)]],
-    theme: ['orange']
+    theme: ['orange'],
+    aiReceiptKey: ['']
   });
 
   loading = true;
   saving = false;
   message = '';
   error = '';
+  aiKeyConfigured = false;
 
   // Sincronizacion del catalogo del proveedor (Coca-Cola / AIC Digital).
   readonly syncForm = this.fb.nonNullable.group({
@@ -61,6 +63,7 @@ export class CompanyConfigComponent implements OnInit {
     this.companyService.get().subscribe({
       next: (company) => {
         this.form.patchValue(company);
+        this.aiKeyConfigured = company.hasAiReceiptKey;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -150,13 +153,18 @@ export class CompanyConfigComponent implements OnInit {
       footerLine2: value.footerLine2,
       showTicketPreview: value.showTicketPreview,
       minimumStock: value.minimumStock,
-      theme: value.theme
+      theme: value.theme,
+      aiReceiptKey: value.aiReceiptKey?.trim() || null
     };
 
     this.companyService.update(payload).subscribe({
       next: () => {
         this.saving = false;
         this.message = 'Configuracion guardada correctamente.';
+        if (value.aiReceiptKey?.trim()) {
+          this.aiKeyConfigured = true;
+          this.form.controls.aiReceiptKey.setValue('');
+        }
         this.cdr.detectChanges();
       },
       error: () => {

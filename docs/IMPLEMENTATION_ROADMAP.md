@@ -295,6 +295,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 5. Seleccion/configuracion de impresora desde UI o archivo
 6. Preparacion SUNAT
 7. Sincronizacion de catalogo de proveedores (ver seccion 10)
+8. Modulo de lectura de boletas de compra con IA de vision (ver seccion 11)
 
 ---
 
@@ -426,3 +427,52 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - antes de codificar, capturar 2-3 respuestas JSON reales de ambas APIs para validar nombres exactos de las
     propiedades (`sku`, `longDescription`, `shortDescription`, `salePrice`, `customerPrice`, `units`, `categoryId`)
 - Nota: contexto de negocio completo en `docs/PROJECT_CONTEXT.md`
+
+---
+
+## 11. Modulo de lectura de boletas de compra con IA de vision
+
+### Objetivo
+Subir la foto de una boleta de compra, leerla con IA de vision y capturar el costo real de cada
+producto por proveedor, para no perder el dato aunque se pierda el papel. Ademas, comparar costos
+entre proveedores para saber donde comprar mas barato.
+
+- Estado: `Implementado (primera version; falta pegar la clave de IA y validar con boletas reales)`
+- Implementacion:
+  - clave de IA (Claude) guardada CIFRADA en `ConfiguracionEmpresa.ClaveIaBoletas`, editable desde `/configuracion`
+  - backend `.NET` y `Java`: `ReceiptService` + `ReceiptsController` (POST `api/receipts/scan` y `.../confirm`)
+  - la app manda la foto (base64) al backend; el backend llama a Claude vision (`claude-sonnet-5`) con la clave descifrada
+  - normaliza costo por unidad con IGV, empareja contra el catalogo, sugiere precio de venta y categoria
+  - Angular: pantalla "Cargar boleta" (Mantenimiento) con confirmacion editable por linea
+  - al confirmar: crea/actualiza productos y registra el costo en `ProveedorProducto`
+  - cifrado AES-256-CBC compartido entre .NET y Java (misma passphrase)
+
+### Flujo
+1. Modulo "Cargar boleta" -> el usuario sube la foto.
+2. La IA de vision extrae: proveedor (RUC/nombre) y cada linea (descripcion, cantidad, precio, descuento, pack/tira).
+3. La app empareja cada producto con el catalogo (~500) por parecido y muestra el mejor candidato, o propone crear nuevo.
+4. Pantalla de confirmacion (obligatoria): por linea -> Confirmar match / Buscar otro (autocompletado inline) / Crear nuevo.
+   Boton "Confirmar todos los seguros" para los de alta confianza (>90%).
+5. Al confirmar: crea/actualiza productos y registra el costo en `ProveedorProducto` (proveedor + costo + fecha).
+6. Reporte "donde comprar mas barato": compara el costo del producto entre proveedores (usa `ProveedorProducto`).
+
+### Reglas / decisiones
+- Normalizar a costo por unidad con IGV (boleta trae Precio SIN IGV -> costo c/IGV = Precio x 1.18; dividir packs/tiras; restar descuentos). Venden por unidad.
+- Codigo de barras: lo agrega el usuario a mano (producto nuevo se crea sin barras).
+- Precio de venta: lo sugiere la app = Costo x margen por categoria + redondeo a moneda. Margenes:
+  gaseosas/aguas/jugos/isotonicos/energizantes +35%, snacks/golosinas/galletas +40%, cervezas +25%,
+  licores +22%, abarrotes +18%, cuidado personal/limpieza +30%.
+- Categoria: la IA la reconoce y la asigna a una de las categorias existentes; editable en la confirmacion.
+- Nombre -> NombreCorto autogenerado, SKU autogenerado (mismo formato actual).
+
+### Reutiliza
+- Tablas `Proveedores` y `ProveedorProducto` (historico costo por proveedor) ya existentes.
+
+### Fases
+- Fase 1: cargar foto -> leer -> confirmar -> guardar costo + crear/emparejar productos.
+- Fase 2: reporte comparador de proveedores ("donde comprar").
+
+### Pendiente de decidir antes de codificar el "lector"
+- Motor de IA de vision (recomendado: Claude API / Anthropic) + API key en configuracion (no hardcodeada)
+  + costo por foto (relevante para producto comercial). El resto (matching, confirmacion, guardado, reporte)
+  es codigo propio en las 4 capas y no depende del motor.

@@ -105,16 +105,16 @@
 
       @if (canAccessCategories() || canAccessSuppliers()) {
       <section class="nav-module">
-        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias', '/proveedores'])" (click)="toggleModule('mantenimiento')">
+        <button type="button" class="nav-module__trigger" [class.active]="isModuleExpanded('mantenimiento', ['/categorias', '/proveedores', '/boletas'])" (click)="toggleModule('mantenimiento')">
           <span class="nav-icon">MT</span>
           <span class="nav-copy">
             <span>Mantenimiento</span>
             <small>Datos base</small>
           </span>
-          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias', '/proveedores']) ? '-' : '+' }}</span>
+          <span class="nav-caret">{{ isModuleExpanded('mantenimiento', ['/categorias', '/proveedores', '/boletas']) ? '-' : '+' }}</span>
         </button>
 
-        @if (isModuleExpanded('mantenimiento', ['/categorias', '/proveedores'])) {
+        @if (isModuleExpanded('mantenimiento', ['/categorias', '/proveedores', '/boletas'])) {
           <div class="nav-module__items">
             @if (canAccessSuppliers()) {
             <a routerLink="/proveedores" routerLinkActive="active">
@@ -126,6 +126,12 @@
             <a routerLink="/categorias" routerLinkActive="active">
               <span class="nav-bullet"></span>
               <span>Categorias</span>
+            </a>
+            }
+            @if (canAccessSuppliers()) {
+            <a routerLink="/boletas" routerLinkActive="active">
+              <span class="nav-bullet"></span>
+              <span>Cargar boleta</span>
             </a>
             }
           </div>

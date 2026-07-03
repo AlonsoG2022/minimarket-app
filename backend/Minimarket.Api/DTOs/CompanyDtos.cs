@@ -14,7 +14,8 @@ public record CompanyDto(
     string FooterLine2,
     bool ShowTicketPreview,
     int MinimumStock,
-    string Theme);
+    string Theme,
+    bool HasAiReceiptKey);
 
 public record SaveCompanyDto(
     string BusinessName,
@@ -29,4 +30,6 @@ public record SaveCompanyDto(
     string FooterLine2,
     bool ShowTicketPreview,
     int MinimumStock,
-    string Theme);
+    string Theme,
+    // null o vacio = no cambiar la clave; con valor = guardar/reemplazar la clave de la IA.
+    string? AiReceiptKey);

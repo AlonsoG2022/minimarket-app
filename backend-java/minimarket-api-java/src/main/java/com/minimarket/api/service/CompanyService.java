@@ -60,6 +60,11 @@ public class CompanyService {
         var theme = dto.theme() != null ? dto.theme().trim().toLowerCase() : "";
         company.setTheme(ALLOWED_THEMES.contains(theme) ? theme : "orange");
 
+        // La clave de la IA solo se toca si llega un valor; se guarda cifrada.
+        if (dto.aiReceiptKey() != null && !dto.aiReceiptKey().isBlank()) {
+            company.setAiReceiptKey(com.minimarket.api.util.CryptoHelper.encrypt(dto.aiReceiptKey().trim()));
+        }
+
         var saved = companyRepository.save(company);
 
         // El stock minimo es global: sincroniza todos los productos con el nuevo valor.

@@ -30,7 +30,8 @@ public final class DtoMapper {
             company.getFooterLine2(),
             company.getShowTicketPreview(),
             company.getMinimumStock(),
-            company.getTheme()
+            company.getTheme(),
+            company.getAiReceiptKey() != null && !company.getAiReceiptKey().isBlank()
         );
     }
 

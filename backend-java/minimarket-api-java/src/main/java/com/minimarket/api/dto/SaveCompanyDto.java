@@ -13,5 +13,6 @@ public record SaveCompanyDto(
     String footerLine2,
     Boolean showTicketPreview,
     Integer minimumStock,
-    String theme
+    String theme,
+    String aiReceiptKey
 ) {}

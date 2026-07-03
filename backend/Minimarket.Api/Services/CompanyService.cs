@@ -44,6 +44,12 @@ public class CompanyService(ICompanyRepository companyRepository, IProductReposi
         var theme = (dto.Theme ?? string.Empty).Trim().ToLowerInvariant();
         company.Theme = AllowedThemes.Contains(theme) ? theme : "orange";
 
+        // La clave de la IA solo se toca si llega un valor; se guarda cifrada.
+        if (!string.IsNullOrWhiteSpace(dto.AiReceiptKey))
+        {
+            company.AiReceiptKey = Helpers.CryptoHelper.Encrypt(dto.AiReceiptKey.Trim());
+        }
+
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();
 

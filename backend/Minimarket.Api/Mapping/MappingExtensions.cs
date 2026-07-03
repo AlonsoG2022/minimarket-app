@@ -21,7 +21,8 @@ public static class MappingExtensions
             company.FooterLine2,
             company.ShowTicketPreview,
             company.MinimumStock,
-            company.Theme);
+            company.Theme,
+            !string.IsNullOrWhiteSpace(company.AiReceiptKey));
 
     public static ProductDto ToDto(this Product product) =>
         new(
