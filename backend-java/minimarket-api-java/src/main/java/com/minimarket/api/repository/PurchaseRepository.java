@@ -14,4 +14,6 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer> {
 
     @EntityGraph(attributePaths = {"supplier", "user", "details", "details.product"})
     Optional<Purchase> findById(Integer id);
+
+    boolean existsByInvoiceNumber(String invoiceNumber);
 }

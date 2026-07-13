@@ -8,6 +8,7 @@ public record ReceiptScanLineDto(
     BigDecimal quantity,
     Integer packUnits,
     BigDecimal unitCost,
+    BigDecimal lineTotal,
     String suggestedName,
     String suggestedShortName,
     String suggestedCategory,

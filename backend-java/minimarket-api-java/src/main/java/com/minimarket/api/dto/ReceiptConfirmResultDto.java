@@ -5,6 +5,6 @@ import java.util.List;
 public record ReceiptConfirmResultDto(
     int created,
     int updated,
-    int costsRecorded,
+    int purchaseId,
     List<String> warnings) {
 }

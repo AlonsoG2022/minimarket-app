@@ -23,6 +23,9 @@ public class PurchaseRepository(MinimarketDbContext context) : IPurchaseReposito
                 .ThenInclude(x => x.Product)
             .FirstOrDefaultAsync(x => x.Id == id);
 
+    public Task<bool> ExistsByInvoiceNumberAsync(string invoiceNumber) =>
+        context.Purchases.AnyAsync(x => x.InvoiceNumber == invoiceNumber);
+
     public Task AddAsync(Purchase purchase) => context.Purchases.AddAsync(purchase).AsTask();
 
     public Task<int> SaveChangesAsync() => context.SaveChangesAsync();

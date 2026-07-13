@@ -18,11 +18,13 @@ public class ReceiptService(
     IProductRepository productRepository,
     ICategoryRepository categoryRepository,
     ISupplierRepository supplierRepository,
-    ISupplierProductRepository supplierProductRepository) : IReceiptService
+    ISupplierProductRepository supplierProductRepository,
+    IPurchaseRepository purchaseRepository,
+    ICashSessionRepository cashSessionRepository,
+    IUserRepository userRepository) : IReceiptService
 {
     private const string ClaudeUrl = "https://api.anthropic.com/v1/messages";
     private const string ClaudeModel = "claude-sonnet-5";
-    private const decimal IgvFactor = 1.18m;
     private const int DefaultMinimumStock = 5;
 
     private static readonly HashSet<string> StopWords = new(StringComparer.OrdinalIgnoreCase)
@@ -34,13 +36,16 @@ public class ReceiptService(
     private const string Prompt =
         "Eres un lector de boletas de compra de un minimarket en Peru. Lee la imagen y devuelve SOLO un JSON " +
         "valido (sin texto adicional, sin markdown) con esta forma exacta: " +
-        "{\"proveedor\":{\"nombre\":\"\",\"ruc\":\"\"},\"items\":[{\"descripcion\":\"\",\"cantidad\":1," +
-        "\"precioUnitario\":0,\"unidadesPorPaquete\":1,\"categoria\":\"\"}]}. " +
-        "Reglas: precioUnitario es el precio unitario SIN IGV tal como aparece en la columna Precio. " +
-        "unidadesPorPaquete: si el item viene en tira/pack (ej. x6, x12, TRAx12UND, PCKx6UND) pon ese numero; " +
-        "si es unidad suelta pon 1. categoria: clasifica el producto (Abarrotes, Bebidas, Gaseosas, Aguas, Jugos, " +
-        "Cuidado personal, Limpieza, Snacks, Golosinas, Galletas, Licores, Cervezas, Lacteos). Si un dato no esta usa " +
-        "0 o cadena vacia. No inventes items que no esten en la boleta.";
+        "{\"proveedor\":{\"nombre\":\"\",\"ruc\":\"\"},\"numeroBoleta\":\"\",\"items\":[{\"descripcion\":\"\",\"cantidad\":1," +
+        "\"total\":0,\"unidadesPorPaquete\":1,\"categoria\":\"\"}]}. " +
+        "numeroBoleta es el numero del comprobante. cantidad es el numero de la columna Cantidad de esa linea. " +
+        "total es el monto de la columna Total de esa linea (lo que se pago por esa linea, ya con IGV si aplica). " +
+        "unidadesPorPaquete: pon 1 por defecto. NO lo deduzcas del nombre del producto: textos como '20X200GR', " +
+        "'12X270GR' o '30X24UND' son solo el formato/presentacion, NO la cantidad comprada. Solo pon un numero mayor a 1 " +
+        "si la unidad de compra es claramente un paquete que el minimarket abre para vender por unidad. " +
+        "categoria: clasifica el producto (Abarrotes, Bebidas, Gaseosas, Aguas, Jugos, Cuidado personal, Limpieza, " +
+        "Snacks, Golosinas, Galletas, Licores, Cervezas, Lacteos). Si un dato no esta usa 0 o cadena vacia. " +
+        "No inventes items que no esten en la boleta.";
 
     public async Task<(bool Success, string? Error, ReceiptScanResultDto? Result)> ScanAsync(ReceiptScanRequestDto request)
     {
@@ -87,6 +92,9 @@ public class ReceiptService(
         var warnings = new List<string>();
         var supplierName = GetString(parsed.TryGetProperty("proveedor", out var prov) ? prov : default, "nombre") ?? "";
         var supplierRuc = GetString(prov, "ruc");
+        var invoiceNumber = GetString(parsed, "numeroBoleta");
+        var invoiceAlreadyRegistered = !string.IsNullOrWhiteSpace(invoiceNumber)
+            && await purchaseRepository.ExistsByInvoiceNumberAsync(invoiceNumber.Trim());
         int? supplierId = null;
         if (!string.IsNullOrWhiteSpace(supplierRuc))
         {
@@ -107,7 +115,7 @@ public class ReceiptService(
                     continue;
                 }
 
-                var priceNet = GetDecimal(item, "precioUnitario") ?? 0m;
+                var lineTotal = GetDecimal(item, "total") ?? 0m;
                 var packUnits = Math.Max(1, GetInt(item, "unidadesPorPaquete") ?? 1);
                 var quantity = GetDecimal(item, "cantidad") ?? 1m;
                 var category = (GetString(item, "categoria") ?? "Abarrotes").Trim();
@@ -116,7 +124,11 @@ public class ReceiptService(
                     category = "Abarrotes";
                 }
 
-                var unitCost = Math.Round(priceNet * IgvFactor / packUnits, 2, MidpointRounding.AwayFromZero);
+                // Costo por unidad = lo pagado en esa linea (columna Total) entre las unidades que entran.
+                var totalUnitsForCost = quantity * packUnits;
+                var unitCost = totalUnitsForCost > 0m
+                    ? Math.Round(lineTotal / totalUnitsForCost, 2, MidpointRounding.AwayFromZero)
+                    : 0m;
                 var suggestedName = Truncate(description, 150);
                 var suggestedShort = Truncate(ShortNameGenerator.Generate(suggestedName), 60);
                 var suggestedPrice = RoundFriendly(unitCost * MarginFactor(category));
@@ -124,7 +136,7 @@ public class ReceiptService(
                 var (matchId, matchName, score) = BestMatch(suggestedName, activeProducts);
 
                 lines.Add(new ReceiptScanLineDto(
-                    description, quantity, packUnits, unitCost,
+                    description, quantity, packUnits, unitCost, lineTotal,
                     suggestedName, suggestedShort, category, suggestedPrice,
                     matchId, matchName, score));
             }
@@ -135,29 +147,80 @@ public class ReceiptService(
             warnings.Add("No se detectaron productos en la boleta.");
         }
 
-        var result = new ReceiptScanResultDto(supplierName, supplierRuc, supplierId, lines, warnings);
+        var result = new ReceiptScanResultDto(supplierName, supplierRuc, supplierId, invoiceNumber, invoiceAlreadyRegistered, lines, warnings);
         return (true, null, result);
     }
 
     public async Task<(bool Success, string? Error, ReceiptConfirmResultDto? Result)> ConfirmAsync(ReceiptConfirmRequestDto request)
     {
-        var supplier = await supplierRepository.GetByIdAsync(request.SupplierId);
-        if (supplier is null)
-        {
-            return (false, "El proveedor seleccionado no existe.", null);
-        }
-
         if (request.Items is null || request.Items.Count == 0)
         {
             return (false, "No hay items para guardar.", null);
         }
 
+        var user = await userRepository.GetByIdAsync(request.UserId);
+        if (user is null || !user.IsActive)
+        {
+            return (false, "El usuario no es valido.", null);
+        }
+
+        // Anti-duplicado: si esa boleta ya se cargo, no se registra de nuevo (evita duplicar stock).
+        var invoiceNumber = string.IsNullOrWhiteSpace(request.InvoiceNumber) ? null : Truncate(request.InvoiceNumber.Trim(), 50);
+        if (invoiceNumber is not null && await purchaseRepository.ExistsByInvoiceNumberAsync(invoiceNumber))
+        {
+            return (false, $"La boleta '{invoiceNumber}' ya fue cargada antes. No se registro de nuevo.", null);
+        }
+
+        // Proveedor: usar el existente o crear uno nuevo desde la boleta.
+        Supplier? supplier;
+        if (request.SupplierId > 0)
+        {
+            supplier = await supplierRepository.GetByIdAsync(request.SupplierId);
+            if (supplier is null)
+            {
+                return (false, "El proveedor seleccionado no existe.", null);
+            }
+        }
+        else
+        {
+            var newName = request.NewSupplierName?.Trim();
+            if (string.IsNullOrWhiteSpace(newName))
+            {
+                return (false, "Falta el nombre del proveedor nuevo.", null);
+            }
+            var ruc = request.NewSupplierRuc?.Trim();
+            supplier = string.IsNullOrWhiteSpace(ruc) ? null : await supplierRepository.GetByDocumentNumberAsync(ruc);
+            if (supplier is null)
+            {
+                supplier = new Supplier
+                {
+                    Name = Truncate(newName, 150),
+                    DocumentNumber = string.IsNullOrWhiteSpace(ruc) ? null : Truncate(ruc, 30),
+                    IsActive = true
+                };
+                await supplierRepository.AddAsync(supplier);
+                await supplierRepository.SaveChangesAsync();
+            }
+        }
+
         var minimumStock = (await companyRepository.GetAsync())?.MinimumStock ?? DefaultMinimumStock;
         var expiration = DateOnly.FromDateTime(DateTime.Today.AddYears(2));
         var warnings = new List<string>();
+        var gastos = new List<(string Name, decimal Amount)>();   // flete/reparto -> gasto en la caja del dia
         var created = 0;
         var updated = 0;
-        var costsRecorded = 0;
+
+        var purchase = new Purchase
+        {
+            PurchaseDate = DateTime.Now,
+            SupplierId = supplier.Id,
+            UserId = user.Id,
+            InvoiceNumber = invoiceNumber,
+            Notes = "Cargada desde foto de boleta",
+            SubTotal = 0m,
+            Igv = 0m,
+            Total = 0m
+        };
 
         foreach (var item in request.Items)
         {
@@ -167,6 +230,24 @@ public class ReceiptService(
                 continue;
             }
 
+            var quantity = Math.Max(1, item.Quantity);
+            var packUnits = Math.Max(1, item.PackUnits);
+            var totalUnits = quantity * packUnits;
+            var unitCost = item.Cost;
+            var packageCost = Math.Round(unitCost * packUnits, 2);
+            var subtotal = Math.Round(unitCost * totalUnits, 2);
+
+            // Flete / reparto: no es producto, se registra como gasto en la caja abierta.
+            if (action == "gasto")
+            {
+                if (subtotal > 0m)
+                {
+                    gastos.Add((string.IsNullOrWhiteSpace(item.Name) ? "Flete/reparto" : item.Name.Trim(), subtotal));
+                }
+                continue;
+            }
+
+            Product product;
             if (action == "create")
             {
                 var categoryName = string.IsNullOrWhiteSpace(item.CategoryName) ? "Abarrotes" : item.CategoryName.Trim();
@@ -179,7 +260,10 @@ public class ReceiptService(
                 }
 
                 var name = Truncate(string.IsNullOrWhiteSpace(item.Name) ? "Producto" : item.Name, 150);
-                var product = new Product
+                // Regalo nuevo (sin precio): se crea OCULTO para no venderlo en 0 hasta ponerle precio.
+                var salePrice = item.Price > 0 ? item.Price : unitCost;
+                var isActive = salePrice > 0m;
+                product = new Product
                 {
                     Name = name,
                     ShortName = Truncate(string.IsNullOrWhiteSpace(item.ShortName) ? ShortNameGenerator.Generate(name) : item.ShortName, 60),
@@ -187,43 +271,108 @@ public class ReceiptService(
                     Barcode = null,
                     PurchaseBarcode = null,
                     Description = null,
-                    Price = item.Price > 0 ? item.Price : item.Cost,
-                    Cost = item.Cost,
-                    Stock = 0,
+                    Price = salePrice,
+                    Cost = unitCost,
+                    Stock = totalUnits,
                     MinimumStock = minimumStock,
                     ExpirationDate = expiration,
                     SalesUnitName = "Unidad",
                     PurchaseUnitName = "Unidad",
                     UnitsPerPurchaseUnit = 1,
-                    IsActive = true,
+                    IsActive = isActive,
                     CategoryId = category.Id
                 };
-
                 await productRepository.AddAsync(product);
                 await productRepository.SaveChangesAsync();
-                await RecordCostAsync(supplier.Id, product.Id, item.Cost);
                 created++;
-                costsRecorded++;
+                if (!isActive)
+                {
+                    warnings.Add($"'{name}' se creo OCULTO (sin precio) porque llego de regalo. Ponle precio en Productos y activalo para venderlo.");
+                }
             }
             else if (action == "match" && item.ProductId is int productId)
             {
-                var product = await productRepository.GetByIdAsync(productId);
-                if (product is null)
+                var existing = await productRepository.GetByIdAsync(productId);
+                if (existing is null)
                 {
                     warnings.Add($"No se encontro el producto a actualizar (id {productId}).");
                     continue;
                 }
-
-                product.Cost = item.Cost;
-                productRepository.Update(product);
+                existing.Stock += totalUnits;                    // suma el stock entrante
+                if (unitCost > 0m)                               // regalos (costo 0) solo suman stock
+                {
+                    existing.Cost = unitCost;                    // costo de la boleta (no promedio)
+                }
+                productRepository.Update(existing);
                 await productRepository.SaveChangesAsync();
-                await RecordCostAsync(supplier.Id, product.Id, item.Cost);
+                product = existing;
                 updated++;
-                costsRecorded++;
+            }
+            else
+            {
+                continue;
+            }
+
+            purchase.Details.Add(new PurchaseDetail
+            {
+                ProductId = product.Id,
+                PackageQuantity = quantity,
+                UnitsPerPackage = packUnits,
+                TotalUnits = totalUnits,
+                PackageCost = packageCost,
+                UnitCost = Math.Round(unitCost, 2),
+                Subtotal = subtotal,
+                PurchaseUnitName = "Unidad",
+                BarcodeSnapshot = null
+            });
+
+            // Los regalos (costo 0) no se registran en el comparador de precios por proveedor.
+            if (unitCost > 0m)
+            {
+                await RecordCostAsync(supplier.Id, product.Id, unitCost);
             }
         }
 
-        return (true, null, new ReceiptConfirmResultDto(created, updated, costsRecorded, warnings));
+        if (purchase.Details.Count == 0)
+        {
+            return (false, "No hay items validos para registrar la compra.", null);
+        }
+
+        purchase.Total = purchase.Details.Sum(x => x.Subtotal);
+        purchase.SubTotal = Math.Round(purchase.Total / 1.18m, 2, MidpointRounding.AwayFromZero);
+        purchase.Igv = Math.Round(purchase.Total - purchase.SubTotal, 2, MidpointRounding.AwayFromZero);
+
+        await purchaseRepository.AddAsync(purchase);
+        await purchaseRepository.SaveChangesAsync();
+
+        // Flete/reparto -> gasto en la caja abierta del usuario (si no hay caja, se avisa).
+        if (gastos.Count > 0)
+        {
+            var openSession = await cashSessionRepository.GetCurrentOpenAsync(user.Id);
+            if (openSession is null)
+            {
+                var totalGasto = gastos.Sum(g => g.Amount);
+                warnings.Add($"No hay una caja abierta: el gasto de flete/reparto (S/ {totalGasto:0.00}) no se registro. Abre la caja y registralo como gasto manualmente.");
+            }
+            else
+            {
+                foreach (var g in gastos)
+                {
+                    openSession.Movements.Add(new CashMovement
+                    {
+                        MovementDate = DateTime.Now,
+                        Type = "gasto",
+                        Amount = g.Amount,
+                        Description = string.IsNullOrWhiteSpace(invoiceNumber) ? g.Name : $"{g.Name} (boleta {invoiceNumber})",
+                        ReferenceType = "compra",
+                        ReferenceId = purchase.Id
+                    });
+                }
+                await cashSessionRepository.SaveChangesAsync();
+            }
+        }
+
+        return (true, null, new ReceiptConfirmResultDto(created, updated, purchase.Id, warnings));
     }
 
     private async Task RecordCostAsync(int supplierId, int productId, decimal cost)

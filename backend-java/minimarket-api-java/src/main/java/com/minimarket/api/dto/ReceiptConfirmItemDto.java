@@ -9,6 +9,8 @@ public record ReceiptConfirmItemDto(
     String name,
     String shortName,
     String categoryName,
+    Integer quantity,
+    Integer packUnits,
     BigDecimal price,
     BigDecimal cost) {
 }

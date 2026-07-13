@@ -2,19 +2,23 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Product, ReceiptConfirmItem, ReceiptScanResult, Supplier } from '../../core/models/minimarket.models';
+import { AuthService } from '../../core/services/auth.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReceiptsService } from '../../core/services/receipts.service';
 import { SuppliersService } from '../../core/services/suppliers.service';
 
 interface ReceiptRow {
   description: string;
-  action: 'match' | 'create' | 'skip';
+  action: 'match' | 'create' | 'skip' | 'gasto';
   productId: number | null;
   name: string;
   shortName: string;
   categoryName: string;
+  quantity: number;
+  packUnits: number;
   price: number;
   cost: number;
+  lineTotal: number;
   matchProductName: string | null;
   matchScore: number;
 }
@@ -30,10 +34,14 @@ export class ReceiptUploadComponent implements OnInit {
   private readonly receiptsService = inject(ReceiptsService);
   private readonly suppliersService = inject(SuppliersService);
   private readonly productsService = inject(ProductsService);
+  private readonly authService = inject(AuthService);
 
   suppliers: Supplier[] = [];
   products: Product[] = [];
   supplierId = 0;
+  newSupplierName = '';
+  newSupplierRuc = '';
+  invoiceNumber = '';
 
   scanning = false;
   confirming = false;
@@ -80,15 +88,21 @@ export class ReceiptUploadComponent implements OnInit {
         next: (res) => {
           this.result = res;
           this.supplierId = res.supplierId ?? 0;
+          this.newSupplierName = res.supplierName ?? '';
+          this.newSupplierRuc = res.supplierRuc ?? '';
+          this.invoiceNumber = res.invoiceNumber ?? '';
           this.rows = res.lines.map((line) => ({
             description: line.description,
-            action: line.matchProductId ? 'match' : 'create',
+            action: (this.isFlete(line.description) ? 'gasto' : line.matchProductId ? 'match' : 'create') as ReceiptRow['action'],
             productId: line.matchProductId ?? null,
             name: line.suggestedName,
             shortName: line.suggestedShortName,
             categoryName: line.suggestedCategory,
+            quantity: Math.max(1, Math.round(line.quantity || 1)),
+            packUnits: Math.max(1, line.packUnits || 1),
             price: line.suggestedPrice,
             cost: line.unitCost,
+            lineTotal: line.lineTotal,
             matchProductName: line.matchProductName ?? null,
             matchScore: line.matchScore
           }));
@@ -111,9 +125,36 @@ export class ReceiptUploadComponent implements OnInit {
     input.value = '';
   }
 
+  // Descarta la boleta cargada y limpia el formulario para empezar de nuevo.
+  cancel(): void {
+    this.result = null;
+    this.rows = [];
+    this.message = '';
+    this.error = '';
+    this.supplierId = 0;
+    this.newSupplierName = '';
+    this.newSupplierRuc = '';
+    this.invoiceNumber = '';
+  }
+
+  // Detecta lineas de flete/reparto/servicio para registrarlas como gasto en caja (no como producto).
+  isFlete(description: string): boolean {
+    const d = (description || '').toLowerCase();
+    return /\b(flete|reparto|delivery|env[ií]o|transporte)\b/.test(d) || d.includes('servicio de flete');
+  }
+
+  // Al cambiar la cantidad o las unidades por paquete, recalcula el costo por unidad
+  // usando el total real de la boleta (Total ÷ unidades que entran).
+  recomputeCost(row: ReceiptRow): void {
+    const units = Math.max(1, Math.round(Number(row.quantity) || 1)) * Math.max(1, Math.round(Number(row.packUnits) || 1));
+    if (units > 0 && row.lineTotal > 0) {
+      row.cost = Math.round((Number(row.lineTotal) / units) * 100) / 100;
+    }
+  }
+
   confirm(): void {
-    if (!this.supplierId) {
-      this.error = 'Selecciona el proveedor de esta boleta.';
+    if (this.supplierId === 0 && !this.newSupplierName.trim()) {
+      this.error = 'Indica el nombre del proveedor nuevo (o elige uno existente).';
       return;
     }
 
@@ -123,6 +164,8 @@ export class ReceiptUploadComponent implements OnInit {
       name: row.name,
       shortName: row.shortName,
       categoryName: row.categoryName,
+      quantity: Math.max(1, Math.round(Number(row.quantity) || 1)),
+      packUnits: Math.max(1, Math.round(Number(row.packUnits) || 1)),
       price: Number(row.price) || 0,
       cost: Number(row.cost) || 0
     }));
@@ -131,10 +174,19 @@ export class ReceiptUploadComponent implements OnInit {
     this.message = '';
     this.error = '';
 
-    this.receiptsService.confirm({ supplierId: this.supplierId, items }).subscribe({
+    this.receiptsService
+      .confirm({
+        supplierId: this.supplierId,
+        newSupplierName: this.supplierId === 0 ? this.newSupplierName.trim() : null,
+        newSupplierRuc: this.supplierId === 0 ? this.newSupplierRuc.trim() : null,
+        userId: this.authService.session()?.id ?? 0,
+        invoiceNumber: this.invoiceNumber.trim() || null,
+        items
+      })
+      .subscribe({
       next: (res) => {
         this.confirming = false;
-        this.message = `Guardado: ${res.created} creado(s), ${res.updated} actualizado(s), ${res.costsRecorded} costo(s) registrado(s).`;
+        this.message = `Compra registrada (#${res.purchaseId}): ${res.created} creado(s), ${res.updated} actualizado(s). Stock y costos actualizados.`;
         this.result = null;
         this.rows = [];
         this.productsService.invalidateCache();

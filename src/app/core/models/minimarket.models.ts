@@ -300,6 +300,7 @@ export interface ReceiptScanLine {
   quantity: number;
   packUnits: number;
   unitCost: number;
+  lineTotal: number;
   suggestedName: string;
   suggestedShortName: string;
   suggestedCategory: string;
@@ -313,6 +314,8 @@ export interface ReceiptScanResult {
   supplierName: string;
   supplierRuc?: string | null;
   supplierId?: number | null;
+  invoiceNumber?: string | null;
+  invoiceAlreadyRegistered: boolean;
   lines: ReceiptScanLine[];
   warnings: string[];
 }
@@ -323,19 +326,25 @@ export interface ReceiptConfirmItem {
   name: string;
   shortName: string;
   categoryName: string;
+  quantity: number;
+  packUnits: number;
   price: number;
   cost: number;
 }
 
 export interface ReceiptConfirmRequest {
   supplierId: number;
+  newSupplierName?: string | null;
+  newSupplierRuc?: string | null;
+  userId: number;
+  invoiceNumber?: string | null;
   items: ReceiptConfirmItem[];
 }
 
 export interface ReceiptConfirmResult {
   created: number;
   updated: number;
-  costsRecorded: number;
+  purchaseId: number;
   warnings: string[];
 }
 

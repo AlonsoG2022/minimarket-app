@@ -3,14 +3,21 @@ package com.minimarket.api.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minimarket.api.dto.*;
+import com.minimarket.api.entity.CashMovement;
 import com.minimarket.api.entity.Category;
 import com.minimarket.api.entity.Product;
+import com.minimarket.api.entity.Purchase;
+import com.minimarket.api.entity.PurchaseDetail;
+import com.minimarket.api.entity.Supplier;
 import com.minimarket.api.entity.SupplierProduct;
+import com.minimarket.api.repository.CashSessionRepository;
 import com.minimarket.api.repository.CategoryRepository;
 import com.minimarket.api.repository.CompanyRepository;
 import com.minimarket.api.repository.ProductRepository;
+import com.minimarket.api.repository.PurchaseRepository;
 import com.minimarket.api.repository.SupplierProductRepository;
 import com.minimarket.api.repository.SupplierRepository;
+import com.minimarket.api.repository.UserRepository;
 import com.minimarket.api.util.CryptoHelper;
 import com.minimarket.api.util.ShortNameGenerator;
 import org.springframework.stereotype.Service;
@@ -50,19 +57,25 @@ public class ReceiptService {
     private static final String PROMPT =
         "Eres un lector de boletas de compra de un minimarket en Peru. Lee la imagen y devuelve SOLO un JSON " +
         "valido (sin texto adicional, sin markdown) con esta forma exacta: " +
-        "{\"proveedor\":{\"nombre\":\"\",\"ruc\":\"\"},\"items\":[{\"descripcion\":\"\",\"cantidad\":1," +
-        "\"precioUnitario\":0,\"unidadesPorPaquete\":1,\"categoria\":\"\"}]}. " +
-        "Reglas: precioUnitario es el precio unitario SIN IGV tal como aparece en la columna Precio. " +
-        "unidadesPorPaquete: si el item viene en tira/pack (ej. x6, x12, TRAx12UND, PCKx6UND) pon ese numero; " +
-        "si es unidad suelta pon 1. categoria: clasifica el producto (Abarrotes, Bebidas, Gaseosas, Aguas, Jugos, " +
-        "Cuidado personal, Limpieza, Snacks, Golosinas, Galletas, Licores, Cervezas, Lacteos). Si un dato no esta usa " +
-        "0 o cadena vacia. No inventes items que no esten en la boleta.";
+        "{\"proveedor\":{\"nombre\":\"\",\"ruc\":\"\"},\"numeroBoleta\":\"\",\"items\":[{\"descripcion\":\"\",\"cantidad\":1," +
+        "\"total\":0,\"unidadesPorPaquete\":1,\"categoria\":\"\"}]}. " +
+        "numeroBoleta es el numero del comprobante. cantidad es el numero de la columna Cantidad de esa linea. " +
+        "total es el monto de la columna Total de esa linea (lo que se pago por esa linea, ya con IGV si aplica). " +
+        "unidadesPorPaquete: pon 1 por defecto. NO lo deduzcas del nombre del producto: textos como '20X200GR', " +
+        "'12X270GR' o '30X24UND' son solo el formato/presentacion, NO la cantidad comprada. Solo pon un numero mayor a 1 " +
+        "si la unidad de compra es claramente un paquete que el minimarket abre para vender por unidad. " +
+        "categoria: clasifica el producto (Abarrotes, Bebidas, Gaseosas, Aguas, Jugos, Cuidado personal, Limpieza, " +
+        "Snacks, Golosinas, Galletas, Licores, Cervezas, Lacteos). Si un dato no esta usa 0 o cadena vacia. " +
+        "No inventes items que no esten en la boleta.";
 
     private final CompanyRepository companyRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
     private final SupplierProductRepository supplierProductRepository;
+    private final PurchaseRepository purchaseRepository;
+    private final CashSessionRepository cashSessionRepository;
+    private final UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -71,12 +84,18 @@ public class ReceiptService {
                           ProductRepository productRepository,
                           CategoryRepository categoryRepository,
                           SupplierRepository supplierRepository,
-                          SupplierProductRepository supplierProductRepository) {
+                          SupplierProductRepository supplierProductRepository,
+                          PurchaseRepository purchaseRepository,
+                          CashSessionRepository cashSessionRepository,
+                          UserRepository userRepository) {
         this.companyRepository = companyRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.supplierRepository = supplierRepository;
         this.supplierProductRepository = supplierProductRepository;
+        this.purchaseRepository = purchaseRepository;
+        this.cashSessionRepository = cashSessionRepository;
+        this.userRepository = userRepository;
     }
 
     public ServiceResult<ReceiptScanResultDto> scan(ReceiptScanRequestDto request) {
@@ -117,6 +136,9 @@ public class ReceiptService {
         var prov = parsed.get("proveedor");
         var supplierName = orEmpty(getString(prov, "nombre"));
         var supplierRuc = getString(prov, "ruc");
+        var invoiceNumber = getString(parsed, "numeroBoleta");
+        var invoiceAlreadyRegistered = invoiceNumber != null && !invoiceNumber.isBlank()
+            && purchaseRepository.existsByInvoiceNumber(invoiceNumber.trim());
         Integer supplierId = null;
         if (supplierRuc != null && !supplierRuc.isBlank()) {
             supplierId = supplierRepository.findByDocumentNumber(supplierRuc.trim()).map(s -> s.getId()).orElse(null);
@@ -134,7 +156,7 @@ public class ReceiptService {
                     continue;
                 }
 
-                var priceNet = orZero(getDecimal(item, "precioUnitario"));
+                var lineTotal = orZero(getDecimal(item, "total"));
                 var packUnits = Math.max(1, getInt(item, "unidadesPorPaquete"));
                 var quantity = getDecimal(item, "cantidad");
                 if (quantity == null) {
@@ -145,7 +167,11 @@ public class ReceiptService {
                     category = "Abarrotes";
                 }
 
-                var unitCost = priceNet.multiply(IGV).divide(BigDecimal.valueOf(packUnits), 2, RoundingMode.HALF_UP);
+                // Costo por unidad = lo pagado en esa linea (columna Total) entre las unidades que entran.
+                var totalUnitsForCost = quantity.multiply(BigDecimal.valueOf(packUnits));
+                var unitCost = totalUnitsForCost.signum() > 0
+                    ? lineTotal.divide(totalUnitsForCost, 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
                 var suggestedName = truncate(description, 150);
                 var suggestedShort = truncate(ShortNameGenerator.generate(suggestedName), 60);
                 var suggestedPrice = unitCost.multiply(marginFactor(category)).setScale(1, RoundingMode.HALF_UP);
@@ -153,7 +179,7 @@ public class ReceiptService {
                 var match = bestMatch(suggestedName, activeProducts);
 
                 lines.add(new ReceiptScanLineDto(
-                    description, quantity, packUnits, unitCost,
+                    description, quantity, packUnits, unitCost, lineTotal,
                     suggestedName, suggestedShort, category, suggestedPrice,
                     match.id(), match.name(), match.score()));
             }
@@ -163,19 +189,50 @@ public class ReceiptService {
             warnings.add("No se detectaron productos en la boleta.");
         }
 
-        return ServiceResult.success(new ReceiptScanResultDto(supplierName, supplierRuc, supplierId, lines, warnings));
+        return ServiceResult.success(new ReceiptScanResultDto(supplierName, supplierRuc, supplierId, invoiceNumber, invoiceAlreadyRegistered, lines, warnings));
     }
 
     public ServiceResult<ReceiptConfirmResultDto> confirm(ReceiptConfirmRequestDto request) {
-        if (request.supplierId() == null) {
-            return ServiceResult.failure("El proveedor seleccionado no existe.");
-        }
-        var supplier = supplierRepository.findById(request.supplierId()).orElse(null);
-        if (supplier == null) {
-            return ServiceResult.failure("El proveedor seleccionado no existe.");
-        }
         if (request.items() == null || request.items().isEmpty()) {
             return ServiceResult.failure("No hay items para guardar.");
+        }
+
+        if (request.userId() == null) {
+            return ServiceResult.failure("El usuario no es valido.");
+        }
+        var user = userRepository.findById(request.userId()).orElse(null);
+        if (user == null || !Boolean.TRUE.equals(user.getIsActive())) {
+            return ServiceResult.failure("El usuario no es valido.");
+        }
+
+        // Anti-duplicado: si esa boleta ya se cargo, no se registra de nuevo (evita duplicar stock).
+        var invoice = request.invoiceNumber() == null || request.invoiceNumber().isBlank()
+            ? null : truncate(request.invoiceNumber().trim(), 50);
+        if (invoice != null && purchaseRepository.existsByInvoiceNumber(invoice)) {
+            return ServiceResult.failure("La boleta '" + invoice + "' ya fue cargada antes. No se registro de nuevo.");
+        }
+
+        // Proveedor: usar el existente o crear uno nuevo desde la boleta.
+        Supplier supplier;
+        if (request.supplierId() != null && request.supplierId() > 0) {
+            supplier = supplierRepository.findById(request.supplierId()).orElse(null);
+            if (supplier == null) {
+                return ServiceResult.failure("El proveedor seleccionado no existe.");
+            }
+        } else {
+            var newName = request.newSupplierName() == null ? "" : request.newSupplierName().trim();
+            if (newName.isBlank()) {
+                return ServiceResult.failure("Falta el nombre del proveedor nuevo.");
+            }
+            var ruc = request.newSupplierRuc() == null ? "" : request.newSupplierRuc().trim();
+            supplier = ruc.isBlank() ? null : supplierRepository.findByDocumentNumber(ruc).orElse(null);
+            if (supplier == null) {
+                var nuevo = new Supplier();
+                nuevo.setName(truncate(newName, 150));
+                nuevo.setDocumentNumber(ruc.isBlank() ? null : truncate(ruc, 30));
+                nuevo.setIsActive(true);
+                supplier = supplierRepository.save(nuevo);
+            }
         }
 
         var minimumStock = companyRepository.findById(1)
@@ -183,9 +240,19 @@ public class ReceiptService {
             .orElse(DEFAULT_MINIMUM_STOCK);
         var expiration = LocalDate.now().plusYears(2);
         var warnings = new ArrayList<String>();
+        var gastos = new ArrayList<Gasto>();   // flete/reparto -> gasto en la caja del dia
         var created = 0;
         var updated = 0;
-        var costsRecorded = 0;
+
+        var purchase = new Purchase();
+        purchase.setPurchaseDate(LocalDateTime.now());
+        purchase.setSupplierId(supplier.getId());
+        purchase.setUserId(user.getId());
+        purchase.setInvoiceNumber(invoice);
+        purchase.setNotes("Cargada desde foto de boleta");
+        purchase.setSubTotal(BigDecimal.ZERO);
+        purchase.setIgv(BigDecimal.ZERO);
+        purchase.setTotal(BigDecimal.ZERO);
 
         for (var item : request.items()) {
             var action = item.action() == null ? "" : item.action().trim().toLowerCase();
@@ -193,8 +260,23 @@ public class ReceiptService {
                 continue;
             }
 
-            var cost = orZero(item.cost());
+            var quantity = Math.max(1, item.quantity() == null ? 1 : item.quantity());
+            var packUnits = Math.max(1, item.packUnits() == null ? 1 : item.packUnits());
+            var totalUnits = quantity * packUnits;
+            var unitCost = orZero(item.cost());
+            var packageCost = unitCost.multiply(BigDecimal.valueOf(packUnits)).setScale(2, RoundingMode.HALF_UP);
+            var subtotal = unitCost.multiply(BigDecimal.valueOf(totalUnits)).setScale(2, RoundingMode.HALF_UP);
 
+            // Flete / reparto: no es producto, se registra como gasto en la caja abierta.
+            if (action.equals("gasto")) {
+                if (subtotal.signum() > 0) {
+                    var nombre = item.name() == null || item.name().isBlank() ? "Flete/reparto" : item.name().trim();
+                    gastos.add(new Gasto(nombre, subtotal));
+                }
+                continue;
+            }
+
+            Product product;
             if (action.equals("create")) {
                 var categoryName = item.categoryName() == null || item.categoryName().isBlank() ? "Abarrotes" : item.categoryName().trim();
                 var category = categoryRepository.findByNameIgnoreCase(categoryName).orElse(null);
@@ -206,44 +288,106 @@ public class ReceiptService {
                 }
 
                 var name = truncate(item.name() == null || item.name().isBlank() ? "Producto" : item.name(), 150);
-                var product = new Product();
-                product.setName(name);
-                product.setShortName(truncate(item.shortName() == null || item.shortName().isBlank()
+                // Regalo nuevo (sin precio): se crea OCULTO para no venderlo en 0 hasta ponerle precio.
+                var salePrice = item.price() != null && item.price().signum() > 0 ? item.price() : unitCost;
+                var isActive = salePrice.signum() > 0;
+                var nuevo = new Product();
+                nuevo.setName(name);
+                nuevo.setShortName(truncate(item.shortName() == null || item.shortName().isBlank()
                     ? ShortNameGenerator.generate(name) : item.shortName(), 60));
-                product.setSku(generateSku(category.getName()));
-                product.setBarcode(null);
-                product.setPurchaseBarcode(null);
-                product.setDescription(null);
-                product.setPrice(item.price() != null && item.price().signum() > 0 ? item.price() : cost);
-                product.setCost(cost);
-                product.setStock(0);
-                product.setMinimumStock(minimumStock);
-                product.setExpirationDate(expiration);
-                product.setSalesUnitName("Unidad");
-                product.setPurchaseUnitName("Unidad");
-                product.setUnitsPerPurchaseUnit(1);
-                product.setIsActive(true);
-                product.setCategoryId(category.getId());
-
-                var saved = productRepository.save(product);
-                recordCost(supplier.getId(), saved.getId(), cost);
+                nuevo.setSku(generateSku(category.getName()));
+                nuevo.setBarcode(null);
+                nuevo.setPurchaseBarcode(null);
+                nuevo.setDescription(null);
+                nuevo.setPrice(salePrice);
+                nuevo.setCost(unitCost);
+                nuevo.setStock(totalUnits);
+                nuevo.setMinimumStock(minimumStock);
+                nuevo.setExpirationDate(expiration);
+                nuevo.setSalesUnitName("Unidad");
+                nuevo.setPurchaseUnitName("Unidad");
+                nuevo.setUnitsPerPurchaseUnit(1);
+                nuevo.setIsActive(isActive);
+                nuevo.setCategoryId(category.getId());
+                product = productRepository.save(nuevo);
                 created++;
-                costsRecorded++;
+                if (!isActive) {
+                    warnings.add("'" + name + "' se creo OCULTO (sin precio) porque llego de regalo. Ponle precio en Productos y activalo para venderlo.");
+                }
             } else if (action.equals("match") && item.productId() != null) {
-                var product = productRepository.findById(item.productId()).orElse(null);
-                if (product == null) {
+                var existing = productRepository.findById(item.productId()).orElse(null);
+                if (existing == null) {
                     warnings.add("No se encontro el producto a actualizar (id " + item.productId() + ").");
                     continue;
                 }
-                product.setCost(cost);
-                productRepository.save(product);
-                recordCost(supplier.getId(), product.getId(), cost);
+                existing.setStock((existing.getStock() == null ? 0 : existing.getStock()) + totalUnits);
+                if (unitCost.signum() > 0) {   // regalos (costo 0) solo suman stock
+                    existing.setCost(unitCost);
+                }
+                product = productRepository.save(existing);
                 updated++;
-                costsRecorded++;
+            } else {
+                continue;
+            }
+
+            var detail = new PurchaseDetail();
+            detail.setPurchase(purchase);
+            detail.setProductId(product.getId());
+            detail.setPackageQuantity(quantity);
+            detail.setUnitsPerPackage(packUnits);
+            detail.setTotalUnits(totalUnits);
+            detail.setPackageCost(packageCost);
+            detail.setUnitCost(unitCost.setScale(2, RoundingMode.HALF_UP));
+            detail.setSubtotal(subtotal);
+            detail.setPurchaseUnitName("Unidad");
+            detail.setBarcodeSnapshot(null);
+            purchase.getDetails().add(detail);
+
+            // Los regalos (costo 0) no se registran en el comparador de precios por proveedor.
+            if (unitCost.signum() > 0) {
+                recordCost(supplier.getId(), product.getId(), unitCost);
             }
         }
 
-        return ServiceResult.success(new ReceiptConfirmResultDto(created, updated, costsRecorded, warnings));
+        if (purchase.getDetails().isEmpty()) {
+            return ServiceResult.failure("No hay items validos para registrar la compra.");
+        }
+
+        var total = purchase.getDetails().stream().map(PurchaseDetail::getSubtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        var subTotal = total.divide(IGV, 2, RoundingMode.HALF_UP);
+        purchase.setTotal(total);
+        purchase.setSubTotal(subTotal);
+        purchase.setIgv(total.subtract(subTotal).setScale(2, RoundingMode.HALF_UP));
+
+        var savedPurchase = purchaseRepository.save(purchase);
+
+        // Flete/reparto -> gasto en la caja abierta del usuario (si no hay caja, se avisa).
+        if (!gastos.isEmpty()) {
+            var openSession = cashSessionRepository
+                .findFirstByUserIdAndStatusOrderByOpenedAtDesc(user.getId(), "abierta").orElse(null);
+            if (openSession == null) {
+                var totalGasto = gastos.stream().map(Gasto::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                warnings.add("No hay una caja abierta: el gasto de flete/reparto (S/ " + totalGasto.setScale(2, RoundingMode.HALF_UP)
+                    + ") no se registro. Abre la caja y registralo como gasto manualmente.");
+            } else {
+                for (var g : gastos) {
+                    var movement = new CashMovement();
+                    movement.setCashSessionId(openSession.getId());
+                    movement.setCashSession(openSession);
+                    movement.setMovementDate(LocalDateTime.now());
+                    movement.setType("gasto");
+                    movement.setAmount(g.amount());
+                    movement.setDescription(invoice == null || invoice.isBlank()
+                        ? g.name() : g.name() + " (boleta " + invoice + ")");
+                    movement.setReferenceType("compra");
+                    movement.setReferenceId(savedPurchase.getId());
+                    openSession.getMovements().add(movement);
+                }
+                cashSessionRepository.save(openSession);
+            }
+        }
+
+        return ServiceResult.success(new ReceiptConfirmResultDto(created, updated, savedPurchase.getId(), warnings));
     }
 
     private void recordCost(Integer supplierId, Integer productId, BigDecimal cost) {
@@ -440,6 +584,9 @@ public class ReceiptService {
     }
 
     private record Match(Integer id, String name, Double score) {
+    }
+
+    private record Gasto(String name, BigDecimal amount) {
     }
 
     private static final class UnauthorizedException extends RuntimeException {

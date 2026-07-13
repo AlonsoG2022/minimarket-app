@@ -444,7 +444,10 @@ entre proveedores para saber donde comprar mas barato.
   - la app manda la foto (base64) al backend; el backend llama a Claude vision (`claude-sonnet-5`) con la clave descifrada
   - normaliza costo por unidad con IGV, empareja contra el catalogo, sugiere precio de venta y categoria
   - Angular: pantalla "Cargar boleta" (Mantenimiento) con confirmacion editable por linea
-  - al confirmar: crea/actualiza productos y registra el costo en `ProveedorProducto`
+  - al confirmar: crea/actualiza productos, **registra una Compra + DetalleCompra**, **suma el stock**
+    (cantidad x unidades por paquete) y guarda el costo en `ProveedorProducto`
+  - el costo se mantiene **tal cual la boleta** (no promedio ponderado), por decision del negocio
+  - si el proveedor (por RUC) no existe, se **crea**; si existe, se usa. Captura el numero de boleta.
   - cifrado AES-256-CBC compartido entre .NET y Java (misma passphrase)
 
 ### Flujo
