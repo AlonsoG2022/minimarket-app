@@ -36,7 +36,8 @@ CREATE TABLE dbo.Categorias
     Id INT IDENTITY(1,1) PRIMARY KEY,
     Nombre NVARCHAR(100) NOT NULL,
     Descripcion NVARCHAR(250) NULL,
-    Activo BIT NOT NULL DEFAULT 1
+    Activo BIT NOT NULL DEFAULT 1,
+    AjustePrecioPorcentaje DECIMAL(5,2) NOT NULL DEFAULT 0
 );
 GO
 

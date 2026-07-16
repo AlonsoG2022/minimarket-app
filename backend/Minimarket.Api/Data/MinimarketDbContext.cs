@@ -28,6 +28,7 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
             entity.Property(x => x.Name).HasColumnName("Nombre").HasMaxLength(100).IsRequired();
             entity.Property(x => x.Description).HasColumnName("Descripcion").HasMaxLength(250);
             entity.Property(x => x.IsActive).HasColumnName("Activo");
+            entity.Property(x => x.PriceAdjustmentPercentage).HasColumnName("AjustePrecioPorcentaje").HasColumnType("decimal(5,2)");
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -268,9 +269,9 @@ public class MinimarketDbContext(DbContextOptions<MinimarketDbContext> options) 
         });
 
         modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Abarrotes", Description = "Productos de uso diario", IsActive = true },
-            new Category { Id = 2, Name = "Bebidas", Description = "Gaseosas, aguas y jugos", IsActive = true },
-            new Category { Id = 3, Name = "Limpieza", Description = "Articulos de limpieza", IsActive = true });
+            new Category { Id = 1, Name = "Abarrotes", Description = "Productos de uso diario", IsActive = true, PriceAdjustmentPercentage = 0m },
+            new Category { Id = 2, Name = "Bebidas", Description = "Gaseosas, aguas y jugos", IsActive = true, PriceAdjustmentPercentage = 0m },
+            new Category { Id = 3, Name = "Limpieza", Description = "Articulos de limpieza", IsActive = true, PriceAdjustmentPercentage = 0m });
 
         modelBuilder.Entity<Product>().HasData(
             new Product { Id = 1, Name = "Arroz Superior 1Kg", Sku = "ABR-001", Description = "Bolsa de arroz blanco", Price = 4.50m, Cost = 3.60m, Stock = 80, MinimumStock = 5, ExpirationDate = null, SalesUnitName = "unidad", PurchaseUnitName = "fardo", UnitsPerPurchaseUnit = 12, CategoryId = 1, IsActive = true },

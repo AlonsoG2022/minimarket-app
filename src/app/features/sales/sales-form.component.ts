@@ -121,8 +121,8 @@ export class SalesFormComponent implements OnInit {
           productName: product.name,
           sku: product.sku,
           quantity,
-          unitPrice: product.price,
-          subtotal: product.price * quantity,
+          unitPrice: this.getEffectivePrice(product),
+          subtotal: this.getEffectivePrice(product) * quantity,
           stock: product.stock
         };
       })
@@ -364,11 +364,16 @@ export class SalesFormComponent implements OnInit {
   }
 
   getProductPrice(productId: number): number {
-    return this.products.find((product) => product.id === Number(productId))?.price ?? 0;
+    const product = this.products.find((item) => item.id === Number(productId));
+    return product ? this.getEffectivePrice(product) : 0;
   }
 
   getTotal(): number {
     return this.currentItems.reduce((sum, item) => sum + item.subtotal, 0);
+  }
+
+  getDisplayedPrice(product: Product): number {
+    return this.getEffectivePrice(product);
   }
 
   private loadRecentSales(forceRefresh = false): void {
@@ -603,6 +608,10 @@ export class SalesFormComponent implements OnInit {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
+  }
+
+  private getEffectivePrice(product: Product): number {
+    return Number(product.effectivePrice ?? product.price ?? 0);
   }
 
   getPrintStatusLabel(status?: string | null): string {

@@ -1,7 +1,9 @@
 <section class="category-layout">
   <article class="card">
     <h2 class="section-title">Categorias</h2>
-    <p class="section-copy">Registra las categorias base que luego podras usar al crear productos.</p>
+    <p class="section-copy">
+      {{ isEditing ? 'Edita la categoria seleccionada y ajusta su recargo cuando lo necesites.' : 'Registra las categorias base que luego podras usar al crear productos.' }}
+    </p>
 
     <form class="form-grid" [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
       <div>
@@ -14,13 +16,28 @@
         <textarea id="description" rows="3" formControlName="description" autocomplete="off"></textarea>
       </div>
 
+      <div>
+        <label for="priceAdjustmentPercentage">Ajuste de precio (%)</label>
+        <input
+          id="priceAdjustmentPercentage"
+          type="number"
+          min="0"
+          step="0.01"
+          formControlName="priceAdjustmentPercentage"
+          autocomplete="off"
+        >
+      </div>
+
       <div class="checkbox-row full-width">
         <input id="isActive" type="checkbox" formControlName="isActive">
         <label for="isActive">Categoria activa</label>
       </div>
 
       <div class="actions full-width">
-        <button type="submit">Guardar categoria</button>
+        <button type="submit">{{ isEditing ? 'Guardar cambios' : 'Guardar categoria' }}</button>
+        @if (isEditing) {
+          <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+        }
       </div>
     </form>
 
@@ -46,6 +63,7 @@
             <tr>
               <th>Nombre</th>
               <th>Descripcion</th>
+              <th>Ajuste</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -57,10 +75,12 @@
                   <strong>{{ category.name }}</strong>
                 </td>
                 <td data-label="Descripcion">{{ category.description || 'Sin descripcion' }}</td>
+                <td data-label="Ajuste">{{ category.priceAdjustmentPercentage }}%</td>
                 <td data-label="Estado">
                   <span class="pill">{{ category.isActive ? 'Activa' : 'Inactiva' }}</span>
                 </td>
                 <td data-label="Acciones" class="actions-cell">
+                  <button type="button" class="secondary" (click)="edit(category)">Editar</button>
                   <button type="button" class="secondary" (click)="toggleActive(category)">
                     {{ category.isActive ? 'Desactivar' : 'Activar' }}
                   </button>

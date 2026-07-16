@@ -15,6 +15,20 @@ public final class DtoMapper {
     private DtoMapper() {
     }
 
+    private static java.math.BigDecimal getEffectivePrice(Product product) {
+        var adjustment = product.getCategory() != null && product.getCategory().getPriceAdjustmentPercentage() != null
+            ? product.getCategory().getPriceAdjustmentPercentage()
+            : java.math.BigDecimal.ZERO;
+
+        if (adjustment.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            return product.getPrice();
+        }
+
+        return product.getPrice()
+            .multiply(java.math.BigDecimal.ONE.add(adjustment.divide(new java.math.BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP)))
+            .setScale(1, java.math.RoundingMode.HALF_UP);
+    }
+
     public static CompanyDto toDto(Company company) {
         return new CompanyDto(
             company.getId(),
@@ -40,7 +54,8 @@ public final class DtoMapper {
             category.getId(),
             category.getName(),
             category.getDescription(),
-            category.getIsActive()
+            category.getIsActive(),
+            category.getPriceAdjustmentPercentage()
         );
     }
 
@@ -54,6 +69,7 @@ public final class DtoMapper {
             product.getPurchaseBarcode(),
             product.getDescription(),
             product.getPrice(),
+            getEffectivePrice(product),
             product.getCost(),
             product.getStock(),
             product.getMinimumStock(),

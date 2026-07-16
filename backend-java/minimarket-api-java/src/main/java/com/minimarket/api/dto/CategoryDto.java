@@ -1,4 +1,6 @@
 package com.minimarket.api.dto;
 
-public record CategoryDto(Integer id, String name, String description, Boolean isActive) {
+import java.math.BigDecimal;
+
+public record CategoryDto(Integer id, String name, String description, Boolean isActive, BigDecimal priceAdjustmentPercentage) {
 }

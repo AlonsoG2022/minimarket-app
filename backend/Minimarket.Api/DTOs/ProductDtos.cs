@@ -9,6 +9,7 @@ public record ProductDto(
     string? PurchaseBarcode,
     string? Description,
     decimal Price,
+    decimal EffectivePrice,
     decimal Cost,
     int Stock,
     int MinimumStock,

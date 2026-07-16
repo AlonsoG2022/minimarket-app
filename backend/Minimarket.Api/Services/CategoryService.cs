@@ -7,11 +7,32 @@ namespace Minimarket.Api.Services;
 
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
+    private static decimal NormalizePriceAdjustment(decimal? value)
+    {
+        var normalized = value ?? 0m;
+        if (normalized < 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(value));
+        }
+
+        return decimal.Round(normalized, 2, MidpointRounding.AwayFromZero);
+    }
+
     public async Task<IReadOnlyCollection<CategoryDto>> GetAllAsync(bool includeInactive) =>
         (await categoryRepository.GetAllAsync(includeInactive)).Select(x => x.ToDto()).ToList();
 
     public async Task<(bool Success, string? Error, CategoryDto? Category)> CreateAsync(SaveCategoryDto dto)
     {
+        decimal normalizedAdjustment;
+        try
+        {
+            normalizedAdjustment = NormalizePriceAdjustment(dto.PriceAdjustmentPercentage);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return (false, "El ajuste de precio no puede ser negativo.", null);
+        }
+
         var normalizedName = dto.Name.Trim();
         if (string.IsNullOrWhiteSpace(normalizedName))
         {
@@ -27,7 +48,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             Name = normalizedName,
             Description = dto.Description?.Trim(),
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            PriceAdjustmentPercentage = normalizedAdjustment
         };
 
         await categoryRepository.AddAsync(category);
@@ -38,6 +60,16 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<(bool Success, string? Error, CategoryDto? Category)> UpdateAsync(int id, SaveCategoryDto dto)
     {
+        decimal normalizedAdjustment;
+        try
+        {
+            normalizedAdjustment = NormalizePriceAdjustment(dto.PriceAdjustmentPercentage);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return (false, "El ajuste de precio no puede ser negativo.", null);
+        }
+
         var category = await categoryRepository.GetByIdAsync(id);
         if (category is null)
         {
@@ -62,6 +94,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         toUpdate.Name = normalizedName;
         toUpdate.Description = dto.Description?.Trim();
         toUpdate.IsActive = dto.IsActive;
+        toUpdate.PriceAdjustmentPercentage = normalizedAdjustment;
 
         categoryRepository.Update(toUpdate);
         await categoryRepository.SaveChangesAsync();
@@ -69,4 +102,3 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return (true, null, toUpdate.ToDto());
     }
 }
-

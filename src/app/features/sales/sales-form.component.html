@@ -108,7 +108,7 @@
                   <div class="search-result__content">
                     <strong class="search-result__title">{{ product.name }}</strong>
                   </div>
-                  <span class="search-result__price">{{ product.price | solesPrice }}</span>
+                  <span class="search-result__price">{{ getDisplayedPrice(product) | solesPrice }}</span>
                 </button>
               } @empty {
                 <p class="empty-copy">No encontramos productos con ese nombre.</p>

@@ -11,6 +11,7 @@ public record ProductDto(
     String purchaseBarcode,
     String description,
     BigDecimal price,
+    BigDecimal effectivePrice,
     BigDecimal cost,
     Integer stock,
     Integer minimumStock,

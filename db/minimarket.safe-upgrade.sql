@@ -130,7 +130,8 @@ BEGIN
         Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_Categorias PRIMARY KEY,
         Nombre NVARCHAR(100) NOT NULL,
         Descripcion NVARCHAR(250) NULL,
-        Activo BIT NOT NULL CONSTRAINT DF_Categorias_Activo DEFAULT (1)
+        Activo BIT NOT NULL CONSTRAINT DF_Categorias_Activo DEFAULT (1),
+        AjustePrecioPorcentaje DECIMAL(5,2) NOT NULL CONSTRAINT DF_Categorias_AjustePrecioPorcentaje DEFAULT (0)
     );
 END;
 GO
@@ -153,19 +154,28 @@ BEGIN
 END;
 GO
 
+IF COL_LENGTH('dbo.Categorias', 'AjustePrecioPorcentaje') IS NULL
+BEGIN
+    ALTER TABLE dbo.Categorias ADD AjustePrecioPorcentaje DECIMAL(5,2) NULL;
+END;
+GO
+
 UPDATE dbo.Categorias
 SET
     Nombre = ISNULL(Nombre, ''),
-    Activo = ISNULL(Activo, 1)
-WHERE Nombre IS NULL OR Activo IS NULL;
+    Activo = ISNULL(Activo, 1),
+    AjustePrecioPorcentaje = ISNULL(AjustePrecioPorcentaje, 0)
+WHERE Nombre IS NULL OR Activo IS NULL OR AjustePrecioPorcentaje IS NULL;
 GO
 
 ALTER TABLE dbo.Categorias ALTER COLUMN Nombre NVARCHAR(100) NOT NULL;
 ALTER TABLE dbo.Categorias ALTER COLUMN Descripcion NVARCHAR(250) NULL;
 ALTER TABLE dbo.Categorias ALTER COLUMN Activo BIT NOT NULL;
+ALTER TABLE dbo.Categorias ALTER COLUMN AjustePrecioPorcentaje DECIMAL(5,2) NOT NULL;
 GO
 
 EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Categorias', 'Activo', 'DF_Categorias_Activo', '(1)';
+EXEC dbo.usp_EnsureDefaultConstraint 'dbo', 'Categorias', 'AjustePrecioPorcentaje', 'DF_Categorias_AjustePrecioPorcentaje', '(0)';
 GO
 
 /* =========================================================

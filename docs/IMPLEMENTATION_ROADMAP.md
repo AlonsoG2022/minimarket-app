@@ -31,6 +31,7 @@ Estados sugeridos:
 - Estado: `Implementado`
 - Notas:
   - barcode unico compra/venta
+  - ajuste de precio por categoria implementado como recargo reversible sobre el precio base del producto
   - importacion y exportacion Excel (con columnas `NombreCorto` y `Costo`)
   - al importar, las categorias que no existen se crean automaticamente
   - el Excel exportado trae dos hojas: `Productos` y `Categorias`
@@ -57,6 +58,7 @@ Estados sugeridos:
   - buscador rapido
   - ticket actual
   - soporte de lector
+  - el POS muestra y cobra `PrecioEfectivo` cuando la categoria tiene `AjustePrecioPorcentaje`
   - guarda `SubTotal`, `IGV` y `Total` en cabecera
   - regla actual: el precio unitario ya incluye IGV
   - el ticket muestra `Subtotal`, `IGV (18%)` y `Total` con los montos reales de la venta
@@ -318,6 +320,16 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 - Datos base:
   - categorias y usuarios `admin`/`cajero` solo se insertan si no existen
   - el script ya no resetea contraseñas existentes ni inserta productos/proveedor de ejemplo
+
+### Ajuste de precio por categoria
+- Estado: `Implementado`
+- Incluye:
+  - columna `Categorias.AjustePrecioPorcentaje` en `db/minimarket.safe-upgrade.sql`
+  - default `0`
+  - tratamiento de `null` como `0`
+  - calculo de `PrecioEfectivo` en Angular, `.NET` y `Java`
+  - redondeo del precio efectivo a 1 decimal
+  - persistencia del precio realmente cobrado en `DetalleVenta`
 
 ### Script destructivo de desarrollo
 - Estado: `Implementado`

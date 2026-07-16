@@ -6,6 +6,17 @@ namespace Minimarket.Api.Mapping;
 
 public static class MappingExtensions
 {
+    private static decimal GetEffectivePrice(Product product)
+    {
+        var adjustment = product.Category?.PriceAdjustmentPercentage ?? 0m;
+        if (adjustment <= 0m)
+        {
+            return product.Price;
+        }
+
+        return decimal.Round(product.Price * (1m + (adjustment / 100m)), 1, MidpointRounding.AwayFromZero);
+    }
+
     public static CompanyDto ToDto(this Company company) =>
         new(
             company.Id,
@@ -34,6 +45,7 @@ public static class MappingExtensions
             product.PurchaseBarcode,
             product.Description,
             product.Price,
+            GetEffectivePrice(product),
             product.Cost,
             product.Stock,
             product.MinimumStock,
@@ -46,7 +58,7 @@ public static class MappingExtensions
             product.Category?.Name ?? string.Empty);
 
     public static CategoryDto ToDto(this Category category) =>
-        new(category.Id, category.Name, category.Description, category.IsActive);
+        new(category.Id, category.Name, category.Description, category.IsActive, category.PriceAdjustmentPercentage);
 
     public static UserDto ToDto(this User user) =>
         new(user.Id, user.FullName, user.Username, user.Role, user.IsActive);

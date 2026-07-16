@@ -1,5 +1,6 @@
 package com.minimarket.api.entity;
 
+import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,6 +30,9 @@ public class Category {
     @Column(name = "Activo", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "AjustePrecioPorcentaje", nullable = false, precision = 5, scale = 2)
+    private BigDecimal priceAdjustmentPercentage = BigDecimal.ZERO;
+
     @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();
 
@@ -40,6 +44,8 @@ public class Category {
     public void setDescription(String description) { this.description = description; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean active) { isActive = active; }
+    public BigDecimal getPriceAdjustmentPercentage() { return priceAdjustmentPercentage; }
+    public void setPriceAdjustmentPercentage(BigDecimal priceAdjustmentPercentage) { this.priceAdjustmentPercentage = priceAdjustmentPercentage; }
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
 }

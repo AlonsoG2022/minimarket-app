@@ -25,6 +25,7 @@ public class SaleService {
 
     private static final Logger logger = LoggerFactory.getLogger(SaleService.class);
     private static final BigDecimal IGV_DIVISOR = new BigDecimal("1.18");
+    private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
 
     private final SaleRepository saleRepository;
     private final UserRepository userRepository;
@@ -88,7 +89,7 @@ public class SaleService {
         sale.setCashSessionId(cashSession.getId());
 
         for (var item : dto.details()) {
-            var product = productRepository.findById(item.productId()).orElse(null);
+            var product = productRepository.findWithCategoryById(item.productId()).orElse(null);
             if (product == null || !Boolean.TRUE.equals(product.getIsActive())) {
                 return ServiceResult.failure("El producto con id " + item.productId() + " no existe.");
             }
@@ -102,6 +103,7 @@ public class SaleService {
             }
 
             product.setStock(product.getStock() - item.quantity());
+            var effectivePrice = calculateEffectivePrice(product);
 
             var detail = new SaleDetail();
             detail.setSale(sale);
@@ -110,8 +112,8 @@ public class SaleService {
             // disponible al generar el snapshot del ticket en la misma transaccion.
             detail.setProduct(product);
             detail.setQuantity(item.quantity());
-            detail.setUnitPrice(product.getPrice());
-            detail.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(item.quantity())));
+            detail.setUnitPrice(effectivePrice);
+            detail.setSubtotal(effectivePrice.multiply(BigDecimal.valueOf(item.quantity())));
 
             sale.getDetails().add(detail);
         }
@@ -167,5 +169,19 @@ public class SaleService {
 
     private BigDecimal calculateIgvFromGross(BigDecimal total, BigDecimal subTotal) {
         return total.subtract(subTotal).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calculateEffectivePrice(com.minimarket.api.entity.Product product) {
+        var adjustment = product.getCategory() != null && product.getCategory().getPriceAdjustmentPercentage() != null
+            ? product.getCategory().getPriceAdjustmentPercentage()
+            : BigDecimal.ZERO;
+
+        if (adjustment.compareTo(BigDecimal.ZERO) <= 0) {
+            return product.getPrice();
+        }
+
+        return product.getPrice()
+            .multiply(BigDecimal.ONE.add(adjustment.divide(ONE_HUNDRED, 4, RoundingMode.HALF_UP)))
+            .setScale(1, RoundingMode.HALF_UP);
     }
 }

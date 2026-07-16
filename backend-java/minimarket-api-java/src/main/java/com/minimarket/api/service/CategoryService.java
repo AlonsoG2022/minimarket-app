@@ -8,6 +8,8 @@ import com.minimarket.api.util.DtoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -26,8 +28,24 @@ public class CategoryService {
         return categories.stream().map(DtoMapper::toDto).toList();
     }
 
+    private BigDecimal normalizePriceAdjustment(BigDecimal value) {
+        var normalized = value != null ? value : BigDecimal.ZERO;
+        if (normalized.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El ajuste de precio no puede ser negativo.");
+        }
+
+        return normalized.setScale(2, RoundingMode.HALF_UP);
+    }
+
     @Transactional
     public ServiceResult<CategoryDto> create(SaveCategoryDto dto) {
+        final BigDecimal normalizedAdjustment;
+        try {
+            normalizedAdjustment = normalizePriceAdjustment(dto.priceAdjustmentPercentage());
+        } catch (IllegalArgumentException ex) {
+            return ServiceResult.failure(ex.getMessage());
+        }
+
         var normalizedName = dto.name() != null ? dto.name().trim() : "";
         if (normalizedName.isBlank()) {
             return ServiceResult.failure("El nombre de la categoria es obligatorio.");
@@ -41,6 +59,7 @@ public class CategoryService {
         category.setName(normalizedName);
         category.setDescription(dto.description() != null ? dto.description().trim() : null);
         category.setIsActive(Boolean.TRUE.equals(dto.isActive()));
+        category.setPriceAdjustmentPercentage(normalizedAdjustment);
 
         var saved = categoryRepository.save(category);
         return ServiceResult.success(DtoMapper.toDto(saved));
@@ -48,6 +67,13 @@ public class CategoryService {
 
     @Transactional
     public ServiceResult<CategoryDto> update(Integer id, SaveCategoryDto dto) {
+        final BigDecimal normalizedAdjustment;
+        try {
+            normalizedAdjustment = normalizePriceAdjustment(dto.priceAdjustmentPercentage());
+        } catch (IllegalArgumentException ex) {
+            return ServiceResult.failure(ex.getMessage());
+        }
+
         var category = categoryRepository.findById(id).orElse(null);
         if (category == null) {
             return ServiceResult.failure("Categoria no encontrada.");
@@ -66,6 +92,7 @@ public class CategoryService {
         category.setName(normalizedName);
         category.setDescription(dto.description() != null ? dto.description().trim() : null);
         category.setIsActive(Boolean.TRUE.equals(dto.isActive()));
+        category.setPriceAdjustmentPercentage(normalizedAdjustment);
 
         var saved = categoryRepository.save(category);
         return ServiceResult.success(DtoMapper.toDto(saved));

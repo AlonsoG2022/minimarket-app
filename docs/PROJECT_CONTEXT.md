@@ -71,6 +71,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - aviso visual de stock minimo
 - ticket imprimible desde navegador
 - cabecera con `SubTotal`, `IGV` y `Total` persistidos en BD
+- el POS muestra y cobra el precio efectivo por categoria cuando existe ajuste
 
 ### Caja
 - apertura de caja con monto inicial
@@ -85,6 +86,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Productos
 - creacion y edicion
 - codigo de barras unico para compra y venta
+- ajuste de precio por categoria (`AjustePrecioPorcentaje`) para aplicar recargos temporales sin tocar el precio base del producto
+  - el precio base del producto se mantiene intacto
+  - el precio efectivo de venta se calcula como `Precio x (1 + ajuste / 100)` y se redondea a 1 decimal
+  - si la categoria tiene ajuste `0`, el producto vuelve automaticamente a su precio normal
 - stock minimo global configurable desde `Configuracion` (por defecto `5`, no editable por producto)
 - aviso compacto de productos en stock minimo (resumen con conteo + los mas bajos)
 - nombre corto por producto (`NombreCorto`) que se muestra en el ticket en vez del nombre largo
@@ -158,6 +163,15 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Codigo de barras
 - un solo codigo de barras puede usarse para compra y venta del mismo producto
 - no debe repetirse entre productos distintos
+
+### Ajuste de precio por categoria
+- cada categoria puede tener `AjustePrecioPorcentaje`
+- si viene `null`, se trata como `0`
+- solo incrementa el precio de venta mostrado/cobrado; no cambia el precio base guardado en `Productos`
+- formula actual:
+  - `PrecioEfectivo = PrecioBase * (1 + AjustePrecioPorcentaje / 100)`
+  - redondeo a 1 decimal
+- el ticket, la venta y los reportes deben reflejar el monto realmente cobrado
 
 ### Montos tributarios base
 - las tablas `Ventas` y `Compras` deben persistir:

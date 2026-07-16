@@ -77,7 +77,12 @@
                   <div class="product-sku">{{ product.sku }}</div>
                 </td>
                 <td data-label="Categoria">{{ product.categoryName }}</td>
-                <td data-label="Precio">{{ product.price | solesPrice }}</td>
+                <td data-label="Precio">
+                  <strong>{{ product.effectivePrice | solesPrice }}</strong>
+                  @if (product.effectivePrice !== product.price) {
+                    <div class="product-sku">Base: {{ product.price | solesPrice }}</div>
+                  }
+                </td>
                 <td data-label="Costo">{{ product.cost | solesPrice }}</td>
                 <td data-label="Stock">
                   <span class="pill" [class.low]="product.stock <= 5">

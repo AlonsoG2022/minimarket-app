@@ -15,6 +15,17 @@ public class SaleService(
 {
     private const decimal IgvDivisor = 1.18m;
 
+    private static decimal CalculateEffectivePrice(Product product)
+    {
+        var adjustment = product.Category?.PriceAdjustmentPercentage ?? 0m;
+        if (adjustment <= 0m)
+        {
+            return product.Price;
+        }
+
+        return decimal.Round(product.Price * (1m + (adjustment / 100m)), 1, MidpointRounding.AwayFromZero);
+    }
+
     public async Task<IReadOnlyCollection<SaleDto>> GetAllAsync() =>
         (await saleRepository.GetAllAsync()).Select(x => x.ToDto()).ToList();
 
@@ -78,6 +89,7 @@ public class SaleService(
             }
 
             product.Stock -= item.Quantity;
+            var effectivePrice = CalculateEffectivePrice(product);
 
             sale.Details.Add(new SaleDetail
             {
@@ -86,8 +98,8 @@ public class SaleService(
                 // disponible al generar el snapshot del ticket.
                 Product = product,
                 Quantity = item.Quantity,
-                UnitPrice = product.Price,
-                Subtotal = product.Price * item.Quantity
+                UnitPrice = effectivePrice,
+                Subtotal = effectivePrice * item.Quantity
             });
         }
 

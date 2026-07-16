@@ -15,15 +15,18 @@ export class CategoryListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly categoriesService = inject(CategoriesService);
+  private editingCategoryId?: number;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     description: [''],
-    isActive: [true]
+    isActive: [true],
+    priceAdjustmentPercentage: [0, [Validators.required, Validators.min(0)]]
   });
 
   categories: Category[] = [];
   loading = true;
+  isEditing = false;
   message = '';
   error = '';
 
@@ -53,7 +56,8 @@ export class CategoryListComponent implements OnInit {
       .update(category.id, {
         name: category.name,
         description: category.description,
-        isActive: !category.isActive
+        isActive: !category.isActive,
+        priceAdjustmentPercentage: category.priceAdjustmentPercentage ?? 0
       })
       .subscribe({
         next: () => {
@@ -72,6 +76,31 @@ export class CategoryListComponent implements OnInit {
       });
   }
 
+  edit(category: Category): void {
+    this.isEditing = true;
+    this.editingCategoryId = category.id;
+    this.message = '';
+    this.error = '';
+    this.form.reset({
+      name: category.name,
+      description: category.description ?? '',
+      isActive: category.isActive,
+      priceAdjustmentPercentage: category.priceAdjustmentPercentage ?? 0
+    });
+    this.cdr.detectChanges();
+  }
+
+  resetForm(): void {
+    this.isEditing = false;
+    this.editingCategoryId = undefined;
+    this.form.reset({
+      name: '',
+      description: '',
+      isActive: true,
+      priceAdjustmentPercentage: 0
+    });
+  }
+
   save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -82,24 +111,27 @@ export class CategoryListComponent implements OnInit {
     const payload: SaveCategory = {
       name: value.name,
       description: value.description,
-      isActive: value.isActive
+      isActive: value.isActive,
+      priceAdjustmentPercentage: Number(value.priceAdjustmentPercentage) || 0
     };
 
-    this.categoriesService.create(payload).subscribe({
+    const request = this.isEditing && this.editingCategoryId
+      ? this.categoriesService.update(this.editingCategoryId, payload)
+      : this.categoriesService.create(payload);
+
+    request.subscribe({
       next: () => {
-        this.message = 'Categoria registrada correctamente.';
+        this.message = this.isEditing
+          ? 'Categoria actualizada correctamente.'
+          : 'Categoria registrada correctamente.';
         this.error = '';
-        this.form.reset({
-          name: '',
-          description: '',
-          isActive: true
-        });
+        this.resetForm();
         this.loadCategories();
         this.cdr.detectChanges();
       },
       error: (response) => {
         this.message = '';
-        this.error = response.error?.message ?? 'No se pudo registrar la categoria.';
+        this.error = response.error?.message ?? 'No se pudo guardar la categoria.';
         this.cdr.detectChanges();
       }
     });

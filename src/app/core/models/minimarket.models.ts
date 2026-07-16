@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   description?: string | null;
   isActive: boolean;
+  priceAdjustmentPercentage: number;
 }
 
 export interface Product {
@@ -14,6 +15,7 @@ export interface Product {
   purchaseBarcode?: string | null;
   description?: string | null;
   price: number;
+  effectivePrice: number;
   cost: number;
   stock: number;
   minimumStock: number;
@@ -79,6 +81,7 @@ export interface SaveCategory {
   name: string;
   description?: string | null;
   isActive: boolean;
+  priceAdjustmentPercentage: number;
 }
 
 export interface Supplier {
