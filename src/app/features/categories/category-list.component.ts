@@ -26,6 +26,7 @@ export class CategoryListComponent implements OnInit {
 
   categories: Category[] = [];
   loading = true;
+  formVisible = false;
   isEditing = false;
   message = '';
   error = '';
@@ -77,6 +78,7 @@ export class CategoryListComponent implements OnInit {
   }
 
   edit(category: Category): void {
+    this.formVisible = true;
     this.isEditing = true;
     this.editingCategoryId = category.id;
     this.message = '';
@@ -91,6 +93,21 @@ export class CategoryListComponent implements OnInit {
   }
 
   resetForm(): void {
+    this.formVisible = false;
+    this.isEditing = false;
+    this.editingCategoryId = undefined;
+    this.form.reset({
+      name: '',
+      description: '',
+      isActive: true,
+      priceAdjustmentPercentage: 0
+    });
+  }
+
+  openCreateForm(): void {
+    this.message = '';
+    this.error = '';
+    this.formVisible = true;
     this.isEditing = false;
     this.editingCategoryId = undefined;
     this.form.reset({

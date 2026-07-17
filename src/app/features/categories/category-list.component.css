@@ -3,6 +3,37 @@
   gap: 1.5rem;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+}
+
+.modal-card {
+  width: min(820px, 100%);
+  max-height: calc(100dvh - 3rem);
+  overflow: auto;
+}
+
+.editor-card {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.editor-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1rem;
+}
+
 .form-grid {
   display: grid;
   gap: 1rem;
@@ -18,6 +49,12 @@
 .form-grid input,
 .form-grid textarea {
   width: 100%;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--color-muted);
 }
 
 .full-width {
@@ -61,5 +98,20 @@
 @media (max-width: 720px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .modal-backdrop {
+    padding: 0;
+    align-items: end;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .editor-header button {
+    width: 100%;
   }
 }

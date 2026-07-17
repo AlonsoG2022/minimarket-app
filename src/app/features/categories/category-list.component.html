@@ -1,45 +1,13 @@
 <section class="category-layout">
   <article class="card">
-    <h2 class="section-title">Categorias</h2>
-    <p class="section-copy">
-      {{ isEditing ? 'Edita la categoria seleccionada y ajusta su recargo cuando lo necesites.' : 'Registra las categorias base que luego podras usar al crear productos.' }}
-    </p>
-
-    <form class="form-grid" [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
+    <div class="editor-header">
       <div>
-        <label for="name">Nombre</label>
-        <input id="name" formControlName="name" placeholder="Ej. Lacteos" autocomplete="off">
+        <h2 class="section-title">Categorias</h2>
+        <p class="section-copy">Administra las categorias base y su ajuste de precio sin perder de vista la lista.</p>
       </div>
 
-      <div class="full-width">
-        <label for="description">Descripcion</label>
-        <textarea id="description" rows="3" formControlName="description" autocomplete="off"></textarea>
-      </div>
-
-      <div>
-        <label for="priceAdjustmentPercentage">Ajuste de precio (%)</label>
-        <input
-          id="priceAdjustmentPercentage"
-          type="number"
-          min="0"
-          step="0.01"
-          formControlName="priceAdjustmentPercentage"
-          autocomplete="off"
-        >
-      </div>
-
-      <div class="checkbox-row full-width">
-        <input id="isActive" type="checkbox" formControlName="isActive">
-        <label for="isActive">Categoria activa</label>
-      </div>
-
-      <div class="actions full-width">
-        <button type="submit">{{ isEditing ? 'Guardar cambios' : 'Guardar categoria' }}</button>
-        @if (isEditing) {
-          <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
-        }
-      </div>
-    </form>
+      <button type="button" (click)="openCreateForm()">Nueva categoria</button>
+    </div>
 
     @if (message) {
       <p class="message">{{ message }}</p>
@@ -97,3 +65,55 @@
     }
   </article>
 </section>
+
+@if (formVisible) {
+  <div class="modal-backdrop" (click)="resetForm()">
+    <article class="card editor-card modal-card" (click)="$event.stopPropagation()">
+      <div class="editor-header">
+        <div>
+          <h2 class="section-title">{{ isEditing ? 'Editar categoria' : 'Nueva categoria' }}</h2>
+          <p class="section-copy">
+            {{ isEditing ? 'Actualiza el nombre, descripcion, ajuste y estado de la categoria seleccionada.' : 'Crea una nueva categoria y define su ajuste de precio si lo necesitas.' }}
+          </p>
+        </div>
+
+        <button type="button" class="secondary" (click)="resetForm()">Cerrar</button>
+      </div>
+
+      <form class="form-grid" [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
+        <div>
+          <label for="name">Nombre</label>
+          <input id="name" formControlName="name" placeholder="Ej. Lacteos" autocomplete="off">
+        </div>
+
+        <div>
+          <label for="priceAdjustmentPercentage">Ajuste de precio (%)</label>
+          <input
+            id="priceAdjustmentPercentage"
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="priceAdjustmentPercentage"
+            autocomplete="off"
+          >
+          <small class="field-hint">Si colocas `0`, la categoria no aplicara recargo adicional.</small>
+        </div>
+
+        <div class="full-width">
+          <label for="description">Descripcion</label>
+          <textarea id="description" rows="3" formControlName="description" autocomplete="off"></textarea>
+        </div>
+
+        <div class="checkbox-row full-width">
+          <input id="isActive" type="checkbox" formControlName="isActive">
+          <label for="isActive">Categoria activa</label>
+        </div>
+
+        <div class="actions full-width">
+          <button type="submit">{{ isEditing ? 'Guardar cambios' : 'Guardar categoria' }}</button>
+          <button type="button" class="secondary" (click)="resetForm()">Cancelar</button>
+        </div>
+      </form>
+    </article>
+  </div>
+}

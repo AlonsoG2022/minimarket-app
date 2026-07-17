@@ -42,6 +42,7 @@ Estados sugeridos:
     con sugerencia en vivo y autogeneracion en el backend si llega vacio (formulario e import)
   - categorias activables/desactivables (`PUT /api/categories/{id}`, `GET ?includeInactive=true`);
     la lista de productos oculta los inactivos y los de categorias inactivas, con checkbox "Ver ocultos"
+  - categorias con modal para `Nueva categoria` y `Editar`, alineado al patron de UX usado en productos
 
 ### Compras
 - Estado: `Implementado`

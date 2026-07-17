@@ -104,6 +104,8 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   un checkbox "Ver ocultos (inactivos)" permite mostrarlos todos
 - las categorias se pueden **activar/desactivar** desde la pantalla de Categorias; al desactivar una,
   sus productos (actuales y futuros) dejan de mostrarse en la lista sin borrarse
+- el mantenimiento de categorias usa modal para `Nueva categoria` y `Editar`, evitando que el usuario
+  tenga que volver al inicio de la pantalla cuando trabaja con listas largas
 
 ### Compras
 - compras por proveedor
