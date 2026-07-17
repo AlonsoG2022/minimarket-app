@@ -10,6 +10,7 @@ import { PrintJobsService } from '../../core/services/print-jobs.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
+import { normalizeLookupTerm } from '../../shared/search-term.utils';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
@@ -169,7 +170,7 @@ export class SalesFormComponent implements OnInit {
     this.loadRecentPrintJobs();
   }
 
-  addProduct(product: Product, quantity = this.quickQuantity): void {
+  addProduct(product: Product, quantity = this.quickQuantity, clearSearch = this.shouldClearProductSearch(product)): void {
     const safeQuantity = Math.max(1, Number(quantity) || 1);
     const existingIndex = this.details.controls.findIndex(
       (control) => Number(control.get('productId')?.value) === product.id
@@ -183,7 +184,10 @@ export class SalesFormComponent implements OnInit {
       this.details.push(this.createDetailGroup(product.id, safeQuantity));
     }
 
-    this.productSearch = '';
+    if (clearSearch) {
+      this.productSearch = '';
+    }
+
     this.quickQuantity = 1;
   }
 
@@ -219,6 +223,19 @@ export class SalesFormComponent implements OnInit {
     }
 
     control.patchValue({ quantity: currentQuantity - 1 });
+  }
+
+  private shouldClearProductSearch(product: Product, searchTerm = this.productSearch): boolean {
+    const normalizedSearchTerm = normalizeLookupTerm(searchTerm);
+    if (!normalizedSearchTerm) {
+      return false;
+    }
+
+    return [
+      product.sku,
+      product.barcode ?? null,
+      product.purchaseBarcode ?? null
+    ].some((value) => normalizeLookupTerm(value) === normalizedSearchTerm);
   }
 
   submit(): void {

@@ -57,6 +57,7 @@ Estados sugeridos:
 - Estado: `Implementado`
 - Notas:
   - buscador rapido
+  - en los buscadores mixtos, el texto se limpia solo cuando se agrego/busco por codigo exacto; si fue por nombre, permanece visible
   - ticket actual
   - soporte de lector
   - el POS muestra y cobra `PrecioEfectivo` cuando la categoria tiene `AjustePrecioPorcentaje`

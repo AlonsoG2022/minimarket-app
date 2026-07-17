@@ -4,6 +4,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { AuthService } from './core/services/auth.service';
 import { CompanyService } from './core/services/company.service';
 import { ThemeService } from './core/services/theme.service';
+import { looksLikeProductCode } from './shared/search-term.utils';
 
 @Component({
   selector: 'app-root',
@@ -55,9 +56,14 @@ export class App {
     }
 
     const query = this.productSearch.trim();
+    const shouldClearSearch = looksLikeProductCode(query);
     this.router.navigate(['/productos'], {
       queryParams: query ? { q: query } : {}
     });
+
+    if (shouldClearSearch) {
+      this.productSearch = '';
+    }
   }
 
   openQuickSale(): void {

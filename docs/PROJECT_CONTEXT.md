@@ -67,6 +67,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Ventas
 - busqueda rapida de productos
 - soporte de lector de codigo de barras
+- en buscadores mixtos (nombre/codigo), el texto solo se limpia automaticamente cuando la coincidencia fue por codigo exacto; si fue por nombre, se mantiene para seguir revisando resultados
 - usuario autenticado asociado a la venta
 - aviso visual de stock minimo
 - ticket imprimible desde navegador
