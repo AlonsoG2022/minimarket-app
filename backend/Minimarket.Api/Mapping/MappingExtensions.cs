@@ -1,4 +1,5 @@
 using Minimarket.Api.DTOs;
+using Minimarket.Api.Helpers;
 using Minimarket.Api.Models;
 
 namespace Minimarket.Api.Mapping;
@@ -9,12 +10,7 @@ public static class MappingExtensions
     private static decimal GetEffectivePrice(Product product)
     {
         var adjustment = product.Category?.PriceAdjustmentPercentage ?? 0m;
-        if (adjustment <= 0m)
-        {
-            return product.Price;
-        }
-
-        return decimal.Round(product.Price * (1m + (adjustment / 100m)), 1, MidpointRounding.AwayFromZero);
+        return PriceCalculator.ApplyCategoryAdjustment(product.Price, adjustment);
     }
 
     public static CompanyDto ToDto(this Company company) =>

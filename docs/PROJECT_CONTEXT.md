@@ -89,7 +89,9 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - codigo de barras unico para compra y venta
 - ajuste de precio por categoria (`AjustePrecioPorcentaje`) para aplicar recargos temporales sin tocar el precio base del producto
   - el precio base del producto se mantiene intacto
-  - el precio efectivo de venta se calcula como `Precio x (1 + ajuste / 100)` y se redondea a 1 decimal
+  - el precio efectivo de venta se calcula como `Precio x (1 + ajuste / 100)` y luego se redondea siempre hacia arriba con regla operativa:
+    - si el precio final es menor a `5.00`, sube al siguiente multiplo de `0.10`
+    - si el precio final es `5.00` o mayor, sube al siguiente multiplo de `0.50`
   - si la categoria tiene ajuste `0`, el producto vuelve automaticamente a su precio normal
 - stock minimo global configurable desde `Configuracion` (por defecto `5`, no editable por producto)
 - aviso compacto de productos en stock minimo (resumen con conteo + los mas bajos)
@@ -172,8 +174,10 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - si viene `null`, se trata como `0`
 - solo incrementa el precio de venta mostrado/cobrado; no cambia el precio base guardado en `Productos`
 - formula actual:
-  - `PrecioEfectivo = PrecioBase * (1 + AjustePrecioPorcentaje / 100)`
-  - redondeo a 1 decimal
+  - `PrecioAjustado = PrecioBase * (1 + AjustePrecioPorcentaje / 100)`
+  - redondeo siempre hacia arriba:
+    - si `PrecioAjustado < 5.00` -> siguiente multiplo de `0.10`
+    - si `PrecioAjustado >= 5.00` -> siguiente multiplo de `0.50`
 - el ticket, la venta y los reportes deben reflejar el monto realmente cobrado
 
 ### Montos tributarios base

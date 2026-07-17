@@ -10,6 +10,7 @@ import com.minimarket.api.repository.ProductRepository;
 import com.minimarket.api.repository.SaleRepository;
 import com.minimarket.api.repository.UserRepository;
 import com.minimarket.api.util.DtoMapper;
+import com.minimarket.api.util.PriceCalculator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -25,8 +26,6 @@ public class SaleService {
 
     private static final Logger logger = LoggerFactory.getLogger(SaleService.class);
     private static final BigDecimal IGV_DIVISOR = new BigDecimal("1.18");
-    private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
-
     private final SaleRepository saleRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
@@ -175,13 +174,6 @@ public class SaleService {
         var adjustment = product.getCategory() != null && product.getCategory().getPriceAdjustmentPercentage() != null
             ? product.getCategory().getPriceAdjustmentPercentage()
             : BigDecimal.ZERO;
-
-        if (adjustment.compareTo(BigDecimal.ZERO) <= 0) {
-            return product.getPrice();
-        }
-
-        return product.getPrice()
-            .multiply(BigDecimal.ONE.add(adjustment.divide(ONE_HUNDRED, 4, RoundingMode.HALF_UP)))
-            .setScale(1, RoundingMode.HALF_UP);
+        return PriceCalculator.applyCategoryAdjustment(product.getPrice(), adjustment);
     }
 }

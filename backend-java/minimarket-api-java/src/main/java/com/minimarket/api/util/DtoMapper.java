@@ -19,14 +19,7 @@ public final class DtoMapper {
         var adjustment = product.getCategory() != null && product.getCategory().getPriceAdjustmentPercentage() != null
             ? product.getCategory().getPriceAdjustmentPercentage()
             : java.math.BigDecimal.ZERO;
-
-        if (adjustment.compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            return product.getPrice();
-        }
-
-        return product.getPrice()
-            .multiply(java.math.BigDecimal.ONE.add(adjustment.divide(new java.math.BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP)))
-            .setScale(1, java.math.RoundingMode.HALF_UP);
+        return PriceCalculator.applyCategoryAdjustment(product.getPrice(), adjustment);
     }
 
     public static CompanyDto toDto(Company company) {

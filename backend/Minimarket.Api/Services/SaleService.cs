@@ -1,4 +1,5 @@
 using Minimarket.Api.DTOs;
+using Minimarket.Api.Helpers;
 using Minimarket.Api.Mapping;
 using Minimarket.Api.Models;
 using Minimarket.Api.Repositories;
@@ -18,12 +19,7 @@ public class SaleService(
     private static decimal CalculateEffectivePrice(Product product)
     {
         var adjustment = product.Category?.PriceAdjustmentPercentage ?? 0m;
-        if (adjustment <= 0m)
-        {
-            return product.Price;
-        }
-
-        return decimal.Round(product.Price * (1m + (adjustment / 100m)), 1, MidpointRounding.AwayFromZero);
+        return PriceCalculator.ApplyCategoryAdjustment(product.Price, adjustment);
     }
 
     public async Task<IReadOnlyCollection<SaleDto>> GetAllAsync() =>

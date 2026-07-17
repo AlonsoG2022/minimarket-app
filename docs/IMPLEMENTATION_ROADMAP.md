@@ -32,6 +32,10 @@ Estados sugeridos:
 - Notas:
   - barcode unico compra/venta
   - ajuste de precio por categoria implementado como recargo reversible sobre el precio base del producto
+  - redondeo operativo de precio efectivo implementado:
+    - menores a `5.00` -> siguiente multiplo de `0.10`
+    - desde `5.00` -> siguiente multiplo de `0.50`
+    - siempre hacia arriba, sin tocar el precio base guardado
   - importacion y exportacion Excel (con columnas `NombreCorto` y `Costo`)
   - al importar, las categorias que no existen se crean automaticamente
   - el Excel exportado trae dos hojas: `Productos` y `Categorias`
@@ -61,6 +65,10 @@ Estados sugeridos:
   - ticket actual
   - soporte de lector
   - el POS muestra y cobra `PrecioEfectivo` cuando la categoria tiene `AjustePrecioPorcentaje`
+  - el precio efectivo sigue la regla operativa de redondeo por tramo:
+    - `< 5.00` a `0.10`
+    - `>= 5.00` a `0.50`
+    - siempre hacia arriba
   - guarda `SubTotal`, `IGV` y `Total` en cabecera
   - regla actual: el precio unitario ya incluye IGV
   - el ticket muestra `Subtotal`, `IGV (18%)` y `Total` con los montos reales de la venta
