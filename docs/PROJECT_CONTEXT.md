@@ -93,6 +93,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
     - si el precio final es menor a `5.00`, sube al siguiente multiplo de `0.10`
     - si el precio final es `5.00` o mayor, sube al siguiente multiplo de `0.50`
   - si la categoria tiene ajuste `0`, el producto vuelve automaticamente a su precio normal
+  - en la lista principal de productos se muestra solo el precio efectivo final, para mantener una lectura mas limpia
 - stock minimo global configurable desde `Configuracion` (por defecto `5`, no editable por producto)
 - aviso compacto de productos en stock minimo (resumen con conteo + los mas bajos)
 - nombre corto por producto (`NombreCorto`) que se muestra en el ticket en vez del nombre largo

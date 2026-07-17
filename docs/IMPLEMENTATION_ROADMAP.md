@@ -36,6 +36,7 @@ Estados sugeridos:
     - menores a `5.00` -> siguiente multiplo de `0.10`
     - desde `5.00` -> siguiente multiplo de `0.50`
     - siempre hacia arriba, sin tocar el precio base guardado
+  - la lista principal de productos muestra solo el precio final efectivo, sin detallar el precio base
   - importacion y exportacion Excel (con columnas `NombreCorto` y `Costo`)
   - al importar, las categorias que no existen se crean automaticamente
   - el Excel exportado trae dos hojas: `Productos` y `Categorias`
