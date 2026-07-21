@@ -7,6 +7,8 @@ namespace Minimarket.PrintWorker.Services;
 
 public class TicketTextRenderer
 {
+    private const string DatePattern = "dd/MM/yyyy HH:mm";
+
     public string Build(TicketPrintPayload payload, PrintingOptions options)
     {
         var width = Math.Max(32, options.LineWidth);
@@ -42,28 +44,21 @@ public class TicketTextRenderer
         lines.Add(Center($"Telefono: {phone}", width));
         lines.Add(new string('-', width));
         lines.Add(Center(documentTitle.ToUpperInvariant(), width));
-        lines.Add(Center($"#{payload.SaleId} - {payload.SaleDate:dd/MM/yyyy HH:mm}", width));
+        lines.Add(Center($"#{payload.SaleId} - {payload.SaleDate.ToString(DatePattern, CultureInfo.InvariantCulture)}", width));
         lines.Add(new string('-', width));
-        lines.Add($"Fecha: {payload.SaleDate:dd/MM/yyyy HH:mm}");
-        lines.Add($"Cajero: {payload.CashierName}");
-        lines.Add($"Cliente: {customerLabel}");
-        lines.Add($"Pago: {payload.PaymentMethod}");
+        lines.Add(MetaRow("Fecha", payload.SaleDate.ToString(DatePattern, CultureInfo.InvariantCulture), width));
+        lines.Add(MetaRow("Cajero", payload.CashierName, width));
+        lines.Add(MetaRow("Cliente", customerLabel, width));
+        lines.Add(MetaRow("Pago", payload.PaymentMethod, width));
         lines.Add(new string('-', width));
         lines.Add(TicketHeader(width));
-        lines.Add(new string('-', width));
 
         foreach (var item in payload.Items)
         {
-            foreach (var wrapped in Wrap(item.ProductName, width - 2))
-            {
-                lines.Add(wrapped);
-            }
-
-            var detail = $"{item.Quantity} x {FormatMoney(item.UnitPrice)}";
-            lines.Add(PadRight(detail, Math.Max(0, width - FormatMoney(item.Subtotal).Length)) + FormatMoney(item.Subtotal));
+            lines.AddRange(TicketItemLines(item, width));
+            lines.Add(new string('-', width));
         }
 
-        lines.Add(new string('-', width));
         lines.Add(Row("Items", payload.Items.Count.ToString(CultureInfo.InvariantCulture), width));
         var totalUnits = payload.Items.Sum(item => item.Quantity);
         lines.Add(Row("Unidades", totalUnits.ToString(CultureInfo.InvariantCulture), width));
@@ -78,7 +73,7 @@ public class TicketTextRenderer
         }
 
         lines.Add(new string('-', width));
-        lines.Add(Row("TOTAL", FormatMoney(total), width));
+        lines.Add(Row("Total", FormatMoney(total), width));
 
         var builder = new StringBuilder();
         foreach (var line in lines)
@@ -99,6 +94,9 @@ public class TicketTextRenderer
 
     private static string Row(string label, string value, int width) =>
         PadRight(label, Math.Max(0, width - value.Length)) + value;
+
+    private static string MetaRow(string label, string value, int width) =>
+        Row(label, value, width);
 
     private static string FormatMoney(decimal value) =>
         $"S/ {value:0.00}";
@@ -155,7 +153,59 @@ public class TicketTextRenderer
 
     private static string TicketHeader(int width)
     {
-        const string header = "CANT PRODUCTO P.UNIT IMPORTE";
-        return header.Length <= width ? header : header[..width];
+        var layout = ColumnLayout.For(width);
+        return PadRight("CANT.", layout.QtyWidth)
+            + " "
+            + PadRight("PRODUCTO", layout.ProductWidth)
+            + " "
+            + PadLeft("P. UNIT", layout.UnitWidth)
+            + " "
+            + PadLeft("IMPORTE", layout.AmountWidth);
+    }
+
+    private static IReadOnlyCollection<string> TicketItemLines(TicketPrintItem item, int width)
+    {
+        var layout = ColumnLayout.For(width);
+        var productLines = Wrap(item.ProductName, layout.ProductWidth).ToList();
+        if (productLines.Count == 0)
+        {
+            productLines.Add(string.Empty);
+        }
+
+        var lines = new List<string>
+        {
+            PadRight(item.Quantity.ToString(CultureInfo.InvariantCulture), layout.QtyWidth)
+            + " "
+            + PadRight(productLines[0], layout.ProductWidth)
+            + " "
+            + PadLeft(FormatMoney(item.UnitPrice), layout.UnitWidth)
+            + " "
+            + PadLeft(FormatMoney(item.Subtotal), layout.AmountWidth)
+        };
+
+        for (var index = 1; index < productLines.Count; index++)
+        {
+            lines.Add(PadRight(string.Empty, layout.QtyWidth)
+                + " "
+                + PadRight(productLines[index], layout.ProductWidth));
+        }
+
+        return lines;
+    }
+
+    private static string PadLeft(string value, int width) =>
+        value.PadLeft(Math.Max(value.Length, width));
+
+    private readonly record struct ColumnLayout(int QtyWidth, int ProductWidth, int UnitWidth, int AmountWidth)
+    {
+        public static ColumnLayout For(int width)
+        {
+            const int qtyWidth = 5;
+            const int unitWidth = 10;
+            const int amountWidth = 10;
+            const int spaces = 3;
+            var productWidth = Math.Max(12, width - qtyWidth - unitWidth - amountWidth - spaces);
+            return new ColumnLayout(qtyWidth, productWidth, unitWidth, amountWidth);
+        }
     }
 }

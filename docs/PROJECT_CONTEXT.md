@@ -158,6 +158,12 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - `impreso`
   - `error`
 - reencolado manual disponible desde ventas
+- el ticket fisico del worker sigue la misma estructura operativa del preview web:
+  - encabezado comercial
+  - bloque de fecha/cajero/cliente/pago
+  - tabla de detalle `Cant. / Producto / P. Unit / Importe`
+  - resumen con `Items`, `Unidades`, `Subtotal`, `IGV` y `Total`
+  - el nombre impreso por linea usa `NombreCorto` si existe
 - roadmap visual de ticket definido en dos fases:
   - `Fase 1`: implementada con encabezado comercial, datos de venta, cliente simple, detalle tabular por producto, subtotal, total y mensaje final
   - `Fase 2`: ticket documental preparado para boleta/factura con serie, correlativo, subtotal, IGV, monto en letras y base para SUNAT

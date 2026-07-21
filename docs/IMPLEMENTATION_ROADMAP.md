@@ -128,6 +128,8 @@ Estados sugeridos:
 - Nota:
   - esta fase reemplaza el ticket muy basico actual, pero todavia no representa una boleta electronica formal
   - la vista previa web y los workers de impresion deben mantenerse consistentes en esta fase
+  - el worker imprime el mismo bloque operativo del preview: encabezado comercial, datos de venta,
+    tabla `Cant. / Producto / P. Unit / Importe` y resumen `Subtotal / IGV / Total`, usando `NombreCorto`
 
 ### Fase 2: Ticket documental preparado para boleta/factura
 - Estado: `Pendiente`

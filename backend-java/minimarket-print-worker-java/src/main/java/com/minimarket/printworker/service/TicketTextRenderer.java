@@ -10,6 +10,7 @@ import java.util.List;
 
 @Component
 public class TicketTextRenderer {
+    private static final String DATE_PATTERN = "dd/MM/yyyy HH:mm";
 
     public String build(TicketPrintPayloadDto payload, PrintingProperties properties) {
         var width = Math.max(32, properties.getLineWidth());
@@ -48,24 +49,20 @@ public class TicketTextRenderer {
         lines.add(center("Telefono: " + phone, width));
         lines.add("-".repeat(width));
         lines.add(center(documentTitle.toUpperCase(), width));
-        lines.add(center("#" + payload.saleId() + " - " + payload.saleDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), width));
+        lines.add(center("#" + payload.saleId() + " - " + payload.saleDate().format(java.time.format.DateTimeFormatter.ofPattern(DATE_PATTERN)), width));
         lines.add("-".repeat(width));
-        lines.add("Fecha: " + payload.saleDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-        lines.add("Cajero: " + payload.cashierName());
-        lines.add("Cliente: " + customerLabel);
-        lines.add("Pago: " + payload.paymentMethod());
+        lines.add(metaRow("Fecha", payload.saleDate().format(java.time.format.DateTimeFormatter.ofPattern(DATE_PATTERN)), width));
+        lines.add(metaRow("Cajero", payload.cashierName(), width));
+        lines.add(metaRow("Cliente", customerLabel, width));
+        lines.add(metaRow("Pago", payload.paymentMethod(), width));
         lines.add("-".repeat(width));
         lines.add(ticketHeader(width));
-        lines.add("-".repeat(width));
 
         for (var item : payload.items()) {
-            lines.addAll(wrap(item.productName(), width - 2));
-            var subtotal = formatMoney(item.subtotal());
-            var detail = item.quantity() + " x " + formatMoney(item.unitPrice());
-            lines.add(padRight(detail, Math.max(0, width - subtotal.length())) + subtotal);
+            lines.addAll(ticketItemLines(item, width));
+            lines.add("-".repeat(width));
         }
 
-        lines.add("-".repeat(width));
         lines.add(row("Items", String.valueOf(payload.items().size()), width));
         var totalUnits = payload.items().stream().mapToInt(item -> item.quantity() == null ? 0 : item.quantity()).sum();
         lines.add(row("Unidades", String.valueOf(totalUnits), width));
@@ -79,7 +76,7 @@ public class TicketTextRenderer {
         }
 
         lines.add("-".repeat(width));
-        lines.add(row("TOTAL", formatMoney(total), width));
+        lines.add(row("Total", formatMoney(total), width));
         lines.add("");
         lines.add(center(footerLine1, width));
         lines.add(center(footerLine2, width));
@@ -95,6 +92,10 @@ public class TicketTextRenderer {
 
     private static String row(String label, String value, int width) {
         return padRight(label, Math.max(0, width - value.length())) + value;
+    }
+
+    private static String metaRow(String label, String value, int width) {
+        return row(label, value, width);
     }
 
     private static String formatMoney(BigDecimal value) {
@@ -144,7 +145,55 @@ public class TicketTextRenderer {
     }
 
     private static String ticketHeader(int width) {
-        var header = "CANT PRODUCTO P.UNIT IMPORTE";
-        return header.length() <= width ? header : header.substring(0, width);
+        var layout = columnLayout(width);
+        return padRight("CANT.", layout.qtyWidth())
+            + " "
+            + padRight("PRODUCTO", layout.productWidth())
+            + " "
+            + padLeft("P. UNIT", layout.unitWidth())
+            + " "
+            + padLeft("IMPORTE", layout.amountWidth());
+    }
+
+    private static List<String> ticketItemLines(com.minimarket.printworker.dto.TicketPrintItemDto item, int width) {
+        var layout = columnLayout(width);
+        var productLines = wrap(item.productName(), layout.productWidth());
+        if (productLines.isEmpty()) {
+            productLines = List.of("");
+        }
+
+        var lines = new ArrayList<String>();
+        var firstLine = padRight(String.valueOf(item.quantity()), layout.qtyWidth())
+            + " "
+            + padRight(productLines.getFirst(), layout.productWidth())
+            + " "
+            + padLeft(formatMoney(item.unitPrice()), layout.unitWidth())
+            + " "
+            + padLeft(formatMoney(item.subtotal()), layout.amountWidth());
+        lines.add(firstLine);
+
+        for (var index = 1; index < productLines.size(); index++) {
+            lines.add(padRight("", layout.qtyWidth())
+                + " "
+                + padRight(productLines.get(index), layout.productWidth()));
+        }
+
+        return lines;
+    }
+
+    private static ColumnLayout columnLayout(int width) {
+        var qtyWidth = 5;
+        var unitWidth = 10;
+        var amountWidth = 10;
+        var spaces = 3;
+        var productWidth = Math.max(12, width - qtyWidth - unitWidth - amountWidth - spaces);
+        return new ColumnLayout(qtyWidth, productWidth, unitWidth, amountWidth);
+    }
+
+    private static String padLeft(String value, int width) {
+        return String.format("%" + Math.max(value.length(), width) + "s", value);
+    }
+
+    private record ColumnLayout(int qtyWidth, int productWidth, int unitWidth, int amountWidth) {
     }
 }
