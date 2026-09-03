@@ -37,6 +37,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     boolean existsByBarcodeIgnoreCaseAndIdNot(String barcode, Integer id);
 
+    Optional<Product> findFirstByBarcodeIgnoreCaseOrPurchaseBarcodeIgnoreCase(String barcode, String purchaseBarcode);
+
     boolean existsByPurchaseBarcodeIgnoreCase(String purchaseBarcode);
 
     boolean existsByPurchaseBarcodeIgnoreCaseAndIdNot(String purchaseBarcode, Integer id);

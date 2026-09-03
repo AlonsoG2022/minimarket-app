@@ -175,6 +175,13 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 ### Codigo de barras
 - un solo codigo de barras puede usarse para compra y venta del mismo producto
 - no debe repetirse entre productos distintos
+- al confirmar una boleta leida por IA, los productos nuevos pueden recibir el codigo de barras en esa misma pantalla
+- el backend rechaza la boleta antes de guardarla si el codigo ya pertenece a otro producto o se repite en la propia boleta
+
+### Busqueda de productos
+- ventas, compras y catalogo ignoran tildes, mayusculas y signos al buscar
+- una consulta de varias palabras encuentra el producto aunque las palabras esten en otro orden o separadas por otros terminos
+- se busca en nombre, categoria, SKU y codigo de barras
 
 ### Ajuste de precio por categoria
 - cada categoria puede tener `AjustePrecioPorcentaje`

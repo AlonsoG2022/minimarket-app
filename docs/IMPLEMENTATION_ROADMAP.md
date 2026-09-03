@@ -469,6 +469,7 @@ entre proveedores para saber donde comprar mas barato.
   - la app manda la foto (base64) al backend; el backend llama a Claude vision (`claude-sonnet-5`) con la clave descifrada
   - normaliza costo por unidad con IGV, empareja contra el catalogo, sugiere precio de venta y categoria
   - Angular: pantalla "Cargar boleta" (Mantenimiento) con confirmacion editable por linea
+  - en las lineas de producto nuevo, permite ingresar el codigo de barras antes de confirmar la compra
   - al confirmar: crea/actualiza productos, **registra una Compra + DetalleCompra**, **suma el stock**
     (cantidad x unidades por paquete) y guarda el costo en `ProveedorProducto`
   - el costo se mantiene **tal cual la boleta** (no promedio ponderado), por decision del negocio
@@ -486,7 +487,7 @@ entre proveedores para saber donde comprar mas barato.
 
 ### Reglas / decisiones
 - Normalizar a costo por unidad con IGV (boleta trae Precio SIN IGV -> costo c/IGV = Precio x 1.18; dividir packs/tiras; restar descuentos). Venden por unidad.
-- Codigo de barras: lo agrega el usuario a mano (producto nuevo se crea sin barras).
+- Codigo de barras: en productos nuevos se puede ingresar durante la confirmacion de la boleta; es opcional y se valida contra el catalogo antes de guardar.
 - Precio de venta: lo sugiere la app = Costo x margen por categoria + redondeo a moneda. Margenes:
   gaseosas/aguas/jugos/isotonicos/energizantes +35%, snacks/golosinas/galletas +40%, cervezas +25%,
   licores +22%, abarrotes +18%, cuidado personal/limpieza +30%.
@@ -499,6 +500,11 @@ entre proveedores para saber donde comprar mas barato.
 ### Fases
 - Fase 1: cargar foto -> leer -> confirmar -> guardar costo + crear/emparejar productos.
 - Fase 2: reporte comparador de proveedores ("donde comprar").
+
+### Mejora de busqueda de productos
+- Estado: `Implementado`
+- Alcance: ventas, compras y catalogo.
+- Regla: ignora tildes, mayusculas y orden de palabras; todas las palabras ingresadas deben existir en el nombre, categoria, SKU o codigo de barras del producto.
 
 ### Pendiente de decidir antes de codificar el "lector"
 - Motor de IA de vision (recomendado: Claude API / Anthropic) + API key en configuracion (no hardcodeada)

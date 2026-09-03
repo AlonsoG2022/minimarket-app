@@ -8,6 +8,7 @@ import { PurchasesService } from '../../core/services/purchases.service';
 import { SuppliersService } from '../../core/services/suppliers.service';
 import { Category, CreatePurchase, Product, Purchase, SaveProduct, Supplier } from '../../core/models/minimarket.models';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
+import { matchesProductLookup } from '../../shared/search-term.utils';
 
 @Component({
   selector: 'app-purchase-list',
@@ -57,6 +58,7 @@ export class PurchaseListComponent implements OnInit {
   pendingScannedCode = '';
   quickPackageQuantity = 1;
   manualProductId = 0;
+  manualProductSearch = '';
   loading = true;
   loadingHistory = true;
   loadingCategories = true;
@@ -67,6 +69,21 @@ export class PurchaseListComponent implements OnInit {
 
   get details(): FormArray {
     return this.form.get('details') as FormArray;
+  }
+
+  get filteredManualProducts(): Product[] {
+    const term = this.manualProductSearch.trim();
+    if (!term) {
+      return this.products;
+    }
+
+    return this.products.filter((product) => matchesProductLookup(term, [
+      product.name,
+      product.sku,
+      product.barcode,
+      product.purchaseBarcode,
+      product.categoryName
+    ]));
   }
 
   get currentItems(): Array<{
@@ -213,6 +230,7 @@ export class PurchaseListComponent implements OnInit {
 
     this.addProduct(product, this.quickPackageQuantity, null);
     this.manualProductId = 0;
+    this.manualProductSearch = '';
   }
 
   addProduct(product: Product, packageQuantity = this.quickPackageQuantity, barcodeSnapshot: string | null = null): void {

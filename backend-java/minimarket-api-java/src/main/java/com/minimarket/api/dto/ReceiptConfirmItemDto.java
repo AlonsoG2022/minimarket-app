@@ -8,6 +8,7 @@ public record ReceiptConfirmItemDto(
     Integer productId,
     String name,
     String shortName,
+    String barcode,
     String categoryName,
     Integer quantity,
     Integer packUnits,

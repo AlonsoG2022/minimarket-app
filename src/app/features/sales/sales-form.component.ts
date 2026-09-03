@@ -10,7 +10,7 @@ import { PrintJobsService } from '../../core/services/print-jobs.service';
 import { ProductsService } from '../../core/services/products.service';
 import { ReportsService } from '../../core/services/reports.service';
 import { SalesService } from '../../core/services/sales.service';
-import { normalizeLookupTerm } from '../../shared/search-term.utils';
+import { matchesProductLookup, normalizeLookupTerm } from '../../shared/search-term.utils';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 
 @Component({
@@ -82,17 +82,19 @@ export class SalesFormComponent implements OnInit {
   }
 
   get filteredProducts(): Product[] {
-    const term = this.productSearch.trim().toLowerCase();
+    const term = this.productSearch.trim();
     if (!term) {
       return [];
     }
 
     return this.products
-      .filter((product) =>
-        product.name.toLowerCase().includes(term) ||
-        product.sku.toLowerCase().includes(term) ||
-        (product.barcode ?? '').toLowerCase().includes(term)
-      )
+      .filter((product) => matchesProductLookup(term, [
+        product.name,
+        product.sku,
+        product.barcode,
+        product.purchaseBarcode,
+        product.categoryName
+      ]))
       .slice(0, 8);
   }
 

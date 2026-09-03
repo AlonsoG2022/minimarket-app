@@ -328,6 +328,7 @@ export interface ReceiptConfirmItem {
   productId?: number | null;
   name: string;
   shortName: string;
+  barcode?: string | null;
   categoryName: string;
   quantity: number;
   packUnits: number;

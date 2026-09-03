@@ -102,6 +102,7 @@
                     }
                   } @else if (row.action === 'create') {
                     <input [(ngModel)]="row.name" placeholder="Nombre del producto">
+                    <input [(ngModel)]="row.barcode" placeholder="Codigo de barras (opcional)" autocomplete="off">
                     <input [(ngModel)]="row.categoryName" placeholder="Categoria">
                   } @else if (row.action === 'gasto') {
                     <span class="field-hint">💰 Se registra como gasto en la caja abierta del dia.</span>

@@ -13,6 +13,7 @@ interface ReceiptRow {
   productId: number | null;
   name: string;
   shortName: string;
+  barcode: string;
   categoryName: string;
   quantity: number;
   packUnits: number;
@@ -97,6 +98,7 @@ export class ReceiptUploadComponent implements OnInit {
             productId: line.matchProductId ?? null,
             name: line.suggestedName,
             shortName: line.suggestedShortName,
+            barcode: '',
             categoryName: line.suggestedCategory,
             quantity: Math.max(1, Math.round(line.quantity || 1)),
             packUnits: Math.max(1, line.packUnits || 1),
@@ -163,6 +165,7 @@ export class ReceiptUploadComponent implements OnInit {
       productId: row.action === 'match' ? row.productId : null,
       name: row.name,
       shortName: row.shortName,
+      barcode: row.barcode.trim() || null,
       categoryName: row.categoryName,
       quantity: Math.max(1, Math.round(Number(row.quantity) || 1)),
       packUnits: Math.max(1, Math.round(Number(row.packUnits) || 1)),

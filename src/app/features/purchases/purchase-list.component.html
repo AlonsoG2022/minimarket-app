@@ -87,14 +87,25 @@
 
           <div class="manual-grid">
             <div>
-              <label for="manualProductId">Producto manual</label>
+              <label for="manualProductSearch">Buscar producto manual</label>
+              <input
+                id="manualProductSearch"
+                [(ngModel)]="manualProductSearch"
+                [ngModelOptions]="{ standalone: true }"
+                autocomplete="off"
+                placeholder="Nombre, SKU o codigo"
+              >
+            </div>
+
+            <div>
+              <label for="manualProductId">Producto</label>
               <select
                 id="manualProductId"
                 [(ngModel)]="manualProductId"
                 [ngModelOptions]="{ standalone: true }"
               >
                 <option [ngValue]="0">Selecciona un producto</option>
-                @for (product of products; track product.id) {
+                @for (product of filteredManualProducts; track product.id) {
                   <option [ngValue]="product.id">{{ product.name }}</option>
                 }
               </select>

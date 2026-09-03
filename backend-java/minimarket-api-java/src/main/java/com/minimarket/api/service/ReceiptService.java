@@ -197,6 +197,11 @@ public class ReceiptService {
             return ServiceResult.failure("No hay items para guardar.");
         }
 
+        var barcodeError = validateReceiptBarcodes(request.items());
+        if (barcodeError != null) {
+            return ServiceResult.failure(barcodeError);
+        }
+
         if (request.userId() == null) {
             return ServiceResult.failure("El usuario no es valido.");
         }
@@ -296,8 +301,9 @@ public class ReceiptService {
                 nuevo.setShortName(truncate(item.shortName() == null || item.shortName().isBlank()
                     ? ShortNameGenerator.generate(name) : item.shortName(), 60));
                 nuevo.setSku(generateSku(category.getName()));
-                nuevo.setBarcode(null);
-                nuevo.setPurchaseBarcode(null);
+                var barcode = normalizeBarcode(item.barcode());
+                nuevo.setBarcode(barcode);
+                nuevo.setPurchaseBarcode(barcode);
                 nuevo.setDescription(null);
                 nuevo.setPrice(salePrice);
                 nuevo.setCost(unitCost);
@@ -340,7 +346,7 @@ public class ReceiptService {
             detail.setUnitCost(unitCost.setScale(2, RoundingMode.HALF_UP));
             detail.setSubtotal(subtotal);
             detail.setPurchaseUnitName("Unidad");
-            detail.setBarcodeSnapshot(null);
+            detail.setBarcodeSnapshot(action.equals("create") ? normalizeBarcode(item.barcode()) : null);
             purchase.getDetails().add(detail);
 
             // Los regalos (costo 0) no se registran en el comparador de precios por proveedor.
@@ -388,6 +394,42 @@ public class ReceiptService {
         }
 
         return ServiceResult.success(new ReceiptConfirmResultDto(created, updated, savedPurchase.getId(), warnings));
+    }
+
+    private String validateReceiptBarcodes(List<ReceiptConfirmItemDto> items) {
+        var receivedBarcodes = new HashSet<String>();
+        for (var item : items) {
+            if (!"create".equalsIgnoreCase(item.action())) {
+                continue;
+            }
+
+            var barcode = normalizeBarcode(item.barcode());
+            if (barcode == null) {
+                continue;
+            }
+
+            var normalizedBarcode = barcode.toLowerCase();
+            if (!receivedBarcodes.add(normalizedBarcode)) {
+                return "El codigo de barras '" + barcode + "' se repite en la misma boleta.";
+            }
+
+            var existing = productRepository
+                .findFirstByBarcodeIgnoreCaseOrPurchaseBarcodeIgnoreCase(barcode, barcode)
+                .orElse(null);
+            if (existing != null) {
+                return "El codigo de barras '" + barcode + "' ya esta registrado en el producto '" + existing.getName() + "'.";
+            }
+        }
+
+        return null;
+    }
+
+    private String normalizeBarcode(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return truncate(value.trim(), 50);
     }
 
     private void recordCost(Integer supplierId, Integer productId, BigDecimal cost) {

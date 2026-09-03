@@ -9,6 +9,7 @@ import { CompanyService } from '../../core/services/company.service';
 import { ProductsService } from '../../core/services/products.service';
 import { SolesPricePipe } from '../../shared/pipes/soles-price.pipe';
 import { generateShortName } from '../../shared/short-name';
+import { matchesProductLookup } from '../../shared/search-term.utils';
 
 @Component({
   selector: 'app-product-list',
@@ -76,18 +77,18 @@ export class ProductListComponent implements OnInit {
   }
 
   get filteredProducts(): Product[] {
-    const term = this.searchTerm.trim().toLowerCase();
+    const term = this.searchTerm.trim();
     if (!term) {
       return this.visibleProducts;
     }
 
-    return this.visibleProducts.filter((product) =>
-      product.name.toLowerCase().includes(term) ||
-      product.sku.toLowerCase().includes(term) ||
-      product.categoryName.toLowerCase().includes(term) ||
-      (product.barcode ?? '').toLowerCase().includes(term) ||
-      (product.purchaseBarcode ?? '').toLowerCase().includes(term)
-    );
+    return this.visibleProducts.filter((product) => matchesProductLookup(term, [
+      product.name,
+      product.sku,
+      product.categoryName,
+      product.barcode,
+      product.purchaseBarcode
+    ]));
   }
 
   ngOnInit(): void {
