@@ -1,0 +1,11 @@
+# Copy this file to application-local.properties. The real file is ignored by Git.
+MARKET11_DB_URL=jdbc:sqlserver://localhost:55320;databaseName=MinimarketDb;encrypt=true;trustServerCertificate=true
+MARKET11_DB_USERNAME=replace-with-local-user
+MARKET11_DB_PASSWORD=replace-with-local-password
+
+# Set to true only after executing db/miroo.platform.safe-upgrade.sql.
+MIROO_TENANCY_ENABLED=true
+MIROO_CORE_DB_URL=jdbc:sqlserver://localhost:55320;databaseName=MirooCore;encrypt=true;trustServerCertificate=true
+MIROO_CORE_DB_USERNAME=replace-with-local-user
+MIROO_CORE_DB_PASSWORD=replace-with-local-password
+MIROO_CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:8081,http://localhost:8080

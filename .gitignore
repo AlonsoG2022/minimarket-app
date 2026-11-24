@@ -13,6 +13,10 @@
 /backend-java/minimarket-api-java/target
 /deploy
 
+# Local configuration and credentials. Use the tracked *.example files as templates.
+**/config/application-local.properties
+**/appsettings.Local.json
+
 # Node
 /node_modules
 npm-debug.log

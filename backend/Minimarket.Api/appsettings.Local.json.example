@@ -1,0 +1,11 @@
+{
+  "ConnectionStrings": {
+    "MinimarketConnection": "Server=localhost;Database=MinimarketDb;Trusted_Connection=True;TrustServerCertificate=True;",
+    "MirooCoreConnection": "Server=localhost;Database=MirooCore;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "MirooTenancy": {
+    "Enabled": false,
+    "OperationalDatabaseName": "MinimarketDb",
+    "LocalHostSlug": "market11"
+  }
+}

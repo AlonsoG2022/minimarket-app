@@ -1,0 +1,5 @@
+# Copy this file to application-local.properties. The real file is ignored by Git.
+MARKET11_DB_URL=jdbc:sqlserver://localhost;databaseName=MinimarketDb;encrypt=true;trustServerCertificate=true
+MARKET11_DB_USERNAME=replace-with-local-user
+MARKET11_DB_PASSWORD=replace-with-local-password
+PRINTING_PRINTER_NAME=

@@ -35,9 +35,11 @@ Edita `src/main/resources/application.properties` y completa la conexion a SQL S
 Ejemplo con autenticacion SQL:
 
 ```properties
-spring.datasource.url=jdbc:sqlserver://localhost;databaseName=MinimarketDb;encrypt=true;trustServerCertificate=true
-spring.datasource.username=minimarket_user
-spring.datasource.password=Minimarket123!
+Las credenciales locales no se guardan en `src/main/resources/application.properties`.
+
+1. Copia `config/application-local.properties.example` como `config/application-local.properties`.
+2. Completa `MARKET11_DB_URL`, `MARKET11_DB_USERNAME` y `MARKET11_DB_PASSWORD`.
+3. El archivo real queda ignorado por Git.
 ```
 
 ## Ejecutar

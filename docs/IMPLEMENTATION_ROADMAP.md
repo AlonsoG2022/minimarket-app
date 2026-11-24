@@ -314,6 +314,33 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 
 ---
 
+## Preparacion Miroo multiempresa
+
+### Fase inicial de plataforma
+- Estado: `Implementado localmente, pendiente de despliegue en Azure`
+- Script: `db/miroo.platform.safe-upgrade.sql`
+- Incluye:
+  - base central `MirooCore` con tabla `Tenants`
+  - tenant activo `market11` apuntando a la base operacional existente `MinimarketDb`
+  - base vacia e inactiva `MirooFutureBusiness`
+  - validacion de tenant por host en Java y .NET, activable por configuracion
+  - endpoint de salud `/actuator/health` en ambas APIs
+  - ejemplos de configuracion local sin incluir credenciales en Git
+- Regla actual:
+  - solo `market11` puede usar el API, porque es el unico tenant con esquema operacional
+  - `future-business` permanece inactivo hasta definir si sera minimarket, farmacia, ferreteria u otro negocio
+
+### Fase futura: segundo negocio operativo
+- Estado: `Pendiente de definir el negocio`
+- Requerira:
+  - migraciones y reglas operacionales del nuevo negocio
+  - habilitar el tenant en `MirooCore`
+  - conexion dinamica a su base operacional
+  - dominio propio y permisos por usuario/tenant
+  - worker de impresion separado si ese negocio imprime documentos
+
+---
+
 ## 9. Mantenimiento SQL
 
 ### Script unico de despliegue

@@ -36,6 +36,16 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - scripts base:
   - `db/minimarket.safe-upgrade.sql` -> script unico recomendado para instalar o actualizar sin perder datos
   - `db/minimarket.sql` -> reseteo destructivo solo para desarrollo
+  - `db/miroo.platform.safe-upgrade.sql` -> prepara la plataforma multiempresa sin modificar `MinimarketDb`
+
+### Preparacion multiempresa Miroo
+- `Market11` es el primer negocio activo y conserva por ahora su base operacional `MinimarketDb`.
+- `MirooCore` registra los negocios, su slug, base operacional y estado.
+- `MirooFutureBusiness` se crea vacia e inactiva; no recibe trafico ni contiene tablas de ventas, productos o stock.
+- Java y .NET pueden validar el negocio desde el host cuando `MIROO_TENANCY_ENABLED` / `MirooTenancy:Enabled` se activa.
+- La API actual solo sirve el esquema de `MinimarketDb`; el enrutamiento dinamico hacia el futuro negocio se implementara cuando se defina su modelo operacional.
+- Las configuraciones locales con credenciales viven en archivos ignorados por Git (`application-local.properties` y `appsettings.Local.json`).
+- El worker de impresion actual sigue conectado solo a `MinimarketDb`; un negocio futuro tendra su propio worker cuando su base y sus documentos esten definidos.
 
 ---
 
@@ -52,6 +62,8 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 3. Si una implementacion es temporal o primera fase, debe quedar documentada aqui o en el roadmap.
 
 4. Para produccion actual, el backend mas usado es `Java`, pero la paridad con `.NET` se mantiene.
+
+5. La aplicacion nunca debe decidir el tenant a partir de un identificador enviado por Angular; el backend lo resuelve desde el host de la solicitud.
 
 ---
 

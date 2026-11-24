@@ -4,21 +4,29 @@ using Minimarket.Api.Data;
 using Minimarket.Api.Helpers;
 using Minimarket.Api.Repositories;
 using Minimarket.Api.Services;
+using Minimarket.Api.Tenants;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
+builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<MinimarketDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MinimarketConnection")));
+
+builder.Services.AddScoped<TenantContext>();
+builder.Services.AddScoped<ITenantResolver, TenantResolver>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+            ?? ["http://localhost:4200", "http://localhost:8081", "http://localhost:8080"];
         policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -60,6 +68,10 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseCors("frontend");
+if (builder.Configuration.GetValue<bool>("MirooTenancy:Enabled"))
+{
+    app.UseMiddleware<TenantResolutionMiddleware>();
+}
 if (spaExists)
 {
     app.UseDefaultFiles(new DefaultFilesOptions
@@ -75,6 +87,7 @@ if (spaExists)
 
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/actuator/health");
 
 if (spaExists)
 {
