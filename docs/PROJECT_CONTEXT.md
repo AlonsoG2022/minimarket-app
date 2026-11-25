@@ -44,6 +44,13 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
 - `MirooFutureBusiness` se crea vacia e inactiva; no recibe trafico ni contiene tablas de ventas, productos o stock.
 - Java y .NET pueden validar el negocio desde el host cuando `MIROO_TENANCY_ENABLED` / `MirooTenancy:Enabled` se activa.
 - La API actual solo sirve el esquema de `MinimarketDb`; el enrutamiento dinamico hacia el futuro negocio se implementara cuando se defina su modelo operacional.
+
+### Preparacion para Azure
+- Angular obtiene la URL del API desde `public/runtime-config.js`, cargado antes de la aplicacion. Localmente apunta a `http://localhost:5214/api`; en Azure se reemplaza durante el despliegue por la URL HTTPS del App Service, sin recompilar el frontend.
+- `public/staticwebapp.config.json` conserva las rutas de Angular al recargar una pagina en Azure Static Web Apps y evita cachear `runtime-config.js`.
+- Java escucha `PORT` si Azure lo proporciona y conserva `5214` como valor local.
+- `MIROO_TENANCY_HOST_MAPPINGS` permite asociar de forma explicita un host publico del API con un tenant. Ejemplo: `api-market11.azurewebsites.net=market11`.
+- Las credenciales productivas se configuraran en Azure Key Vault y App Service; no se guardan en Git.
 - Las configuraciones locales con credenciales viven en archivos ignorados por Git (`application-local.properties` y `appsettings.Local.json`).
 - El worker de impresion actual sigue conectado solo a `MinimarketDb`; un negocio futuro tendra su propio worker cuando su base y sus documentos esten definidos.
 

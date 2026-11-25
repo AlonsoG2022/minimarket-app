@@ -1,0 +1,17 @@
+{
+  "routes": [
+    {
+      "route": "/runtime-config.js",
+      "headers": {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"
+      }
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/*.{css,js,map,json,png,jpg,jpeg,gif,svg,ico,woff,woff2,webp}"
+    ]
+  }
+}

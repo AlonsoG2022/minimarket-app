@@ -8,6 +8,7 @@ public class TenantProperties {
     private boolean enabled;
     private String operationalDatabaseName = "MinimarketDb";
     private String localHostSlug = "market11";
+    private String hostMappings = "";
     private final CoreDatasource coreDatasource = new CoreDatasource();
 
     public boolean isEnabled() {
@@ -32,6 +33,14 @@ public class TenantProperties {
 
     public void setLocalHostSlug(String localHostSlug) {
         this.localHostSlug = localHostSlug;
+    }
+
+    public String getHostMappings() {
+        return hostMappings;
+    }
+
+    public void setHostMappings(String hostMappings) {
+        this.hostMappings = hostMappings;
     }
 
     public CoreDatasource getCoreDatasource() {

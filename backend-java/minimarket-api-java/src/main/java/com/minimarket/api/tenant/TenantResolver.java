@@ -69,12 +69,32 @@ public class TenantResolver {
         }
 
         String normalizedHost = host.split(":")[0].toLowerCase(Locale.ROOT);
+        String configuredSlug = resolveConfiguredHostSlug(normalizedHost);
+        if (StringUtils.hasText(configuredSlug)) {
+            return configuredSlug;
+        }
+
         if (normalizedHost.equals("localhost") || normalizedHost.equals("127.0.0.1") || normalizedHost.equals("::1")) {
             return properties.getLocalHostSlug();
         }
 
         int dotIndex = normalizedHost.indexOf('.');
         return dotIndex > 0 ? normalizedHost.substring(0, dotIndex) : normalizedHost;
+    }
+
+    private String resolveConfiguredHostSlug(String normalizedHost) {
+        if (!StringUtils.hasText(properties.getHostMappings())) {
+            return null;
+        }
+
+        for (String mapping : properties.getHostMappings().split(",")) {
+            String[] parts = mapping.trim().split("=", 2);
+            if (parts.length == 2 && normalizedHost.equals(parts[0].trim().toLowerCase(Locale.ROOT))) {
+                return parts[1].trim();
+            }
+        }
+
+        return null;
     }
 
     @PreDestroy

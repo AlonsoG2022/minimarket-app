@@ -317,7 +317,7 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 ## Preparacion Miroo multiempresa
 
 ### Fase inicial de plataforma
-- Estado: `Implementado localmente, pendiente de despliegue en Azure`
+- Estado: `Implementado localmente; preparacion de configuracion Azure implementada`
 - Script: `db/miroo.platform.safe-upgrade.sql`
 - Incluye:
   - base central `MirooCore` con tabla `Tenants`
@@ -326,9 +326,20 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
   - validacion de tenant por host en Java y .NET, activable por configuracion
   - endpoint de salud `/actuator/health` en ambas APIs
   - ejemplos de configuracion local sin incluir credenciales en Git
+  - configuracion externa de URL de API para Angular mediante `public/runtime-config.js`
+  - configuracion de SPA para Azure Static Web Apps mediante `public/staticwebapp.config.json`
+  - puerto Java configurable mediante `PORT` y mapeo explicito host publico -> tenant mediante `MIROO_TENANCY_HOST_MAPPINGS`
 - Regla actual:
   - solo `market11` puede usar el API, porque es el unico tenant con esquema operacional
   - `future-business` permanece inactivo hasta definir si sera minimarket, farmacia, ferreteria u otro negocio
+
+### Siguiente fase: despliegue Azure
+- Crear Azure SQL logical server con `MirooCore`, `MinimarketDb` y `MirooFutureBusiness`.
+- Migrar la base operacional local con BACPAC y ejecutar las secciones de esquema correspondientes por base; el script local no debe crear bases desde Azure SQL.
+- Crear Azure Key Vault para secretos de SQL e IA.
+- Publicar solo la API Java en Azure App Service Linux y configurar sus variables de entorno.
+- Publicar Angular en Azure Static Web Apps, reemplazando `runtime-config.js` con la URL HTTPS real del API.
+- Mantener el worker de impresion en la computadora del minimarket hasta evolucionarlo a una comunicacion segura por API.
 
 ### Fase futura: segundo negocio operativo
 - Estado: `Pendiente de definir el negocio`

@@ -9,3 +9,6 @@ MIROO_CORE_DB_URL=jdbc:sqlserver://localhost:55320;databaseName=MirooCore;encryp
 MIROO_CORE_DB_USERNAME=replace-with-local-user
 MIROO_CORE_DB_PASSWORD=replace-with-local-password
 MIROO_CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:8081,http://localhost:8080
+
+# Optional explicit public host mapping. Example: api-market11.azurewebsites.net=market11
+MIROO_TENANCY_HOST_MAPPINGS=
