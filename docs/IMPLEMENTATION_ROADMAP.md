@@ -335,7 +335,8 @@ Para produccion Windows, priorizar `.NET Worker Service` como servicio real.
 
 ### Siguiente fase: despliegue Azure
 - Crear Azure SQL logical server con `MirooCore`, `MinimarketDb` y `MirooFutureBusiness`.
-- Migrar la base operacional local con BACPAC y ejecutar las secciones de esquema correspondientes por base; el script local no debe crear bases desde Azure SQL.
+- Ejecutar `db/azure/miroo-core.bootstrap.sql` conectado a `MirooCore`; el script local no debe crear bases desde Azure SQL.
+- Migrar la base operacional local con BACPAC hacia `MinimarketDb`.
 - Crear Azure Key Vault para secretos de SQL e IA.
 - Publicar solo la API Java en Azure App Service Linux y configurar sus variables de entorno.
 - Publicar Angular en Azure Static Web Apps, reemplazando `runtime-config.js` con la URL HTTPS real del API.

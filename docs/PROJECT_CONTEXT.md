@@ -37,6 +37,7 @@ Este archivo sirve como contexto base para cualquier implementacion futura.
   - `db/minimarket.safe-upgrade.sql` -> script unico recomendado para instalar o actualizar sin perder datos
   - `db/minimarket.sql` -> reseteo destructivo solo para desarrollo
   - `db/miroo.platform.safe-upgrade.sql` -> prepara la plataforma multiempresa sin modificar `MinimarketDb`
+  - `db/azure/miroo-core.bootstrap.sql` -> version idempotente para Azure SQL; se ejecuta conectado a `MirooCore` y no crea bases ni usuarios
 
 ### Preparacion multiempresa Miroo
 - `Market11` es el primer negocio activo y conserva por ahora su base operacional `MinimarketDb`.
